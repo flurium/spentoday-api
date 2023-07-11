@@ -11,5 +11,10 @@ git clone https://github.com/flurium/spentoday-api.git
 Get inside of folder:
 
 ```bash
+cd spentoday-api
+```
+
+Use dev branch:
+```bash
 git checkout dev
 ```
