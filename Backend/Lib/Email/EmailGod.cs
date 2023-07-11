@@ -31,17 +31,7 @@ public interface IEmailSender
     }
 }
 
-public class EmailService
-{
-    public IEmailSender Sender { get; }
-    public ILimiter[] Limiters { get; }
-
-    public EmailService(IEmailSender sender, params ILimiter[] limiters)
-    {
-        Sender = sender;
-        Limiters = limiters;
-    }
-}
+public record EmailService(IEmailSender Sender, params ILimiter[] Limiters);
 
 public class EmailGod : IEmailSender
 {
