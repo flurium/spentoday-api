@@ -6,5 +6,10 @@ namespace Backend.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
+        [HttpGet("/")]
+        public IActionResult Home()
+        {
+            return Ok("hello");
+        }
     }
 }
