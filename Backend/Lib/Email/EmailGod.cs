@@ -1,6 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Net.Http.Headers;
-using System.Text;
 
 namespace Backend.Lib.Email;
 
@@ -14,21 +12,6 @@ public enum EmailStatus
 public interface IEmailSender
 {
     public Task<EmailStatus> Send(string fromEmail, string fromName, List<string> toEmails, string subject, string text, string html);
-
-    protected static HttpClient JsonHttpClient(Action<HttpRequestHeaders> setHeaders)
-    {
-        HttpClient client = new();
-
-        client.DefaultRequestHeaders.Add("Accept", "application/json");
-        setHeaders(client.DefaultRequestHeaders);
-
-        return client;
-    }
-
-    protected static async Task<HttpResponseMessage> JsonPost(HttpClient client, string url, string body)
-    {
-        return await client.PostAsync(url, new StringContent(body, Encoding.UTF8, "application/json"));
-    }
 }
 
 public record EmailService(IEmailSender Sender, params ILimiter[] Limiters);

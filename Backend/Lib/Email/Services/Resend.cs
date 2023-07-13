@@ -10,29 +10,29 @@ public class Resend : IEmailSender
 
     public Resend(string token)
     {
-        httpClient = IEmailSender.JsonHttpClient(headers =>
+        httpClient = Http.JsonClient(headers =>
         {
             headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         });
     }
 
-    public async Task<EmailStatus> Send(string fromEmail, string fromName, List<string> to, string subject, string text, string html)
+    public async Task<EmailStatus> Send(string fromEmail, string fromName, List<string> toEmails, string subject, string text, string html)
     {
         try
         {
             string jsonBody = $@"
             {{
                 ""from"": ""{fromName} <{fromEmail}>"",
-                ""to"": [{string.Join(",", to.Select(x => $@"""{x}"""))}],
+                ""to"": [{string.Join(",", toEmails.Select(x => $@"""{x}"""))}],
                 ""subject"": ""{subject}"",
                 ""text"":""{text}"",
                 ""html"": ""{html}""
-            }}";
+            }}".Compact();
 
-            HttpResponseMessage response = await IEmailSender.JsonPost(httpClient, url, jsonBody);
+            HttpResponseMessage response = await Http.JsonPost(httpClient, url, jsonBody);
 
-            string responseBody = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(responseBody);
+            //string responseBody = await response.Content.ReadAsStringAsync();
+            //Console.WriteLine(responseBody);
 
             if (response.IsSuccessStatusCode) return EmailStatus.Success;
 
