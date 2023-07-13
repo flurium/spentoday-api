@@ -1,3 +1,4 @@
+using Backend.Auth;
 using Backend.Lib;
 using Backend.Lib.Email;
 using Backend.Lib.Email.Services;
@@ -9,7 +10,7 @@ Env.LoadFile(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => options.Filters.Add<DoubleSubmitCookieFilter>(int.MinValue));
 
 // Swagger Docs
 builder.Services.AddEndpointsApiExplorer();
@@ -29,8 +30,12 @@ builder.Services.AddScoped<Jwt>(_ => new(jwtSecrets));
 
 // Email
 var resendApiKey = Env.Get("RESEND_API_KEY");
+var brevoApiKey = Env.Get("BREVO_API_KEY");
+var sendGridApiKey = Env.Get("SENDGRID_API_KEY");
 builder.Services.AddSingleton<IEmailSender>(_ => new EmailGod(
-    new(new Resend(resendApiKey), new DayLimiter(100))
+    new EmailService(new Resend(resendApiKey), new DayLimiter(100)),
+    new EmailService(new Brevo(brevoApiKey), new DayLimiter(300)),
+    new EmailService(new SendGrid(sendGridApiKey), new DayLimiter(100))
 ));
 
 var app = builder.Build();
