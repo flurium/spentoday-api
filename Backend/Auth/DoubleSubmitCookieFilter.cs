@@ -18,20 +18,20 @@ public class DoubleSubmitCookieFilter : IAuthorizationFilter
         var cookie = Cookie(context.HttpContext);
         if (cookie == null)
         {
-            context.Result = new ForbidResult();
+            context.Result = new StatusCodeResult(403);
             return;
         }
 
         var header = Header(context.HttpContext);
         if (header == null)
         {
-            context.Result = new ForbidResult();
+            context.Result = new StatusCodeResult(403);
             return;
         }
 
         if (cookie != header)
         {
-            context.Result = new ForbidResult();
+            context.Result = new StatusCodeResult(403);
             return;
         }
     }
