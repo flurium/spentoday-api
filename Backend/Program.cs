@@ -1,8 +1,6 @@
 using Backend.Auth;
 using Backend.Config;
 using Backend.Lib;
-using Backend.Lib.Email;
-using Backend.Lib.Email.Services;
 using Data;
 using Microsoft.EntityFrameworkCore;
 
