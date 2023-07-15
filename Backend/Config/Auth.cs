@@ -3,6 +3,7 @@ using Backend.Lib;
 using Data;
 using Data.Models;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Config;
@@ -31,8 +32,10 @@ public static class Auth
             .AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = RefreshOnly.Scheme;
+                options.DefaultForbidScheme = RefreshOnly.Scheme;
+                options.DefaultChallengeScheme = RefreshOnly.Scheme;
                 options.DefaultScheme = RefreshOnly.Scheme;
             })
-            .AddScheme<AuthenticationSchemeOptions, RefreshOnlyAuthenticationHandler>(RefreshOnly.Scheme, null);
+            .AddScheme<AuthenticationSchemeOptions, RefreshOnlyHandler>(RefreshOnly.Scheme, options => { });
     }
 }

@@ -14,13 +14,13 @@ public static class RefreshOnly
     public const string Scheme = "RefreshOnly";
 }
 
-public class RefreshOnlyAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+public class RefreshOnlyHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     private const string bearer = "Bearer ";
     private readonly Jwt jwt;
     private readonly Db db;
 
-    public RefreshOnlyAuthenticationHandler(
+    public RefreshOnlyHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger,
         UrlEncoder encoder, ISystemClock clock, Jwt jwt, Db db
     ) : base(options, logger, encoder, clock)
@@ -34,7 +34,7 @@ public class RefreshOnlyAuthenticationHandler : AuthenticationHandler<Authentica
         try
         {
             var token = GetToken(Request);
-            if (token == null) return AuthenticateResult.Fail("Missing token");
+            if (token == null) return AuthenticateResult.NoResult();
 
             var princimal = jwt.Validate(token);
             if (princimal == null) return AuthenticateResult.Fail("Invalid token");
@@ -77,5 +77,17 @@ public class RefreshOnlyAuthenticationHandler : AuthenticationHandler<Authentica
         if (string.IsNullOrEmpty(token)) return null;
 
         return token;
+    }
+
+    protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
+    {
+        Response.StatusCode = StatusCodes.Status403Forbidden;
+        return Task.CompletedTask;
+    }
+
+    protected override Task HandleChallengeAsync(AuthenticationProperties properties)
+    {
+        Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return Task.CompletedTask;
     }
 }

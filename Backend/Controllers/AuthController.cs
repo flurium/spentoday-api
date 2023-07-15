@@ -1,4 +1,5 @@
-﻿using Backend.Lib;
+﻿using Backend.Auth;
+using Backend.Lib;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,20 +7,27 @@ namespace Backend.Controllers
 {
     [Route("api/auth")]
     [ApiController]
-    [AllowAnonymous]
     public class AuthController : ControllerBase
     {
-        [HttpGet("/")]
-        public IActionResult Home()
+        private readonly Jwt jwt;
+
+        public AuthController(Jwt jwt)
         {
-            return Ok("hello");
+            this.jwt = jwt;
         }
 
-        [HttpGet("/me")]
+        [HttpGet("token")]
+        public IActionResult Home()
+        {
+            return Ok(jwt.Token("1111", 1));
+        }
+
+        [HttpGet("me")]
         [Authorize]
         public IActionResult Me()
         {
-            return Ok(User.FindFirst(Jwt.Uid));
+            var uid = User.FindFirst(Jwt.Uid)?.Value;
+            return Ok(uid);
         }
     }
 }

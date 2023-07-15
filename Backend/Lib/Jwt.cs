@@ -33,7 +33,7 @@ public class Jwt
 
         var jwt = new JwtSecurityToken(
             issuer: secrets.Issuer,
-            expires: DateTime.Now.AddMinutes(15),
+            expires: DateTime.Now.AddDays(30),
             claims: claims,
             signingCredentials: credentials
         );
