@@ -15,13 +15,20 @@ are revoked.
 To implement this we have `RefreshOnlyAuthenticationHandler` which do all logic to check
 whether user is authenticated or not.
 
-Now for web we store token inside of cookie, so we need also use Double Submit Cookie to
-prevent CSRF. Just send same value inside of cookie and header.
+Now for web we store token inside of cookie, so we need also use Custom Header Protection
+to prevent CSRF.
 
-## Double Submit Token
+## Custom Header Protection
 
-`DoubleSubmitTokenMiddleware` requires double submit token for all endpoints that require
-authentication.
+`CustomHeaderProtectionMiddleware` requires custom header in all requests to secure endpoints.
+
 Identifying whether endpoint requires authentication or not relies on `AuthorizeAttribute`
-and `AllowAnonymousAttribute`. **So you need to use them.** By the way `.RequireAuthorization()`
-adds AuthorizeAttribute to the endpoint, so don't worry if you use Minimal Api.
+By the way `.RequireAuthorization()` adds AuthorizeAttribute to the endpoint,
+so don't worry if you use Minimal Api.
+
+## AllowAnonymous Ban
+
+`AllowAnonymous` is `banned` in our codebase. Because somehow it overrides Authorize
+attribute in any position. So I created one more class AllowAnonymousAttribute in same
+namespace as existing and throw error in it constructor. So you can't start application
+if you use AllwoAnonymous.
