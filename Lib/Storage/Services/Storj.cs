@@ -1,7 +1,11 @@
-﻿using Amazon.S3;
+﻿using Amazon;
+using Amazon.Runtime;
+using Amazon.S3;
+using Amazon.S3.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,15 +13,57 @@ namespace Lib.Storage.Services;
 
 public class Storj : IStorage
 {
-    private AmazonS3Client client;
+    private readonly AmazonS3Client client;
+    private const string provider = "storj";
 
-    public Storj()
+    public Storj(string accessKey, string secretKey, string endpoint)
     {
-        client = new AmazonS3Client();
+        var config = new AmazonS3Config() { ServiceURL = endpoint };
+        client = new AmazonS3Client(accessKey, secretKey, config);
     }
 
-    public (StorageItem item, Exception? error) Upload()
+    public async Task<StorageItem?> Upload(string bucket, string filename, Stream fileStream)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var request = new PutObjectRequest
+            {
+                BucketName = bucket,
+                Key = filename,
+                InputStream = fileStream,
+                CannedACL = S3CannedACL.PublicRead
+            };
+
+            var response = await client.PutObjectAsync(request);
+
+            if (response.HttpStatusCode != HttpStatusCode.OK) return null;
+            return new StorageItem(bucket, filename, provider);
+        }
+        catch
+        {
+            // TODO: log exception
+            return null;
+        }
+    }
+
+    public async Task<bool> Delete(string bucket, string key)
+    {
+        try
+        {
+            var request = new DeleteObjectRequest
+            {
+                BucketName = bucket,
+                Key = key
+            };
+
+            var response = await client.DeleteObjectAsync(request);
+
+            return response.HttpStatusCode == HttpStatusCode.OK;
+        }
+        catch
+        {
+            // TODO: log exception
+            return false;
+        }
     }
 }

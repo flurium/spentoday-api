@@ -20,7 +20,7 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173", "http://localhost:5174")
+            .WithOrigins("http://localhost:5173", "http://localhost:5174") // during dev
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -31,8 +31,9 @@ builder.Services.AddCors(options =>
 var dbConnectionString = Env.Get("DB_CONNECTION_STRING");
 builder.Services.AddDbContext<Db>(options => options.UseNpgsql(dbConnectionString));
 
-// Email
+// Infrastructure
 builder.Services.AddEmail();
+builder.Services.AddStorage();
 
 // Authentication
 builder.Services.AddJwt();

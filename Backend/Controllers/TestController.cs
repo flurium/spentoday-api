@@ -1,5 +1,6 @@
 ﻿using Backend.Auth;
 using Lib;
+using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,10 +11,12 @@ namespace Backend.Controllers
     public class TestController : ControllerBase
     {
         private readonly Jwt jwt;
+        private readonly IStorage storage;
 
-        public TestController(Jwt jwt)
+        public TestController(Jwt jwt, IStorage storage)
         {
             this.jwt = jwt;
+            this.storage = storage;
         }
 
         [HttpGet("token")]
@@ -31,7 +34,19 @@ namespace Backend.Controllers
         }
 
         [HttpPost("upload")]
-        public IActionResult Upload(IEnumerable<IFormFile> files)
+        public async Task<IActionResult> Upload(IFormFile file)
+        {
+            var key = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+
+            var upload = await storage.Upload("shops", key, file.OpenReadStream());
+
+            if (upload != null) return Ok(upload);
+
+            return Problem();
+        }
+
+        [HttpGet("uploads")]
+        public async Task<IActionResult> Uploads()
         {
             return Ok();
         }
