@@ -1,17 +1,17 @@
 ﻿using Backend.Auth;
-using Backend.Lib;
+using Lib;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
 {
-    [Route("api/auth")]
+    [Route("api/test")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class TestController : ControllerBase
     {
         private readonly Jwt jwt;
 
-        public AuthController(Jwt jwt)
+        public TestController(Jwt jwt)
         {
             this.jwt = jwt;
         }
@@ -28,6 +28,12 @@ namespace Backend.Controllers
         {
             var uid = User.FindFirst(Jwt.Uid)?.Value;
             return Ok(uid);
+        }
+
+        [HttpPost("upload")]
+        public IActionResult Upload(IEnumerable<IFormFile> files)
+        {
+            return Ok();
         }
     }
 }

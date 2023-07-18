@@ -3,7 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Backend.Lib;
+namespace Lib;
 
 public record JwtSecrets(string Issuer, string Audience, string Secret);
 

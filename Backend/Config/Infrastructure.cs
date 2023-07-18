@@ -1,6 +1,6 @@
-﻿using Backend.Lib;
-using Backend.Lib.Email.Services;
-using Backend.Lib.Email;
+﻿using Lib;
+using Lib.Email.Services;
+using Lib.Email;
 
 namespace Backend.Config;
 

@@ -1,6 +1,7 @@
-﻿using System.Net;
+﻿using Lib.Email;
+using System.Net;
 
-namespace Backend.Lib.Email.Services;
+namespace Lib.Email.Services;
 
 public class Resend : IEmailSender
 {

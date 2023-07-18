@@ -1,4 +1,4 @@
-﻿namespace Backend.Lib.Email.Services;
+﻿namespace Lib.Email.Services;
 
 /// <summary>
 /// Brevo email sender. At the current moment Brevo doesn't have month limit.

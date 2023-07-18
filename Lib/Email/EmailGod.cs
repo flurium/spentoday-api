@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace Backend.Lib.Email;
+namespace Lib.Email;
 
 public enum EmailStatus
 {

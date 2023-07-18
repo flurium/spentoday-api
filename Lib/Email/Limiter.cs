@@ -1,4 +1,4 @@
-﻿namespace Backend.Lib.Email;
+﻿namespace Lib.Email;
 
 public interface ILimiter
 {

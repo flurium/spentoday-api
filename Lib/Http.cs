@@ -1,7 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
 
-namespace Backend.Lib;
+namespace Lib;
 
 public class Http
 {

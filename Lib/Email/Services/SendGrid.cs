@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 
-namespace Backend.Lib.Email.Services;
+namespace Lib.Email.Services;
 
 public class SendGrid : IEmailSender
 {

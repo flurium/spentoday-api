@@ -1,4 +1,4 @@
-﻿using Backend.Lib;
+﻿using Lib;
 using Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;

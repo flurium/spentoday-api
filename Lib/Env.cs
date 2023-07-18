@@ -1,4 +1,4 @@
-﻿namespace Backend.Lib;
+﻿namespace Lib;
 
 public static class Env
 {

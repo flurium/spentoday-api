@@ -1,6 +1,6 @@
 using Backend.Auth;
 using Backend.Config;
-using Backend.Lib;
+using Lib;
 using Data;
 using Microsoft.EntityFrameworkCore;
 
