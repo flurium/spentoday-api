@@ -1,5 +1,4 @@
-﻿using Lib.Email;
-using System.Net;
+﻿using System.Net;
 
 namespace Lib.Email.Services;
 

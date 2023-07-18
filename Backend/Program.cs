@@ -1,7 +1,7 @@
 using Backend.Auth;
 using Backend.Config;
-using Lib;
 using Data;
+using Lib;
 using Microsoft.EntityFrameworkCore;
 
 // Load env variables form .env file (in development)

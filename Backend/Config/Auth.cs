@@ -1,7 +1,7 @@
 ﻿using Backend.Auth;
-using Lib;
 using Data;
 using Data.Models;
+using Lib;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 
