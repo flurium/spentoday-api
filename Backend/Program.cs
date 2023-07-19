@@ -3,6 +3,7 @@ using Backend.Config;
 using Backend.Lib;
 using Data;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 // Load env variables form .env file (in development)
 Env.LoadFile(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
@@ -34,11 +35,20 @@ builder.Services.AddDbContext<Db>(options => options.UseNpgsql(dbConnectionStrin
 // Email
 builder.Services.AddEmail();
 
+
+
 // Authentication
 builder.Services.AddJwt();
 builder.Services.AddAuth();
 
 var app = builder.Build();
+
+// Logs
+var logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .MinimumLevel.Fatal()
+    .CreateLogger();
+builder.Logging.AddSerilog(logger);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

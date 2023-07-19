@@ -16,6 +16,7 @@ namespace Data.Models
         public List<Image> Images { get; set; }
         //public List<CategoryToProduct> Categories?
         public string ShopId { get; set; }
+        public Shop Shop { get; set; }
         public string VideoURL { get; set; }
         //SEO
         public string SeoTitle { get; set; }
