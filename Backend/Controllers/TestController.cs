@@ -1,4 +1,7 @@
-﻿using Lib;
+﻿using Data;
+using Data.Models;
+using Lib;
+using Lib.EntityFrameworkCore;
 using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +14,13 @@ namespace Backend.Controllers
     {
         private readonly Jwt jwt;
         private readonly IStorage storage;
+        private readonly Db db;
 
-        public TestController(Jwt jwt, IStorage storage)
+        public TestController(Jwt jwt, IStorage storage, Db db)
         {
             this.jwt = jwt;
             this.storage = storage;
+            this.db = db;
         }
 
         [HttpGet("token")]
@@ -49,6 +54,33 @@ namespace Backend.Controllers
         {
             var delete = await storage.Delete("shops", key);
             return delete ? Ok() : Problem();
+        }
+
+        [HttpGet("query")]
+        public async Task<IActionResult> Query()
+        {
+            Random rnd = new();
+
+            IQueryable<ProductImage> query = db.Images;
+
+            if (rnd.Next() % 2 == 0)
+            {
+                query = query.Where(x => x.Url.StartsWith("tscrnmg"));
+            }
+
+            var images = await query.QueryMany();
+            return Ok(images);
+        }
+
+        [HttpDelete("image")]
+        public async Task<IActionResult> DeleteImage()
+        {
+            var image = await db.Images.QueryOne(x => x.Url.StartsWith("https://l"));
+            if (image == null) return NotFound();
+
+            db.Images.Remove(image);
+            var saved = await db.Save();
+            return saved ? Ok() : Problem();
         }
     }
 }
