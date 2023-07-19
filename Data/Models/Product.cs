@@ -13,7 +13,7 @@ namespace Data.Models
         public double Price { get; set; }
         public int Amount { get; set; }
         public string PreviewImage { get; set; }
-        public List<Image> Images { get; set; }
+        public List<ProductImage> Images { get; set; }
         //public List<CategoryToProduct> Categories?
         public string ShopId { get; set; }
         public Shop Shop { get; set; }

@@ -13,8 +13,8 @@ public class Db : IdentityDbContext<User>
 
     public DbSet<Product> Products { get; set; }
     public DbSet<Shop> Shops { get; set; }
-    public DbSet<Banner> Banners { get; set; }
-    public DbSet<Image> Images { get; set; }
+    public DbSet<ShopBanner> Banners { get; set; }
+    public DbSet<ProductImage> Images { get; set; }
     public DbSet<SocialMediaLink> SocialMediaLinks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -27,11 +27,11 @@ public class Db : IdentityDbContext<User>
 
         builder.Entity<Shop>().HasKey(s=>s.Id);
       
-        builder.Entity<Banner>().HasKey(b => b.Url);
-        builder.Entity<Banner>().HasOne(b =>b.Shop).WithMany(s => s.Banners).HasForeignKey(b => b.ShopId);
+        builder.Entity<ShopBanner>().HasKey(b => b.Url);
+        builder.Entity<ShopBanner>().HasOne(b =>b.Shop).WithMany(s => s.Banners).HasForeignKey(b => b.ShopId);
 
-        builder.Entity<Image>().HasKey(i => i.Url);
-        builder.Entity<Image>().HasOne(i => i.Product).WithMany(p => p.Images).HasForeignKey(i => i.ProductId);
+        builder.Entity<ProductImage>().HasKey(i => i.Url);
+        builder.Entity<ProductImage>().HasOne(i => i.Product).WithMany(p => p.Images).HasForeignKey(i => i.ProductId);
 
         builder.Entity<SocialMediaLink>().HasKey(s=>s.Id);
         builder.Entity<SocialMediaLink>().HasOne(s=>s.Shop).WithMany(S => S.SocialMediaLinks).HasForeignKey(s => s.ShopId);

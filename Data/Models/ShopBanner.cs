@@ -7,11 +7,10 @@ using System.Threading.Tasks;
 
 namespace Data.Models
 {
-    public class Image
+    public class ShopBanner
     {
-        public string Url { get ; set; }
-        public string ProductId { get; set; }
-        public Product Product { get; set; }
+        public string Url { get; set; }
+        public string ShopId { get; set; }
+        public Shop Shop { get; set; }
     }
-
 }

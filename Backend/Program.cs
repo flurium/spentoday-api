@@ -41,14 +41,16 @@ builder.Services.AddEmail();
 builder.Services.AddJwt();
 builder.Services.AddAuth();
 
-var app = builder.Build();
-
 // Logs
 var logger = new LoggerConfiguration()
     .WriteTo.Console()
     .MinimumLevel.Fatal()
     .CreateLogger();
 builder.Logging.AddSerilog(logger);
+
+var app = builder.Build();
+
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
