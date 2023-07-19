@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace Data.Models
 {
-    public class Banner
+    public class ShopBanner
     {
-        public string URL { get; set; }
+        public string Url { get; set; }
         public string ShopId { get; set; }
+        public Shop Shop { get; set; }
     }
 }
