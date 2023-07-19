@@ -38,16 +38,17 @@ namespace Backend.Controllers
             var key = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
 
             var upload = await storage.Upload("shops", key, file.OpenReadStream());
+            if (upload == null) return Problem();
 
-            if (upload != null) return Ok(upload);
-
-            return Problem();
+            var link = storage.Url(upload);
+            return Ok(link);
         }
 
-        [HttpGet("uploads")]
-        public async Task<IActionResult> Uploads()
+        [HttpDelete("upload")]
+        public async Task<IActionResult> DeleteUpload(string key)
         {
-            return Ok();
+            var delete = await storage.Delete("shops", key);
+            return delete ? Ok() : Problem();
         }
     }
 }

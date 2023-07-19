@@ -35,17 +35,33 @@ public class EmailGod : IEmailSender
 
             foreach (var service in services)
             {
-                if (!service.Limiters.All(l => l.IsLimitAllow())) continue;
-
-                var status = await service.Sender.Send(fromEmail, fromName, toEmails, subject, text, html);
-
-                if (status == EmailStatus.Success)
+                try
                 {
-                    foreach (var limiter in service.Limiters) limiter.IncrementLimiter();
-                    return EmailStatus.Success;
-                }
+                    if (!service.Limiters.All(l => l.IsLimitAllow())) continue;
 
-                if (status == EmailStatus.Failed) allLimitsReached = false;
+                    var status = await service.Sender.Send(fromEmail, fromName, toEmails, subject, text, html);
+
+                    if (status == EmailStatus.Success)
+                    {
+                        foreach (var limiter in service.Limiters) limiter.IncrementLimiter();
+                        return EmailStatus.Success;
+                    }
+
+                    if (status == EmailStatus.LimitReached)
+                    {
+                        foreach (var limiter in service.Limiters) limiter.ReachedLimit();
+                    }
+                    else
+                    {
+                        // if (status == EmailStatus.Failed)
+                        allLimitsReached = false;
+                    }
+                }
+                catch
+                {
+                    allLimitsReached = false;
+                    continue;
+                }
             }
 
             return allLimitsReached ? EmailStatus.LimitReached : EmailStatus.Failed;

@@ -12,47 +12,11 @@ public interface ILimiter
     /// Increment limiter. Is called if email is sent successfully.
     /// </summary>
     void IncrementLimiter();
-}
-
-public class MonthLimiter : ILimiter
-{
-    private readonly long monthLimit;
-    private long monthUsed = 0;
 
     /// <summary>
-    /// Date of last month limit reset. We store it in long to use Interlocked.
-    /// Represent DateTime Ticks.
+    /// Set used to limit. Called if email returned response that limit is reached.
     /// </summary>
-    private long lastMonthReset;
-
-    public MonthLimiter(DateTime lastMonthReset, long monthLimit)
-    {
-        this.monthLimit = monthLimit;
-        this.lastMonthReset = lastMonthReset.Ticks;
-    }
-
-    public void IncrementLimiter() => Interlocked.Increment(ref monthUsed);
-
-    public bool IsLimitAllow()
-    {
-        DateTime now = DateTime.Now;
-
-        // because it's long fractional part is cut
-        // so we have 0, 1, 2, ...
-        long monthsBetween = (now.Ticks - lastMonthReset) / (TimeSpan.TicksPerDay * 30);
-
-        // 1, 2, 3
-        if (monthsBetween > 0)
-        {
-            long ticksToAdd = monthsBetween * 30 * TimeSpan.TicksPerDay;
-            long newResetDate = lastMonthReset + ticksToAdd;
-
-            Interlocked.Exchange(ref lastMonthReset, newResetDate);
-            Interlocked.Exchange(ref monthUsed, 0);
-        }
-
-        return monthUsed < monthLimit;
-    }
+    void ReachedLimit();
 }
 
 public class DayLimiter : ILimiter
@@ -81,5 +45,10 @@ public class DayLimiter : ILimiter
         }
 
         return dayUsed < dayLimit;
+    }
+
+    public void ReachedLimit()
+    {
+        Interlocked.Exchange(ref dayUsed, dayLimit);
     }
 }
