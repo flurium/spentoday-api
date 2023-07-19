@@ -1,9 +1,8 @@
 ﻿using Backend.Auth;
-using Backend.Lib;
 using Data;
 using Data.Models;
+using Lib;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Config;

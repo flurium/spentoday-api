@@ -1,6 +1,8 @@
-﻿using Backend.Lib;
-using Backend.Lib.Email.Services;
-using Backend.Lib.Email;
+﻿using Lib;
+using Lib.Email;
+using Lib.Email.Services;
+using Lib.Storage;
+using Lib.Storage.Services;
 
 namespace Backend.Config;
 
@@ -17,5 +19,15 @@ public static class Infrastructure
             new EmailService(new Brevo(brevoApiKey), new DayLimiter(300)),
             new EmailService(new SendGrid(sendGridApiKey), new DayLimiter(100))
         ));
+    }
+
+    public static void AddStorage(this IServiceCollection services)
+    {
+        var storjAccessKey = Env.Get("STORJ_ACCESS_KEY");
+        var storjSecretKey = Env.Get("STORJ_SECRET_KEY");
+        var storjEndpoint = Env.Get("STORJ_ENDPOINT");
+        var storjPublicKey = Env.Get("STORJ_PUBLIC_KEY");
+
+        services.AddScoped<IStorage>(_ => new Storj(storjAccessKey, storjSecretKey, storjEndpoint, storjPublicKey));
     }
 }

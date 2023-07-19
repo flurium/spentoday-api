@@ -1,5 +1,5 @@
-﻿using Backend.Lib;
-using Data;
+﻿using Data;
+using Lib;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

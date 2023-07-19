@@ -1,7 +1,8 @@
-﻿using System.Net.Http.Headers;
+﻿using Microsoft.AspNetCore.Http;
+using System.Net.Http.Headers;
 using System.Text;
 
-namespace Backend.Lib;
+namespace Lib;
 
 public class Http
 {
@@ -18,6 +19,11 @@ public class Http
     public static async Task<HttpResponseMessage> JsonPost(HttpClient client, string url, string body)
     {
         return await client.PostAsync(url, new StringContent(body, Encoding.UTF8, "application/json"));
+    }
+
+    public static bool IsSuccessful(int statusCode)
+    {
+        return (statusCode >= 200) && (statusCode <= 299);
     }
 }
 
