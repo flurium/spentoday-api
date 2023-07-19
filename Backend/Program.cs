@@ -36,8 +36,6 @@ builder.Services.AddDbContext<Db>(options => options.UseNpgsql(dbConnectionStrin
 builder.Services.AddEmail();
 builder.Services.AddStorage();
 
-
-
 // Authentication
 builder.Services.AddJwt();
 builder.Services.AddAuth();
@@ -50,8 +48,6 @@ var logger = new LoggerConfiguration()
 builder.Logging.AddSerilog(logger);
 
 var app = builder.Build();
-
-
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
