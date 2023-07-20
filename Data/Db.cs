@@ -16,6 +16,8 @@ public class Db : IdentityDbContext<User>
     public DbSet<ShopBanner> Banners { get; set; }
     public DbSet<ProductImage> Images { get; set; }
     public DbSet<SocialMediaLink> SocialMediaLinks { get; set; }
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<ProductCategory> ProductCategories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -35,5 +37,14 @@ public class Db : IdentityDbContext<User>
 
         builder.Entity<SocialMediaLink>().HasKey(s => s.Id);
         builder.Entity<SocialMediaLink>().HasOne(s => s.Shop).WithMany(S => S.SocialMediaLinks).HasForeignKey(s => s.ShopId);
+
+        builder.Entity<Category>().HasKey(c => c.Id);
+
+        builder.Entity<ProductCategory>().HasKey(pc => new { pc.ProductId, pc.CategoryId });
+
+        builder.Entity<ProductCategory>().HasOne(pc => pc.Product).WithMany(p => p.ProductCategories).HasForeignKey(pc => pc.ProductId);
+
+        builder.Entity<ProductCategory>().HasOne(pc => pc.Category).WithMany(c => c.ProductCategories).HasForeignKey(pc => pc.CategoryId);
+     
     }
 }
