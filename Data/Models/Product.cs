@@ -17,7 +17,7 @@ namespace Data.Models
 
         public string ShopId { get; set; }
         public Shop Shop { get; set; }
-        public bool isDraft { get; set; } = true;
+        public bool IsDraft { get; set; } = true;
         public string? VideoUrl { get; set; }
 
         //SEO
