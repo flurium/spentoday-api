@@ -11,29 +11,34 @@ public class Db : IdentityDbContext<User>
         Database.EnsureCreated();
     }
 
-    public DbSet<Product> Products { get; set; }
-    public DbSet<Shop> Shops { get; set; }
-    public DbSet<ShopBanner> Banners { get; set; }
-    public DbSet<ProductImage> Images { get; set; }
-    public DbSet<SocialMediaLink> SocialMediaLinks { get; set; }
+    public DbSet<Product> Products { get; set; } = default!;
+    public DbSet<Shop> Shops { get; set; } = default!;
+    public DbSet<ShopBanner> Banners { get; set; } = default!;
+    public DbSet<ProductImage> Images { get; set; } = default!;
+    public DbSet<SocialMediaLink> SocialMediaLinks { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
-        builder.Entity<Product>().HasKey(p => p.Id);
-        builder.Entity<Product>().HasOne(p => p.Shop).WithMany(s => s.Products).HasForeignKey(p => p.ShopId);
-        builder.Entity<Product>().Property(p => p.SeoDescription).HasColumnType("text");
+        var product = builder.Entity<Product>();
+        product.HasKey(p => p.Id);
+        product.HasOne(p => p.Shop).WithMany(s => s.Products).HasForeignKey(p => p.ShopId);
+        product.Property(p => p.SeoDescription).HasColumnType("text");
 
-        builder.Entity<Shop>().HasKey(s => s.Id);
+        var shop = builder.Entity<Shop>();
+        shop.HasKey(s => s.Id);
 
-        builder.Entity<ShopBanner>().HasKey(b => b.Url);
-        builder.Entity<ShopBanner>().HasOne(b => b.Shop).WithMany(s => s.Banners).HasForeignKey(b => b.ShopId);
+        var shopBanner = builder.Entity<ShopBanner>();
+        shopBanner.HasKey(b => b.Url);
+        shopBanner.HasOne(b => b.Shop).WithMany(s => s.Banners).HasForeignKey(b => b.ShopId);
 
-        builder.Entity<ProductImage>().HasKey(i => i.Url);
-        builder.Entity<ProductImage>().HasOne(i => i.Product).WithMany(p => p.Images).HasForeignKey(i => i.ProductId);
+        var productImage = builder.Entity<ProductImage>();
+        productImage.HasKey(i => i.Url);
+        productImage.HasOne(i => i.Product).WithMany(p => p.Images).HasForeignKey(i => i.ProductId);
 
-        builder.Entity<SocialMediaLink>().HasKey(s => s.Id);
-        builder.Entity<SocialMediaLink>().HasOne(s => s.Shop).WithMany(S => S.SocialMediaLinks).HasForeignKey(s => s.ShopId);
+        var socialMediaLink = builder.Entity<SocialMediaLink>();
+        socialMediaLink.HasKey(s => s.Id);
+        socialMediaLink.HasOne(s => s.Shop).WithMany(S => S.SocialMediaLinks).HasForeignKey(s => s.ShopId);
     }
 }
