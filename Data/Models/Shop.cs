@@ -2,11 +2,17 @@
 {
     public class Shop
     {
-        public string Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; }
         public string LogoUrl { get; set; }
-        public List<SocialMediaLink> SocialMediaLinks { get; set; }
-        public List<Product> Products { get; set; }
-        public List<ShopBanner> Banners { get; set; }
+        public IReadOnlyCollection<SocialMediaLink> SocialMediaLinks { get; set; }
+        public IReadOnlyCollection<Product> Products { get; set; }
+        public IReadOnlyCollection<ShopBanner> Banners { get; set; }
+
+        public Shop(string Name, string LogoUrl)
+        {
+            this.Name = Name;
+            this.LogoUrl = LogoUrl;
+        }
     }
 }
