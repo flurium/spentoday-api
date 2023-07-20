@@ -2,24 +2,26 @@
 using Microsoft.AspNetCore.Mvc;
 using Data;
 using Data.Models;
+using Lib;
+using Lib.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/category")]
     [ApiController]
     public class CategoryController : ControllerBase
     {
-        private readonly Db _context;
+        private readonly Db db;
 
         public CategoryController(Db context)
         {
-            _context = context;
+            db = context;
         }
 
-        // POST api/categories
-        [HttpPost]
-        public IActionResult CreateOrUpdateCategory([FromBody] string categoryName)
+        // POST api/category/{categoryName}
+        [HttpPost("{categoryName}")]
+        public async Task<IActionResult> CreateOrUpdateCategory(string categoryName)
         {
             if (string.IsNullOrEmpty(categoryName))
             {
@@ -28,7 +30,7 @@ namespace Backend.Controllers
 
             string lowercaseCategoryName = categoryName.ToLower();
 
-            var existingCategory = _context.Categories.FirstOrDefault(c => c.Name.ToLower() == lowercaseCategoryName);
+            var existingCategory = await db.Categories.QueryOne(c => c.Name.ToLower() == lowercaseCategoryName);
 
             if (existingCategory != null)
             {
@@ -37,55 +39,48 @@ namespace Backend.Controllers
             else
             {
                 var newCategory = new Category(categoryName);
-                _context.Categories.Add(newCategory);
-                _context.SaveChanges();
+                db.Categories.Add(newCategory);
+                await db.Save();
                 return Ok(newCategory);
             }
         }
 
-        // DELETE api/categories/{categoryId}
+        // DELETE api/category/{categoryId}
         [HttpDelete("{categoryId}")]
-        public IActionResult DeleteCategory(string categoryId)
+        public async Task<IActionResult> DeleteCategory(string categoryId)
         {
-            var category = _context.Categories
+            var category = await db.Categories
                 .Include(c => c.ProductCategories)
-                .FirstOrDefault(c => c.Id == categoryId);
+                .QueryOne(c => c.Id == categoryId);
 
             if (category == null)
             {
                 return NotFound();
             }
 
-            if (category.ProductCategories.Any())
+            if (!category.ProductCategories.Any())
             {
-                foreach (var productCategory in category.ProductCategories.ToList())
-                {
-                    _context.ProductCategories.Remove(productCategory);
-                }
-            }
-            else
-            {
-                _context.Categories.Remove(category);
+                db.Categories.Remove(category);
             }
 
-            _context.SaveChanges();
+            await db.Save();
             return Ok();
         }
 
-        // PUT api/categories/{categoryId}
-        [HttpPut("{categoryId}")]
-        public IActionResult EditCategory(string categoryId, [FromBody] string newCategoryName)
+        // PUT api/category
+        [HttpPut]
+        public async Task<IActionResult> EditCategory( [FromBody] Category newCategory)
         {
-            var category = _context.Categories.Include(c => c.ProductCategories).FirstOrDefault(c => c.Id == categoryId);
+            var category = await db.Categories.Include(c => c.ProductCategories).QueryOne(c => c.Id == newCategory.Id);
 
             if (category == null)
             {
                 return NotFound();
             }
 
-            string lowercaseNewCategoryName = newCategoryName.ToLower();
+            string lowercaseNewCategoryName = newCategory.Name.ToLower();
 
-            var existingCategory = _context.Categories.FirstOrDefault(c => c.Name.ToLower() == lowercaseNewCategoryName);
+            var existingCategory = await db.Categories.QueryOne(c => c.Name.ToLower() == lowercaseNewCategoryName);
 
             if (existingCategory != null)
             {
@@ -95,16 +90,16 @@ namespace Backend.Controllers
             {
                 if (category.ProductCategories.Any())
                 {
-                    var newCategory = new Category(newCategoryName);
-                    _context.Categories.Add(newCategory);
-                    _context.SaveChanges();
+                    var createCategory = new Category(newCategory.Name);
+                    db.Categories.Add(createCategory);
+                    await db.Save();
 
-                    return Ok(newCategory);
+                    return Ok(createCategory);
                 }
                 else
                 {
-                    category.Name = newCategoryName;
-                    _context.SaveChanges();
+                    category.Name = newCategory.Name;
+                    await db.Save();
 
                     return Ok(category);
                 }
