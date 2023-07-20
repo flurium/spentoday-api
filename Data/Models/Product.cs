@@ -17,16 +17,13 @@ namespace Data.Models
 
         public string ShopId { get; set; }
         public Shop Shop { get; set; }
-        public bool isDraft { get; set; } = false;
+        public bool isDraft { get; set; } = true;
         public string? VideoUrl { get; set; }
 
         //SEO
         public string SeoTitle { get; set; } = string.Empty;
-
         public string SeoDescription { get; set; } = string.Empty;
         public string SeoSlug { get; set; } = string.Empty;
-
-        public Product() { }
 
         public Product(string Name, double Price, int Amount, string PreviewImage, string ShopId, string VideoUrl = null ) {
             this.Name = Name;

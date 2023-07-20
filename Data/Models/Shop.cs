@@ -16,8 +16,6 @@ namespace Data.Models
         public IReadOnlyCollection<Product> Products { get; set; }
         public IReadOnlyCollection<ShopBanner> Banners { get; set; }
 
-        public Shop() { }
-
         public Shop(string Name, string LogoUrl)
         {
             this.Name = Name;

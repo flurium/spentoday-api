@@ -12,14 +12,10 @@ namespace Data.Models
         public string ShopId { get; set; }
         public Shop Shop { get; set; }
 
-        public ShopBanner() { }
-
         public ShopBanner(string Url, string ShopId)
         {
             this.Url = Url;
             this.ShopId = ShopId;
-
         }
-     
     }
 }

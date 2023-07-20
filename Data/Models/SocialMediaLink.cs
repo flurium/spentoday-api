@@ -14,14 +14,11 @@ namespace Data.Models
         public string ShopId { get; set; }
         public Shop Shop { get; set; }
 
-        public SocialMediaLink() { }
-
         public SocialMediaLink(string Name, string Link, string ShopId)
         {
             this.Name = Name;
             this.Link = Link;
             this.ShopId = ShopId;
         }
-
     }
 }

@@ -13,8 +13,6 @@ namespace Data.Models
         public string ProductId { get; set; }
         public Product Product { get; set; }
 
-        public ProductImage() { }
-
         public ProductImage(string Url, string ProductId) {
             this.Url = Url;
             this.ProductId = ProductId;
