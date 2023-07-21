@@ -4,7 +4,6 @@ using Lib;
 using Lib.EntityFrameworkCore;
 using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers;
@@ -70,6 +69,7 @@ public class TestController : ControllerBase
         }
 
         var images = await query.QueryMany();
+
         return Ok(images);
     }
 

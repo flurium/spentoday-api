@@ -76,7 +76,6 @@ If class is just container for data, you should use records or tuples. Records c
 You should place data classes as close as possible to methods that use it.
 
 ```csharp
-
 // tuple as return type
 public (string?, Exception?) UserId(string token) {
   try {
@@ -94,5 +93,4 @@ public ProductDto GetProducts() {
   var product = db.Products.QueryOne();
   return new ProductDto(product.Name, product.Description);
 }
-
 ```
