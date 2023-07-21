@@ -36,15 +36,17 @@ namespace Backend.Controllers
             {
                 return Ok(existingCategory);
             }
-            else
-            {
-                var newCategory = new Category(categoryName);
-                db.Categories.Add(newCategory);
-                await db.Save();
-                return Ok(newCategory);
-            }
+
+             var newCategory = new Category(categoryName);
+             db.Categories.Add(newCategory);
+             var saved = await db.Save();
+
+             return saved ? Ok(newCategory) : Problem();
+             
+            
         }
 
+      /*
         // DELETE api/category/{categoryId}
         [HttpDelete("{categoryId}")]
         public async Task<IActionResult> DeleteCategory(string categoryId)
@@ -63,10 +65,12 @@ namespace Backend.Controllers
                 db.Categories.Remove(category);
             }
 
-            await db.Save();
-            return Ok();
+            var saved = await db.Save();
+            return saved ? Ok() : Problem();
         }
+      */
 
+        /*
         // PUT api/category
         [HttpPut]
         public async Task<IActionResult> EditCategory( [FromBody] Category newCategory)
@@ -85,25 +89,25 @@ namespace Backend.Controllers
             if (existingCategory != null)
             {
                 return Ok(existingCategory);
+
             }
-            else
-            {
+
+
                 if (category.ProductCategories.Any())
                 {
                     var createCategory = new Category(newCategory.Name);
                     db.Categories.Add(createCategory);
-                    await db.Save();
+                    var saved = await db.Save();
 
-                    return Ok(createCategory);
-                }
-                else
-                {
+                    return saved ? Ok(createCategory) : Problem();
+                } else {
                     category.Name = newCategory.Name;
-                    await db.Save();
+                    var saved = await db.Save();
 
-                    return Ok(category);
+                    return saved ? Ok(category) : Problem();
                 }
-            }
+            
         }
+        */
     }
     }
