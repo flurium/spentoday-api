@@ -14,19 +14,21 @@ public class Storj : IStorage
 
     private readonly AmazonS3Client client;
     private readonly string publicKey;
+    private readonly string bucket;
 
     /// <param name="accessKey">Access key to S3 compatible gateway.</param>
     /// <param name="secretKey">Secret key to S3 compatible gateway.</param>
     /// <param name="endpoint">Endpoint to S3 compatible gateway.</param>
     /// <param name="publicKey">Public key to create url to a public file.</param>
-    public Storj(string accessKey, string secretKey, string endpoint, string publicKey)
+    public Storj(string accessKey, string secretKey, string endpoint, string publicKey, string bucket)
     {
         var config = new AmazonS3Config() { ServiceURL = endpoint };
         client = new AmazonS3Client(accessKey, secretKey, config);
         this.publicKey = publicKey;
+        this.bucket = bucket;
     }
 
-    public async Task<IStorageFile?> Upload(string bucket, string key, Stream fileStream)
+    public async Task<IStorageFile?> Upload(string key, Stream fileStream)
     {
         try
         {

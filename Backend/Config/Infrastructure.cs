@@ -28,6 +28,6 @@ public static class Infrastructure
         var storjEndpoint = Env.Get("STORJ_ENDPOINT");
         var storjPublicKey = Env.Get("STORJ_PUBLIC_KEY");
 
-        services.AddScoped<IStorage>(_ => new Storj(storjAccessKey, storjSecretKey, storjEndpoint, storjPublicKey));
+        services.AddScoped<IStorage>(_ => new Storj(storjAccessKey, storjSecretKey, storjEndpoint, storjPublicKey, "shops"));
     }
 }

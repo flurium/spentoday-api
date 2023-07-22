@@ -1,5 +1,6 @@
 using Backend.Auth;
 using Backend.Config;
+using Backend.Services;
 using Data;
 using Lib;
 using Microsoft.EntityFrameworkCore;
@@ -35,6 +36,9 @@ builder.Services.AddDbContext<Db>(options => options.UseNpgsql(dbConnectionStrin
 // Infrastructure
 builder.Services.AddEmail();
 builder.Services.AddStorage();
+
+builder.Services.AddScoped<ImageService>();
+builder.Services.AddHostedService<BackgroundRunner>();
 
 // Authentication
 builder.Services.AddJwt();

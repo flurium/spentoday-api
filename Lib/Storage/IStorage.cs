@@ -21,7 +21,7 @@ public interface IStorage
     /// Bucket name, path and provider. Provider is used for migrations,
     /// multistorage usage, creating link to the file.
     /// </returns>
-    public Task<IStorageFile?> Upload(string bucket, string key, Stream fileStream);
+    public Task<IStorageFile?> Upload(string key, Stream fileStream);
 
     /// <param name="bucket">Bucket name</param>
     /// <param name="key">Key/path to item</param>

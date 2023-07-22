@@ -1,4 +1,5 @@
-﻿using Data;
+﻿using Backend.Services;
+using Data;
 using Data.Models;
 using Lib;
 using Lib.EntityFrameworkCore;
@@ -15,12 +16,14 @@ public class TestController : ControllerBase
     private readonly Jwt jwt;
     private readonly IStorage storage;
     private readonly Db db;
+    private readonly ImageService imageService;
 
-    public TestController(Jwt jwt, IStorage storage, Db db)
+    public TestController(Jwt jwt, IStorage storage, Db db, ImageService imageService)
     {
         this.jwt = jwt;
         this.storage = storage;
         this.db = db;
+        this.imageService = imageService;
     }
 
     [HttpGet("token")]
@@ -42,18 +45,11 @@ public class TestController : ControllerBase
     {
         var key = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
 
-        var upload = await storage.Upload("shops", key, file.OpenReadStream());
+        var upload = await storage.Upload(key, file.OpenReadStream());
         if (upload == null) return Problem();
 
         var link = storage.Url(upload);
         return Ok(link);
-    }
-
-    [HttpDelete("upload")]
-    public async Task<IActionResult> DeleteUpload(string key)
-    {
-        var delete = await storage.Delete("shops", key);
-        return delete ? Ok() : Problem();
     }
 
     [HttpGet("query")]
@@ -65,7 +61,7 @@ public class TestController : ControllerBase
 
         if (rnd.Next() % 2 == 0)
         {
-            query = query.Where(x => x.Url.StartsWith("tscrnmg"));
+            query = query.Where(x => x.Id.StartsWith("tscrnmg"));
         }
 
         var images = await query.QueryMany();
@@ -76,11 +72,27 @@ public class TestController : ControllerBase
     [HttpDelete("image")]
     public async Task<IActionResult> DeleteImage()
     {
-        var image = await db.Images.QueryOne(x => x.Url.StartsWith("https://l"));
+        var image = await db.Images.QueryOne();
         if (image == null) return NotFound();
 
         db.Images.Remove(image);
         var saved = await db.Save();
         return saved ? Ok() : Problem();
+    }
+
+    [HttpDelete("product")]
+    public async Task<IActionResult> DeleteProduct()
+    {
+        var product = await db.Products.QueryOne();
+        if (product == null) return NotFound();
+
+        var images = await db.Images.QueryMany(x => x.ProductId == product.Id);
+        db.Products.Remove(product);
+
+        var saved = await db.Save();
+        if (!saved) return Problem();
+
+        await imageService.SafeDelete(images);
+        return Ok();
     }
 }
