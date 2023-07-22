@@ -3,6 +3,7 @@ using System;
 using Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Data.Migrations
 {
     [DbContext(typeof(Db))]
-    partial class DbModelSnapshot : ModelSnapshot
+    [Migration("20230722093412_Categories")]
+    partial class Categories
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -128,13 +130,7 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("OwnerId");
 
                     b.ToTable("Shops");
                 });
@@ -416,17 +412,6 @@ namespace Data.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("Data.Models.Shop", b =>
-                {
-                    b.HasOne("Data.Models.User", "Owner")
-                        .WithMany("Shops")
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Owner");
-                });
-
             modelBuilder.Entity("Data.Models.ShopBanner", b =>
                 {
                     b.HasOne("Data.Models.Shop", "Shop")
@@ -519,11 +504,6 @@ namespace Data.Migrations
                     b.Navigation("Products");
 
                     b.Navigation("SocialMediaLinks");
-                });
-
-            modelBuilder.Entity("Data.Models.User", b =>
-                {
-                    b.Navigation("Shops");
                 });
 #pragma warning restore 612, 618
         }
