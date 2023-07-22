@@ -11,6 +11,8 @@ public class Db : IdentityDbContext<User>
         Database.EnsureCreated();
     }
 
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<ProductCategory> ProductCategories { get; set; }
     public DbSet<Product> Products { get; set; } = default!;
     public DbSet<Shop> Shops { get; set; } = default!;
     public DbSet<ShopBanner> Banners { get; set; } = default!;
@@ -37,8 +39,17 @@ public class Db : IdentityDbContext<User>
         productImage.HasKey(i => i.Url);
         productImage.HasOne(i => i.Product).WithMany(p => p.Images).HasForeignKey(i => i.ProductId);
 
+        builder.Entity<Category>().HasKey(c => c.Id);
+
+        builder.Entity<ProductCategory>().HasKey(pc => new { pc.ProductId, pc.CategoryId });
+
+        builder.Entity<ProductCategory>().HasOne(pc => pc.Product).WithMany(p => p.ProductCategories).HasForeignKey(pc => pc.ProductId);
+
+        builder.Entity<ProductCategory>().HasOne(pc => pc.Category).WithMany(c => c.ProductCategories).HasForeignKey(pc => pc.CategoryId);
+
         var socialMediaLink = builder.Entity<SocialMediaLink>();
         socialMediaLink.HasKey(s => s.Id);
         socialMediaLink.HasOne(s => s.Shop).WithMany(S => S.SocialMediaLinks).HasForeignKey(s => s.ShopId);
+
     }
 }

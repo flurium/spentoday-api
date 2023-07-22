@@ -8,6 +8,7 @@
         public int Amount { get; set; } = 0;
         public string PreviewImage { get; set; }
         public IReadOnlyCollection<ProductImage> Images { get; set; }
+        public IReadOnlyCollection<ProductCategory> ProductCategories { get; set; }
 
         public string ShopId { get; set; }
         public Shop Shop { get; set; }
