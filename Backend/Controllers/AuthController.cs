@@ -2,11 +2,8 @@
 using Data.Models;
 using Lib;
 using Lib.Email;
-using Lib.Email.Services;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 
 namespace Backend.Controllers
 {
@@ -32,7 +29,7 @@ namespace Backend.Controllers
 
             var res = await userManager.CheckPasswordAsync(user, input.Password);
             if (!res) return BadRequest();
-            
+
             var cookieOptions = new CookieOptions
             {
                 Expires = DateTimeOffset.Now.AddDays(30),
@@ -90,8 +87,8 @@ namespace Backend.Controllers
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
             var confirmationLink = Url.Action("", "confirmation", new { guid = token, userEmail = user.Email }, Request.Scheme, Request.Host.Value);
             await emailSender.Send(
-                fromEmail: "support@flurium.com", 
-                fromName: "spentoday", 
+                fromEmail: "support@flurium.com",
+                fromName: "spentoday",
                 toEmails: new List<string>() { input.Email },
                 subject: "ConfirmationLink",
                 text: $"Go to this link:{confirmationLink}",
