@@ -1,14 +1,23 @@
-﻿namespace Data.Models;
+﻿using Lib.Storage;
 
-public class ProductImage
+namespace Data.Models;
+
+public class ProductImage : IStorageFile
 {
-    public string Url { get; set; }
-    public string ProductId { get; set; }
-    public Product Product { get; set; }
+    public string Id { get; } = Guid.NewGuid().ToString();
 
-    public ProductImage(string Url, string ProductId)
+    public string Provider { get; }
+    public string Bucket { get; }
+    public string Key { get; }
+
+    public string ProductId { get; set; }
+    public Product? Product { get; set; }
+
+    public ProductImage(IStorageFile file, string productId)
     {
-        this.Url = Url;
-        this.ProductId = ProductId;
+        Provider = file.Provider;
+        Bucket = file.Bucket;
+        Key = file.Key;
+        ProductId = productId;
     }
 }

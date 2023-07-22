@@ -9,7 +9,9 @@ namespace Lib.Storage.Services;
 /// </summary>
 public class Storj : IStorage
 {
+    /// <summary>Never change this value. It's key for this provider.</summary>
     private const string provider = "storj";
+
     private readonly AmazonS3Client client;
     private readonly string publicKey;
 
@@ -24,14 +26,14 @@ public class Storj : IStorage
         this.publicKey = publicKey;
     }
 
-    public async Task<StorageItem?> Upload(string bucket, string filename, Stream fileStream)
+    public async Task<IStorageFile?> Upload(string bucket, string key, Stream fileStream)
     {
         try
         {
             var request = new PutObjectRequest
             {
                 BucketName = bucket,
-                Key = filename,
+                Key = key,
                 InputStream = fileStream,
                 CannedACL = S3CannedACL.PublicRead
             };
@@ -39,23 +41,22 @@ public class Storj : IStorage
             var response = await client.PutObjectAsync(request);
 
             if (response.HttpStatusCode != HttpStatusCode.OK) return null;
-            return new StorageItem(bucket, filename, provider);
+            return new StorageFile(bucket, key, provider);
         }
         catch
         {
-            // TODO: log exception
             return null;
         }
     }
 
-    public async Task<bool> Delete(string bucket, string key)
+    public async Task<bool> Delete(IStorageFile file)
     {
         try
         {
             var request = new DeleteObjectRequest
             {
-                BucketName = bucket,
-                Key = key
+                BucketName = file.Bucket,
+                Key = file.Key
             };
 
             var response = await client.DeleteObjectAsync(request);
@@ -64,13 +65,12 @@ public class Storj : IStorage
         }
         catch
         {
-            // TODO: log exception
             return false;
         }
     }
 
-    public string Url(StorageItem item)
+    public string Url(IStorageFile file)
     {
-        return $"https://link.storjshare.io/raw/{publicKey}/{item.Bucket}/{item.Key}";
+        return $"https://link.storjshare.io/raw/{publicKey}/{file.Bucket}/{file.Key}";
     }
 }

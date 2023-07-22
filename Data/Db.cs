@@ -35,11 +35,11 @@ public class Db : IdentityDbContext<User>
         shop.HasOne(x => x.Owner).WithMany(x => x.Shops).HasForeignKey(x => x.OwnerId);
 
         var shopBanner = builder.Entity<ShopBanner>();
-        shopBanner.HasKey(b => b.Url);
+        shopBanner.HasKey(x => x.Id);
         shopBanner.HasOne(b => b.Shop).WithMany(s => s.Banners).HasForeignKey(b => b.ShopId);
 
         var productImage = builder.Entity<ProductImage>();
-        productImage.HasKey(i => i.Url);
+        productImage.HasKey(i => i.Id);
         productImage.HasOne(i => i.Product).WithMany(p => p.Images).HasForeignKey(i => i.ProductId);
 
         var category = builder.Entity<Category>();

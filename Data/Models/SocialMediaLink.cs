@@ -2,16 +2,16 @@
 
 public class SocialMediaLink
 {
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string Id { get; } = Guid.NewGuid().ToString();
     public string Name { get; set; }
     public string Link { get; set; }
     public string ShopId { get; set; }
-    public Shop Shop { get; set; }
+    public Shop? Shop { get; set; }
 
-    public SocialMediaLink(string Name, string Link, string ShopId)
+    public SocialMediaLink(string name, string link, string shopId)
     {
-        this.Name = Name;
-        this.Link = Link;
-        this.ShopId = ShopId;
+        Name = name;
+        Link = link;
+        ShopId = shopId;
     }
 }

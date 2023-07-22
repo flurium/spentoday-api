@@ -1,14 +1,23 @@
-﻿namespace Data.Models;
+﻿using Lib.Storage;
 
-public class ShopBanner
+namespace Data.Models;
+
+public class ShopBanner : IStorageFile
 {
-    public string Url { get; set; }
-    public string ShopId { get; set; }
-    public Shop Shop { get; set; }
+    public string Id { get; } = Guid.NewGuid().ToString();
 
-    public ShopBanner(string Url, string ShopId)
+    public string ShopId { get; set; }
+    public Shop? Shop { get; set; }
+
+    public string Provider { get; }
+    public string Bucket { get; }
+    public string Key { get; }
+
+    public ShopBanner(IStorageFile file, string shopId)
     {
-        this.Url = Url;
-        this.ShopId = ShopId;
+        Provider = file.Provider;
+        Bucket = file.Bucket;
+        Key = file.Key;
+        ShopId = shopId;
     }
 }

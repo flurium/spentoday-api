@@ -2,7 +2,7 @@
 
 public class Category
 {
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string Id { get; } = Guid.NewGuid().ToString();
     public string Name { get; set; }
     public IReadOnlyCollection<ProductCategory> ProductCategories { get; set; }
 
