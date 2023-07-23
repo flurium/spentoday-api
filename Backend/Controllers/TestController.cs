@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers;
 
-[Route("api/test")]
+[Route("v1/test")]
 [ApiController]
 public class TestController : ControllerBase
 {
@@ -17,13 +17,15 @@ public class TestController : ControllerBase
     private readonly IStorage storage;
     private readonly Db db;
     private readonly ImageService imageService;
+    private readonly BackgroundQueue background;
 
-    public TestController(Jwt jwt, IStorage storage, Db db, ImageService imageService)
+    public TestController(Jwt jwt, IStorage storage, Db db, ImageService imageService, BackgroundQueue background)
     {
         this.jwt = jwt;
         this.storage = storage;
         this.db = db;
         this.imageService = imageService;
+        this.background = background;
     }
 
     [HttpGet("token")]
@@ -93,6 +95,18 @@ public class TestController : ControllerBase
         if (!saved) return Problem();
 
         await imageService.SafeDelete(images);
+        return Ok();
+    }
+
+    [HttpGet("background")]
+    public async Task<IActionResult> Background()
+    {
+        background.Enqueue(_ =>
+        {
+            Thread.Sleep(10000);
+            Console.WriteLine("From background");
+            return Task.CompletedTask;
+        });
         return Ok();
     }
 }

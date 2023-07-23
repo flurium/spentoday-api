@@ -7,21 +7,22 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("v1/auth")]
     [ApiController]
     public class AuthController : ControllerBase
     {
         private readonly Jwt jwt;
         private readonly UserManager<User> userManager;
-        private readonly IEmailSender emailSender;
+        private readonly IEmailSender email;
 
-        public AuthController(Jwt jwt, UserManager<User> userManager)
+        public AuthController(Jwt jwt, UserManager<User> userManager, IEmailSender email)
         {
             this.jwt = jwt;
             this.userManager = userManager;
+            this.email = email;
         }
 
-        [HttpPost, Route("login")]
+        [HttpPost("login")]
         public async Task<IActionResult> Login(LoginInput input)
         {
             var user = await userManager.FindByNameAsync(input.Email.Trim());
@@ -52,7 +53,7 @@ namespace Backend.Controllers
             public string ConfirmPassword { get; set; }
         }
 
-        [HttpPost, Route("register")]
+        [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterInput input)
         {
             if ((input.Name.Length > 21) || input.Name.Any(char.IsWhiteSpace))
@@ -86,14 +87,14 @@ namespace Backend.Controllers
 
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
             var confirmationLink = Url.Action("", "confirmation", new { guid = token, userEmail = user.Email }, Request.Scheme, Request.Host.Value);
-            await emailSender.Send(
+            await email.Send(
                 fromEmail: "support@flurium.com",
                 fromName: "spentoday",
                 toEmails: new List<string>() { input.Email },
                 subject: "ConfirmationLink",
                 text: $"Go to this link:{confirmationLink}",
                 html: $"<a href={confirmationLink}>Confirmation Link</a>"
-                );
+            );
 
             var cookieOptions = new CookieOptions
             {

@@ -9,9 +9,9 @@ namespace Backend.Services;
 public class ImageService
 {
     private readonly IStorage storage;
-    private readonly BackgroundRunner background;
+    private readonly BackgroundQueue background;
 
-    public ImageService(IStorage storage, BackgroundRunner background)
+    public ImageService(IStorage storage, BackgroundQueue background)
     {
         this.storage = storage;
         this.background = background;

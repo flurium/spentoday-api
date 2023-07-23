@@ -4,7 +4,6 @@ using Backend.Services;
 using Data;
 using Lib;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
 
 // Load env variables form .env file (in development)
 Env.LoadFile(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
@@ -29,6 +28,10 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Logs
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 // Database
 var dbConnectionString = Env.Get("DB_CONNECTION_STRING");
 builder.Services.AddDbContext<Db>(options => options.UseNpgsql(dbConnectionString));
@@ -37,19 +40,13 @@ builder.Services.AddDbContext<Db>(options => options.UseNpgsql(dbConnectionStrin
 builder.Services.AddEmail();
 builder.Services.AddStorage();
 
+builder.Services.AddSingleton<BackgroundQueue>();
+builder.Services.AddHostedService<BackgroundQueue.Runner>();
 builder.Services.AddScoped<ImageService>();
-builder.Services.AddHostedService<BackgroundRunner>();
 
 // Authentication
 builder.Services.AddJwt();
 builder.Services.AddAuth();
-
-// Logs
-var logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .MinimumLevel.Fatal()
-    .CreateLogger();
-builder.Logging.AddSerilog(logger);
 
 var app = builder.Build();
 

@@ -5,18 +5,17 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers;
 
-[Route("api/category")]
+[Route("v1/category")]
 [ApiController]
 public class CategoryController : ControllerBase
 {
     private readonly Db db;
 
-    public CategoryController(Db context)
+    public CategoryController(Db db)
     {
-        db = context;
+        this.db = db;
     }
 
-    // POST api/category/{categoryName}
     [HttpPost("{categoryName}")]
     public async Task<IActionResult> CreateOrUpdateCategory(string categoryName)
     {
@@ -42,7 +41,6 @@ public class CategoryController : ControllerBase
     }
 
     /*
-      // DELETE api/category/{categoryId}
       [HttpDelete("{categoryId}")]
       public async Task<IActionResult> DeleteCategory(string categoryId)
       {
@@ -66,7 +64,6 @@ public class CategoryController : ControllerBase
     */
 
     /*
-    // PUT api/category
     [HttpPut]
     public async Task<IActionResult> EditCategory( [FromBody] Category newCategory)
     {
