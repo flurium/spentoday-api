@@ -16,6 +16,11 @@ public interface IEmailSender
 
 public record EmailService(IEmailSender Sender, params ILimiter[] Limiters);
 
+/// <summary>
+/// Orchestrate/manage several email services.
+/// Based on limits it sends email through available service.
+/// If service responds not with success then EmailGod will try to use another one.
+/// </summary>
 public class EmailGod : IEmailSender
 {
     private readonly IImmutableList<EmailService> services;
@@ -29,46 +34,39 @@ public class EmailGod : IEmailSender
 
     public async Task<EmailStatus> Send(string fromEmail, string fromName, List<string> toEmails, string subject, string text, string html)
     {
-        try
+        bool allLimitsReached = true;
+
+        foreach (var service in services)
         {
-            bool allLimitsReached = true;
-
-            foreach (var service in services)
+            try
             {
-                try
+                if (!service.Limiters.All(l => l.IsLimitAllow())) continue;
+
+                var status = await service.Sender.Send(fromEmail, fromName, toEmails, subject, text, html);
+
+                if (status == EmailStatus.Success)
                 {
-                    if (!service.Limiters.All(l => l.IsLimitAllow())) continue;
-
-                    var status = await service.Sender.Send(fromEmail, fromName, toEmails, subject, text, html);
-
-                    if (status == EmailStatus.Success)
-                    {
-                        foreach (var limiter in service.Limiters) limiter.IncrementLimiter();
-                        return EmailStatus.Success;
-                    }
-
-                    if (status == EmailStatus.LimitReached)
-                    {
-                        foreach (var limiter in service.Limiters) limiter.ReachedLimit();
-                    }
-                    else
-                    {
-                        // if (status == EmailStatus.Failed)
-                        allLimitsReached = false;
-                    }
+                    foreach (var limiter in service.Limiters) limiter.IncrementLimiter();
+                    return EmailStatus.Success;
                 }
-                catch
+
+                if (status == EmailStatus.LimitReached)
                 {
+                    foreach (var limiter in service.Limiters) limiter.ReachedLimit();
+                }
+                else
+                {
+                    // if (status == EmailStatus.Failed)
                     allLimitsReached = false;
-                    continue;
                 }
             }
+            catch
+            {
+                allLimitsReached = false;
+                continue;
+            }
+        }
 
-            return allLimitsReached ? EmailStatus.LimitReached : EmailStatus.Failed;
-        }
-        catch
-        {
-            return EmailStatus.Failed;
-        }
+        return allLimitsReached ? EmailStatus.LimitReached : EmailStatus.Failed;
     }
 }

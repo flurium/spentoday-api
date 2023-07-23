@@ -3,7 +3,7 @@
 namespace Backend.Services;
 
 /// <summary>
-/// Run functions in background.
+/// Run async functions in background.
 /// </summary>
 public class BackgroundRunner : BackgroundService
 {
@@ -19,7 +19,7 @@ public class BackgroundRunner : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.Log(LogLevel.Information, "Background is started.");
+        logger.LogInformation("Background is started.");
 
         foreach (var task in queue.GetConsumingEnumerable(stoppingToken))
         {
@@ -36,6 +36,12 @@ public class BackgroundRunner : BackgroundService
         logger.LogInformation("Background is shutting down.");
     }
 
+    /// <summary>
+    /// Add function to background queue.
+    /// </summary>
+    /// <param name="task">
+    /// Function that accept IServiceProvider (to get services if need) and return nothing.
+    /// </param>
     public void Enqueue(Func<IServiceProvider, Task> task)
     {
         try

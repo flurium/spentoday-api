@@ -7,15 +7,16 @@ public class Shop
     public string LogoUrl { get; set; }
 
     public string OwnerId { get; set; }
-    public User? Owner { get; set; }
+    public User Owner { get; set; } = default!;
 
-    public IReadOnlyCollection<SocialMediaLink> SocialMediaLinks { get; set; }
-    public IReadOnlyCollection<Product> Products { get; set; }
-    public IReadOnlyCollection<ShopBanner> Banners { get; set; }
+    public IReadOnlyCollection<SocialMediaLink> SocialMediaLinks { get; set; } = default!;
+    public IReadOnlyCollection<Product> Products { get; set; } = default!;
+    public IReadOnlyCollection<ShopBanner> Banners { get; set; } = default!;
 
-    public Shop(string name, string logoUrl)
+    public Shop(string name, string logoUrl, string ownerId)
     {
         Name = name;
         LogoUrl = logoUrl;
+        OwnerId = ownerId;
     }
 }

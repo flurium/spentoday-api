@@ -5,7 +5,7 @@ using System.Net;
 namespace Lib.Storage.Services;
 
 /// <summary>
-/// Storj storage.
+/// Handle files inside storage of Storj service.
 /// </summary>
 public class Storj : IStorage
 {
