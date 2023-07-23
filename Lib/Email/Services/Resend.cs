@@ -2,6 +2,9 @@
 
 namespace Lib.Email.Services;
 
+/// <summary>
+/// Send emails with Resend service: <see href="https://resend.com/">resend.com</see>
+/// </summary>
 public class Resend : IEmailSender
 {
     private const string url = "https://api.resend.com/emails";
@@ -18,31 +21,23 @@ public class Resend : IEmailSender
 
     public async Task<EmailStatus> Send(string fromEmail, string fromName, List<string> toEmails, string subject, string text, string html)
     {
-        try
-        {
-            string jsonBody = $@"
-            {{
-                ""from"": ""{fromName} <{fromEmail}>"",
-                ""to"": [{string.Join(",", toEmails.Select(x => $@"""{x}"""))}],
-                ""subject"": ""{subject}"",
-                ""text"":""{text}"",
-                ""html"": ""{html}""
-            }}".Compact();
+        string jsonBody = $@"
+        {{
+            ""from"":""{fromName} <{fromEmail}>"",
+            ""to"":[{string.Join(",", toEmails.Select(x => $@"""{x}"""))}],
+            ""subject"":""{subject}"",
+            ""text"":""{text}"",
+            ""html"":""{html}""
+        }}".Compact();
 
-            HttpResponseMessage response = await Http.JsonPost(httpClient, url, jsonBody);
+        var response = await Http.JsonPost(httpClient, url, jsonBody);
 
-            //string responseBody = await response.Content.ReadAsStringAsync();
-            //Console.WriteLine(responseBody);
+        if (response == null) return EmailStatus.Failed;
 
-            if (response.IsSuccessStatusCode) return EmailStatus.Success;
+        if (response.IsSuccessStatusCode) return EmailStatus.Success;
 
-            if (response.StatusCode == HttpStatusCode.TooManyRequests) return EmailStatus.LimitReached;
+        if (response.StatusCode == HttpStatusCode.TooManyRequests) return EmailStatus.LimitReached;
 
-            return EmailStatus.Failed;
-        }
-        catch
-        {
-            return EmailStatus.Failed;
-        }
+        return EmailStatus.Failed;
     }
 }

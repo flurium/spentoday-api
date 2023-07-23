@@ -9,11 +9,14 @@ public class User : IdentityUser
     public IReadOnlyCollection<Shop> Shops { get; set; } = default!;
 
     public string Name { get; set; }
-    public UserImage Image { get; set; }
 
-    public User(string name, string email)
+    public string? ImageId { get; set; }
+    public UserImage? Image { get; set; } = default!;
+
+    public User(string name, string email, string? imageId = null)
     {
         Name = name;
         Email = email;
+        ImageId = imageId;
     }
 }

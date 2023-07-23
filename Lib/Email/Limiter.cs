@@ -19,6 +19,7 @@ public interface ILimiter
     void ReachedLimit();
 }
 
+/// <summary>Track daily limit.</summary>
 public class DayLimiter : ILimiter
 {
     private readonly int dayLimit;
