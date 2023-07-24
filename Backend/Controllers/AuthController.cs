@@ -1,5 +1,5 @@
 ﻿using Backend.Auth;
-using Data.Models;
+using Data.Models.UserTables;
 using Lib;
 using Lib.Email;
 using Microsoft.AspNetCore.Identity;

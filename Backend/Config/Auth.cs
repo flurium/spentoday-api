@@ -1,6 +1,6 @@
 ﻿using Backend.Auth;
 using Data;
-using Data.Models;
+using Data.Models.UserTables;
 using Lib;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;

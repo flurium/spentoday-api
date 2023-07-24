@@ -1,4 +1,6 @@
-﻿using Data.Models;
+﻿using Data.Models.ProductTables;
+using Data.Models.ShopTables;
+using Data.Models.UserTables;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,48 +12,64 @@ public class Db : IdentityDbContext<User>
     {
     }
 
+    public DbSet<UserImage> UserImages { get; set; } = default!;
+
+    public DbSet<Shop> Shops { get; set; } = default!;
+    public DbSet<ShopBanner> ShopBanners { get; set; } = default!;
+    public DbSet<InfoPage> InfoPages { get; set; } = default!;
+    public DbSet<SocialMediaLink> SocialMediaLinks { get; set; } = default!;
+
     public DbSet<Category> Categories { get; set; } = default!;
     public DbSet<ProductCategory> ProductCategories { get; set; } = default!;
     public DbSet<Product> Products { get; set; } = default!;
-    public DbSet<Shop> Shops { get; set; } = default!;
-    public DbSet<ShopBanner> Banners { get; set; } = default!;
-    public DbSet<ProductImage> Images { get; set; } = default!;
-    public DbSet<SocialMediaLink> SocialMediaLinks { get; set; } = default!;
+    public DbSet<ProductImage> ProductImages { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
+        // User tables
         var user = builder.Entity<User>();
         user.HasKey(x => x.Id);
 
-        var product = builder.Entity<Product>();
-        product.HasKey(p => p.Id);
-        product.HasOne(p => p.Shop).WithMany(s => s.Products).HasForeignKey(p => p.ShopId);
-        product.Property(p => p.SeoDescription).HasColumnType("text");
+        var userImage = builder.Entity<UserImage>();
+        userImage.HasKey(x => x.Id);
+        userImage.HasOne(x => x.User).WithOne(x => x.Image).HasForeignKey<UserImage>(x => x.UserId);
 
+        // Shop tables
         var shop = builder.Entity<Shop>();
-        shop.HasKey(s => s.Id);
+        shop.HasKey(x => x.Id);
         shop.HasOne(x => x.Owner).WithMany(x => x.Shops).HasForeignKey(x => x.OwnerId);
 
         var shopBanner = builder.Entity<ShopBanner>();
         shopBanner.HasKey(x => x.Id);
-        shopBanner.HasOne(b => b.Shop).WithMany(s => s.Banners).HasForeignKey(b => b.ShopId);
-
-        var productImage = builder.Entity<ProductImage>();
-        productImage.HasKey(i => i.Id);
-        productImage.HasOne(i => i.Product).WithMany(p => p.Images).HasForeignKey(i => i.ProductId);
-
-        var category = builder.Entity<Category>();
-        category.HasKey(c => c.Id);
-
-        var productCategory = builder.Entity<ProductCategory>();
-        productCategory.HasKey(pc => new { pc.ProductId, pc.CategoryId });
-        productCategory.HasOne(pc => pc.Product).WithMany(p => p.ProductCategories).HasForeignKey(pc => pc.ProductId);
-        productCategory.HasOne(pc => pc.Category).WithMany(c => c.ProductCategories).HasForeignKey(pc => pc.CategoryId);
+        shopBanner.HasOne(x => x.Shop).WithMany(x => x.Banners).HasForeignKey(x => x.ShopId);
 
         var socialMediaLink = builder.Entity<SocialMediaLink>();
-        socialMediaLink.HasKey(s => s.Id);
-        socialMediaLink.HasOne(s => s.Shop).WithMany(S => S.SocialMediaLinks).HasForeignKey(s => s.ShopId);
+        socialMediaLink.HasKey(x => x.Id);
+        socialMediaLink.HasOne(x => x.Shop).WithMany(x => x.SocialMediaLinks).HasForeignKey(x => x.ShopId);
+
+        var infoPage = builder.Entity<InfoPage>();
+        infoPage.HasKey(x => new { x.Slug, x.ShopId });
+        infoPage.HasOne(x => x.Shop).WithMany(x => x.InfoPages).HasForeignKey(x => x.ShopId);
+        infoPage.Property(x => x.Content).HasColumnType("text");
+
+        // Product tables
+        var product = builder.Entity<Product>();
+        product.HasKey(x => x.Id);
+        product.HasOne(x => x.Shop).WithMany(x => x.Products).HasForeignKey(x => x.ShopId);
+        product.Property(x => x.SeoDescription).HasColumnType("text");
+
+        var productImage = builder.Entity<ProductImage>();
+        productImage.HasKey(x => x.Id);
+        productImage.HasOne(x => x.Product).WithMany(x => x.Images).HasForeignKey(x => x.ProductId);
+
+        var category = builder.Entity<Category>();
+        category.HasKey(x => x.Id);
+
+        var productCategory = builder.Entity<ProductCategory>();
+        productCategory.HasKey(x => new { x.ProductId, x.CategoryId });
+        productCategory.HasOne(x => x.Product).WithMany(x => x.ProductCategories).HasForeignKey(x => x.ProductId);
+        productCategory.HasOne(x => x.Category).WithMany(x => x.ProductCategories).HasForeignKey(x => x.CategoryId);
     }
 }

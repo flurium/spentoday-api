@@ -1,5 +1,5 @@
 ﻿using Data;
-using Data.Models;
+using Data.Models.ProductTables;
 using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 

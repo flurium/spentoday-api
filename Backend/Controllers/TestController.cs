@@ -1,6 +1,6 @@
 ﻿using Backend.Services;
 using Data;
-using Data.Models;
+using Data.Models.ProductTables;
 using Lib;
 using Lib.EntityFrameworkCore;
 using Lib.Storage;
@@ -59,7 +59,7 @@ public class TestController : ControllerBase
     {
         Random rnd = new();
 
-        IQueryable<ProductImage> query = db.Images;
+        IQueryable<ProductImage> query = db.ProductImages;
 
         if (rnd.Next() % 2 == 0)
         {
@@ -74,10 +74,10 @@ public class TestController : ControllerBase
     [HttpDelete("image")]
     public async Task<IActionResult> DeleteImage()
     {
-        var image = await db.Images.QueryOne();
+        var image = await db.ProductImages.QueryOne();
         if (image == null) return NotFound();
 
-        db.Images.Remove(image);
+        db.ProductImages.Remove(image);
         var saved = await db.Save();
         return saved ? Ok() : Problem();
     }
@@ -88,7 +88,7 @@ public class TestController : ControllerBase
         var product = await db.Products.QueryOne();
         if (product == null) return NotFound();
 
-        var images = await db.Images.QueryMany(x => x.ProductId == product.Id);
+        var images = await db.ProductImages.QueryMany(x => x.ProductId == product.Id);
         db.Products.Remove(product);
 
         var saved = await db.Save();

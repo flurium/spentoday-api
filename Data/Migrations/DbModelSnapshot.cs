@@ -22,7 +22,7 @@ namespace Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Data.Models.Category", b =>
+            modelBuilder.Entity("Data.Models.ProductTables.Category", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -36,7 +36,7 @@ namespace Data.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("Data.Models.Product", b =>
+            modelBuilder.Entity("Data.Models.ProductTables.Product", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -84,7 +84,7 @@ namespace Data.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("Data.Models.ProductCategory", b =>
+            modelBuilder.Entity("Data.Models.ProductTables.ProductCategory", b =>
                 {
                     b.Property<string>("ProductId")
                         .HasColumnType("text");
@@ -99,23 +99,65 @@ namespace Data.Migrations
                     b.ToTable("ProductCategories");
                 });
 
-            modelBuilder.Entity("Data.Models.ProductImage", b =>
+            modelBuilder.Entity("Data.Models.ProductTables.ProductImage", b =>
                 {
-                    b.Property<string>("Url")
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Bucket")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ProductId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Url");
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Images");
+                    b.ToTable("ProductImages");
                 });
 
-            modelBuilder.Entity("Data.Models.Shop", b =>
+            modelBuilder.Entity("Data.Models.ShopTables.InfoPage", b =>
+                {
+                    b.Property<string>("Slug")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShopId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Slug", "ShopId");
+
+                    b.HasIndex("ShopId");
+
+                    b.ToTable("InfoPages");
+                });
+
+            modelBuilder.Entity("Data.Models.ShopTables.Shop", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -139,23 +181,35 @@ namespace Data.Migrations
                     b.ToTable("Shops");
                 });
 
-            modelBuilder.Entity("Data.Models.ShopBanner", b =>
+            modelBuilder.Entity("Data.Models.ShopTables.ShopBanner", b =>
                 {
-                    b.Property<string>("Url")
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Bucket")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ShopId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Url");
+                    b.HasKey("Id");
 
                     b.HasIndex("ShopId");
 
-                    b.ToTable("Banners");
+                    b.ToTable("ShopBanners");
                 });
 
-            modelBuilder.Entity("Data.Models.SocialMediaLink", b =>
+            modelBuilder.Entity("Data.Models.ShopTables.SocialMediaLink", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -179,7 +233,7 @@ namespace Data.Migrations
                     b.ToTable("SocialMediaLinks");
                 });
 
-            modelBuilder.Entity("Data.Models.User", b =>
+            modelBuilder.Entity("Data.Models.UserTables.User", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -203,6 +257,10 @@ namespace Data.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -241,6 +299,35 @@ namespace Data.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("Data.Models.UserTables.UserImage", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Bucket")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserImages");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -375,9 +462,9 @@ namespace Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Data.Models.Product", b =>
+            modelBuilder.Entity("Data.Models.ProductTables.Product", b =>
                 {
-                    b.HasOne("Data.Models.Shop", "Shop")
+                    b.HasOne("Data.Models.ShopTables.Shop", "Shop")
                         .WithMany("Products")
                         .HasForeignKey("ShopId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -386,15 +473,15 @@ namespace Data.Migrations
                     b.Navigation("Shop");
                 });
 
-            modelBuilder.Entity("Data.Models.ProductCategory", b =>
+            modelBuilder.Entity("Data.Models.ProductTables.ProductCategory", b =>
                 {
-                    b.HasOne("Data.Models.Category", "Category")
+                    b.HasOne("Data.Models.ProductTables.Category", "Category")
                         .WithMany("ProductCategories")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Data.Models.Product", "Product")
+                    b.HasOne("Data.Models.ProductTables.Product", "Product")
                         .WithMany("ProductCategories")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -405,9 +492,9 @@ namespace Data.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("Data.Models.ProductImage", b =>
+            modelBuilder.Entity("Data.Models.ProductTables.ProductImage", b =>
                 {
-                    b.HasOne("Data.Models.Product", "Product")
+                    b.HasOne("Data.Models.ProductTables.Product", "Product")
                         .WithMany("Images")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -416,9 +503,20 @@ namespace Data.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("Data.Models.Shop", b =>
+            modelBuilder.Entity("Data.Models.ShopTables.InfoPage", b =>
                 {
-                    b.HasOne("Data.Models.User", "Owner")
+                    b.HasOne("Data.Models.ShopTables.Shop", "Shop")
+                        .WithMany("InfoPages")
+                        .HasForeignKey("ShopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shop");
+                });
+
+            modelBuilder.Entity("Data.Models.ShopTables.Shop", b =>
+                {
+                    b.HasOne("Data.Models.UserTables.User", "Owner")
                         .WithMany("Shops")
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -427,9 +525,9 @@ namespace Data.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("Data.Models.ShopBanner", b =>
+            modelBuilder.Entity("Data.Models.ShopTables.ShopBanner", b =>
                 {
-                    b.HasOne("Data.Models.Shop", "Shop")
+                    b.HasOne("Data.Models.ShopTables.Shop", "Shop")
                         .WithMany("Banners")
                         .HasForeignKey("ShopId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -438,15 +536,26 @@ namespace Data.Migrations
                     b.Navigation("Shop");
                 });
 
-            modelBuilder.Entity("Data.Models.SocialMediaLink", b =>
+            modelBuilder.Entity("Data.Models.ShopTables.SocialMediaLink", b =>
                 {
-                    b.HasOne("Data.Models.Shop", "Shop")
+                    b.HasOne("Data.Models.ShopTables.Shop", "Shop")
                         .WithMany("SocialMediaLinks")
                         .HasForeignKey("ShopId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Shop");
+                });
+
+            modelBuilder.Entity("Data.Models.UserTables.UserImage", b =>
+                {
+                    b.HasOne("Data.Models.UserTables.User", "User")
+                        .WithOne("Image")
+                        .HasForeignKey("Data.Models.UserTables.UserImage", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -460,7 +569,7 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("Data.Models.User", null)
+                    b.HasOne("Data.Models.UserTables.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -469,7 +578,7 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("Data.Models.User", null)
+                    b.HasOne("Data.Models.UserTables.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -484,7 +593,7 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Data.Models.User", null)
+                    b.HasOne("Data.Models.UserTables.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -493,36 +602,40 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("Data.Models.User", null)
+                    b.HasOne("Data.Models.UserTables.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Data.Models.Category", b =>
+            modelBuilder.Entity("Data.Models.ProductTables.Category", b =>
                 {
                     b.Navigation("ProductCategories");
                 });
 
-            modelBuilder.Entity("Data.Models.Product", b =>
+            modelBuilder.Entity("Data.Models.ProductTables.Product", b =>
                 {
                     b.Navigation("Images");
 
                     b.Navigation("ProductCategories");
                 });
 
-            modelBuilder.Entity("Data.Models.Shop", b =>
+            modelBuilder.Entity("Data.Models.ShopTables.Shop", b =>
                 {
                     b.Navigation("Banners");
+
+                    b.Navigation("InfoPages");
 
                     b.Navigation("Products");
 
                     b.Navigation("SocialMediaLinks");
                 });
 
-            modelBuilder.Entity("Data.Models.User", b =>
+            modelBuilder.Entity("Data.Models.UserTables.User", b =>
                 {
+                    b.Navigation("Image");
+
                     b.Navigation("Shops");
                 });
 #pragma warning restore 612, 618
