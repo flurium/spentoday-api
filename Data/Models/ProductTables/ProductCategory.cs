@@ -1,4 +1,4 @@
-﻿namespace Data.Models;
+﻿namespace Data.Models.ProductTables;
 
 public class ProductCategory
 {

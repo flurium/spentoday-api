@@ -1,4 +1,6 @@
-﻿namespace Data.Models;
+﻿using Data.Models.ShopTables;
+
+namespace Data.Models.ProductTables;
 
 public class Product
 {
@@ -7,16 +9,17 @@ public class Product
     public double Price { get; set; } = 0;
     public int Amount { get; set; } = 0;
     public string PreviewImage { get; set; }
-    public IReadOnlyCollection<ProductImage> Images { get; set; } = default!;
-    public IReadOnlyCollection<ProductCategory> ProductCategories { get; set; } = default!;
+    public IReadOnlyCollection<ProductImage> Images { get; set; }
+    public IReadOnlyCollection<ProductCategory> ProductCategories { get; set; }
 
     public string ShopId { get; set; }
-    public Shop Shop { get; set; } = default!;
-
+    public Shop Shop { get; set; }
     public bool IsDraft { get; set; } = true;
     public string? VideoUrl { get; set; }
 
+    //SEO
     public string SeoTitle { get; set; } = string.Empty;
+
     public string SeoDescription { get; set; } = string.Empty;
     public string SeoSlug { get; set; } = string.Empty;
 
