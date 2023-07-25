@@ -32,11 +32,10 @@ public class DashboardController : ControllerBase
         return Ok(pages);
     }
 
-    public record NewPageInput(string Slug);
-
     [NonAction]
     public bool IsSlugValid(string slug)
     {
+        slug = slug.ToLower().Trim('-');
         for (int i = 0; i < slug.Length; ++i)
         {
             char c = slug[i];
@@ -49,6 +48,8 @@ public class DashboardController : ControllerBase
         return true;
     }
 
+    public record NewPageInput(string Slug);
+
     /// <returns>
     /// 400 - slug is invalid
     /// 401 - unauthorized
@@ -59,10 +60,10 @@ public class DashboardController : ControllerBase
     /// </returns>
     [HttpPost("{shopId}/page")]
     [Authorize]
-    public async Task<IActionResult> NewPage(string shopId, string slug)
+    public async Task<IActionResult> NewPage([FromRoute] string shopId, [FromBody] NewPageInput input)
     {
         // validate slug
-        var isValid = IsSlugValid(slug);
+        var isValid = IsSlugValid(input.Slug);
         if (!isValid) return BadRequest();
 
         var uid = User.FindFirst(Jwt.Uid);
@@ -71,10 +72,10 @@ public class DashboardController : ControllerBase
         var ownShop = await db.Shops.AnyAsync(x => x.OwnerId == uid.Value && x.Id == shopId).ConfigureAwait(false);
         if (!ownShop) return NotFound();
 
-        var slugTaken = await db.InfoPages.AnyAsync(x => x.ShopId == shopId && x.Slug == slug).ConfigureAwait(false);
+        var slugTaken = await db.InfoPages.AnyAsync(x => x.ShopId == shopId && x.Slug == input.Slug).ConfigureAwait(false);
         if (slugTaken) return Conflict();
 
-        var newInfoPage = new InfoPage(slug, shopId);
+        var newInfoPage = new InfoPage(input.Slug, shopId);
         await db.InfoPages.AddAsync(newInfoPage);
         var saved = await db.Save();
 

@@ -56,13 +56,9 @@ namespace Backend.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterInput input)
         {
-            if ((input.Name.Length > 21) || input.Name.Any(char.IsWhiteSpace))
+            if (!input.Email.Contains('@'))
             {
-                BadRequest();
-            }
-            if (!input.Email.Contains('@') || input.Email.Length < 5)
-            {
-                BadRequest();
+                return BadRequest();
             }
             if (
                 input.Password.Length < 6 ||
@@ -70,12 +66,12 @@ namespace Backend.Controllers
                 !input.Password.Any(char.IsLower) ||
                 !input.Password.Any(char.IsNumber) ||
                 !input.Password.Any(char.IsPunctuation)
-                )
+            )
             {
-                BadRequest();
+                return BadRequest();
             }
 
-            if (!input.Password.Equals(input.ConfirmPassword)) return BadRequest();
+            if (!input.Password.Equals(input.ConfirmPassword)) return BadRequest("confirmPassword");
 
             var user = new User(input.Name, input.Email);
 
@@ -98,7 +94,7 @@ namespace Backend.Controllers
 
             var cookieOptions = new CookieOptions
             {
-                Expires = DateTimeOffset.Now.AddDays(30),
+                Expires = DateTimeOffset.Now.AddDays(30)
             };
             Response.Cookies.Append(RefreshOnly.Cookie, jwt.Token(user.Id, user.Version), cookieOptions);
 
