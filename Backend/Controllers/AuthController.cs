@@ -4,6 +4,7 @@ using Lib;
 using Lib.Email;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Controllers
 {
@@ -104,5 +105,74 @@ namespace Backend.Controllers
 
             return Ok();
         }
+
+
+        [HttpGet("confirm")]
+        public async Task<IActionResult> Confirm(string guid, string userEmail)
+        {
+            var user = await userManager.FindByEmailAsync(userEmail);
+
+            if (user == null) return BadRequest();
+
+            var res = await userManager.ConfirmEmailAsync(user, guid);
+            if (!res.Succeeded) return Problem();
+
+            return Ok();
+        }
+
+        public class EmailInput
+        {
+            public string Email { get; set; }
+        }
+
+        [HttpPost("forgot")]
+        public async Task<IActionResult> ForgotPassword(EmailInput input)
+        {
+            var user = await userManager.FindByEmailAsync(input.Email);
+            if (user == null) return Problem();
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            var callback = Url.Action(nameof(ResetPassword), "Account", new { token, email = user.Email }, Request.Scheme);
+
+            await email.Send(
+                fromEmail: "support@flurium.com",
+                fromName: "spentoday",
+                toEmails: new List<string>() { user.Email },
+                subject: "Reset password token",
+                text: $"Go to this link:{callback}",
+                html: $"Link-> <a href={callback}>Reset Password Link</a>"
+            );
+            return Ok();
+        }
+
+        public class ResetPasswordInput
+        {
+            public string Password { get; set; }
+
+            public string ConfirmPassword { get; set; }
+
+            public string Email { get; set; }
+            public string Token { get; set; }
+        }
+
+        [HttpPost("reset")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordInput input)
+        {
+            if (!input.Password.Equals(input.ConfirmPassword)) return BadRequest();
+
+            var user = await userManager.FindByEmailAsync(input.Email);
+            if (user == null) return Problem();
+
+            var resetPassResult = await userManager.ResetPasswordAsync(user, input.Token, input.Password);
+            if (!resetPassResult.Succeeded)
+            {
+                //foreach (var error in resetPassResult.Errors)
+                //{
+                //    ModelState.TryAddModelError(error.Code, error.Description);
+                //}
+                return Problem();
+            }
+            return Ok();
+        }
+
     }
 }
