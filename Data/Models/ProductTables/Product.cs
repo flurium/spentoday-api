@@ -11,10 +11,12 @@ public class Product
     public string PreviewImage { get; set; }
     public IReadOnlyCollection<ProductImage> Images { get; set; }
     public IReadOnlyCollection<ProductCategory> ProductCategories { get; set; }
+    public IReadOnlyCollection<Order> Orders { get; set; }
 
     public string ShopId { get; set; }
     public Shop Shop { get; set; }
     public bool IsDraft { get; set; } = true;
+    public bool IsArchive { get; set; } = false;
     public string? VideoUrl { get; set; }
 
     //SEO
