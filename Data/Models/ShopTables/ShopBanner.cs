@@ -1,5 +1,4 @@
 ﻿using Lib.Storage;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Data.Models.ShopTables;
 

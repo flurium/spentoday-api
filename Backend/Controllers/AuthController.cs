@@ -4,7 +4,6 @@ using Lib;
 using Lib.Email;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Controllers
 {
@@ -102,7 +101,6 @@ namespace Backend.Controllers
             return Ok();
         }
 
-
         [HttpGet("confirm")]
         public async Task<IActionResult> Confirm(string guid, string userEmail)
         {
@@ -169,6 +167,5 @@ namespace Backend.Controllers
             }
             return Ok();
         }
-
     }
 }

@@ -1,4 +1,5 @@
-﻿using Lib;
+﻿using Backend.Services;
+using Lib;
 using Lib.Email;
 using Lib.Email.Services;
 using Lib.Storage;
@@ -29,5 +30,19 @@ public static class Infrastructure
         var storjPublicKey = Env.Get("STORJ_PUBLIC_KEY");
 
         services.AddScoped<IStorage>(_ => new Storj(storjAccessKey, storjSecretKey, storjEndpoint, storjPublicKey, "shops"));
+    }
+
+    public static void AddDomainService(this IServiceCollection services)
+    {
+        var token = Env.Get("VERCEL_TOKEN");
+        var projectId = Env.Get("VERCEL_PROJECT_ID");
+        var teamId = Env.Get("VERCEL_TEAM_ID");
+
+        services.AddHttpClient();
+        services.AddScoped(provider =>
+        {
+            var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient();
+            return new DomainService(client, token, projectId, teamId);
+        });
     }
 }
