@@ -18,14 +18,16 @@ public class TestController : ControllerBase
     private readonly Db db;
     private readonly ImageService imageService;
     private readonly BackgroundQueue background;
+    private readonly DomainService domainService;
 
-    public TestController(Jwt jwt, IStorage storage, Db db, ImageService imageService, BackgroundQueue background)
+    public TestController(Jwt jwt, IStorage storage, Db db, ImageService imageService, BackgroundQueue background, DomainService domainService)
     {
         this.jwt = jwt;
         this.storage = storage;
         this.db = db;
         this.imageService = imageService;
         this.background = background;
+        this.domainService = domainService;
     }
 
     [HttpGet("token")]

@@ -39,6 +39,7 @@ builder.Services.AddDbContext<Db>(options => options.UseNpgsql(dbConnectionStrin
 // Infrastructure
 builder.Services.AddEmail();
 builder.Services.AddStorage();
+builder.Services.AddDomainService();
 
 builder.Services.AddSingleton<BackgroundQueue>();
 builder.Services.AddHostedService<BackgroundQueue.Runner>();
