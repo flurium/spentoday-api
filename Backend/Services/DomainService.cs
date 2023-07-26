@@ -4,6 +4,8 @@ using System.Text.Json;
 namespace Backend.Services;
 
 public record DomainServiceSecrets(string Token, string ProjectId, string TeamId);
+public record DomainVerification(string Type, string Domain, string Value, string Reason);
+public record DomainResponse(bool Verified, List<DomainVerification>? Verification);
 
 public class DomainService
 {
@@ -22,9 +24,6 @@ public class DomainService
         this.client.BaseAddress = new Uri("https://api.vercel.com/");
         this.client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
     }
-
-    public record DomainVerification(string Type, string Domain, string Value, string Reason);
-    public record DomainResponse(bool Verified, List<DomainVerification>? Verification);
 
     public async Task<DomainResponse?> AddDomainToShop(string domain)
     {

@@ -26,16 +26,22 @@ namespace Backend.Controllers.Dashboard
             this.background = background;
         }
 
+        public record ShopDomainOutput(string Domain);
+
         [HttpGet("{shopId}")]
         [Authorize]
         public async Task<IActionResult> ShopDomains([FromRoute] string shopId)
         {
             var uid = User.FindFirst(Jwt.Uid)!.Value;
-            var domains = await db.ShopDomains.QueryMany(x => x.ShopId == shopId && x.Shop.OwnerId == uid);
+            var domains = await db.ShopDomains
+                .Where(x => x.ShopId == shopId && x.Shop.OwnerId == uid)
+                .Select(x => new ShopDomainOutput(x.Domain))
+                .QueryMany();
             return Ok(domains);
         }
 
         public record AddDomainInput(string Domain);
+        public record AddDomainOutput(string Domain, List<DomainVerification>? Verifications);
 
         [HttpPost("{shopId}")]
         [Authorize]
@@ -57,7 +63,7 @@ namespace Backend.Controllers.Dashboard
             await db.ShopDomains.AddAsync(new ShopDomain(domain, shopId));
             var saved = await db.Save();
 
-            return saved ? Ok(domainResponse) : Problem();
+            return saved ? Ok(new AddDomainOutput(domain, domainResponse.Verification)) : Problem();
         }
 
         [HttpDelete("{shopId}/{domain}")]
@@ -100,7 +106,7 @@ namespace Backend.Controllers.Dashboard
             if (res == null) return Problem();
 
             if (res.Verified) return Ok();
-            return Accepted(res);
+            return Accepted(new AddDomainOutput(domain, res.Verification));
         }
     }
 }
