@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 // Load env variables form .env file (in development)
 Env.LoadFile(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
+//bool isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +22,8 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173", "http://localhost:5174", "http://localhost:3003") // during dev
+            .SetIsOriginAllowed(origin => true)
+            //.WithOrigins("http://localhost:5174", "http://localhost:3003") // during dev
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -57,8 +59,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
+else
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseRouting();
 

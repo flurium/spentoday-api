@@ -17,5 +17,6 @@ public class User : IdentityUser
     {
         Name = name;
         Email = email;
+        UserName = email;
     }
 }
