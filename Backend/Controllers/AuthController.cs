@@ -2,6 +2,7 @@
 using Data.Models.UserTables;
 using Lib;
 using Lib.Email;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -101,6 +102,19 @@ namespace Backend.Controllers
 
             AddAuthCookie(jwt.Token(user.Id, user.Version));
             return Ok();
+        }
+
+        [HttpGet("me")]
+        [Authorize]
+        public IActionResult Me()
+        {
+            var uid = User.FindFirst(Jwt.Uid)?.Value;
+            var version = User.FindFirst(Jwt.Version)?.Value;
+            return Ok(new
+            {
+                Uid = uid,
+                Version = version
+            });
         }
 
         [HttpGet("confirm")]
