@@ -18,18 +18,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy
-            .SetIsOriginAllowed(origin => true)
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-    });
-});
-
 // Logs
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
@@ -77,11 +65,14 @@ app.UseCors(options =>
     {
         options.SetIsOriginAllowed(origin =>
         {
-            if (origin.EndsWith("spentoday.com") || origin.EndsWith("flurium.com")) return true;
+            string hostname = new Uri(origin).Host;
+
+            if (hostname.EndsWith("spentoday.com") || hostname.EndsWith("flurium.com")) return true;
 
             // maybe change in future
-            var db = app.Services.GetRequiredService<Db>();
-            var domainAllowed = db.ShopDomains.Any(x => origin.EndsWith(x.Domain));
+            var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<Db>();
+            var domainAllowed = db.ShopDomains.Any(x => x.Domain == hostname);
             return domainAllowed;
         });
     }
