@@ -4,7 +4,6 @@ using Backend.Services;
 using Data;
 using Lib;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Writers;
 
 // Load env variables form .env file (in development)
 Env.LoadFile(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
@@ -54,32 +53,16 @@ else
 
 app.UseRouting();
 
+// CORS for origin checking, super important
+if (app.Environment.IsProduction()) app.UseDomainCors();
+
 app.UseCors(options =>
 {
     options
+        .AllowAnyOrigin()
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials();
-
-    if (app.Environment.IsProduction())
-    {
-        options.SetIsOriginAllowed(origin =>
-        {
-            string hostname = new Uri(origin).Host;
-
-            if (hostname.EndsWith("spentoday.com") || hostname.EndsWith("flurium.com")) return true;
-
-            // maybe change in future
-            var scope = app.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<Db>();
-            var domainAllowed = db.ShopDomains.Any(x => x.Domain == hostname);
-            return domainAllowed;
-        });
-    }
-    else
-    {
-        options.SetIsOriginAllowed(_ => true);
-    }
 });
 
 app.UseCustomHeaderProtection();

@@ -4,7 +4,6 @@ using Data.Models.UserTables;
 using Lib;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Config;
 
