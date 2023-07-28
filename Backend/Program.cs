@@ -4,6 +4,7 @@ using Backend.Services;
 using Data;
 using Lib;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Writers;
 
 // Load env variables form .env file (in development)
 Env.LoadFile(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
@@ -23,7 +24,6 @@ builder.Services.AddCors(options =>
     {
         policy
             .SetIsOriginAllowed(origin => true)
-            //.WithOrigins("http://localhost:5174", "http://localhost:3003") // during dev
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -54,19 +54,42 @@ builder.Services.AddAuth();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
+else
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-else
-{
-    app.UseHttpsRedirection();
-}
 
 app.UseRouting();
 
-app.UseCors();
+app.UseCors(options =>
+{
+    options
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+
+    if (app.Environment.IsProduction())
+    {
+        options.SetIsOriginAllowed(origin =>
+        {
+            if (origin.EndsWith("spentoday.com") || origin.EndsWith("flurium.com")) return true;
+
+            // maybe change in future
+            var db = app.Services.GetRequiredService<Db>();
+            var domainAllowed = db.ShopDomains.Any(x => x.Domain == origin);
+            return domainAllowed;
+        });
+    }
+    else
+    {
+        options.SetIsOriginAllowed(_ => true);
+    }
+});
 
 app.UseCustomHeaderProtection();
 
