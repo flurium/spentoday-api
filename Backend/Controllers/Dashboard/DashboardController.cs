@@ -75,6 +75,8 @@ public class DashboardController : ControllerBase
     }
 
 
+    public record ShopOut(string Name, string Id);
+
     public record ShopAdd(string shopName);
     [HttpPost("addshop")]
     [Authorize]
@@ -96,11 +98,10 @@ public class DashboardController : ControllerBase
         await db.Shops.AddAsync(newShop);
 
         var saved = await db.Save();
-        return saved ? Ok() : Problem();
+        return saved ? Ok(new ShopOut(newShop.Name, newShop.Id)) : Problem();
     }
 
 
-    public record ShopOut(string Name, string Id);
 
     [HttpGet("shops")]
     [Authorize]
@@ -117,15 +118,17 @@ public class DashboardController : ControllerBase
         return Ok(shops);
     }
 
-    /*[HttpGet("shops/filter/{search}")]
+    /*
+    public record ShopFilter(string shopName);
+    [HttpGet("shops/filter")]
     [Authorize]
-    public async Task<IActionResult> FilterShops([FromRoute] string search)
+    public async Task<IActionResult> FilterShops([FromBody] ShopFilter search)
     {
         var uid = User.FindFirst(Jwt.Uid);
         if (uid == null) return Unauthorized();
 
         var shops = await db.Shops
-            .Where(x => x.OwnerId == uid.Value && x.Name.Contains(search))
+            .Where(x => x.OwnerId == uid.Value && x.Name.Contains(search.shopName))
             .QueryMany();
 
         return Ok(shops);
