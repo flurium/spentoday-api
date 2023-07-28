@@ -1,20 +1,20 @@
 ﻿using Data;
 using Data.Models.ShopTables;
-using Lib;
 using Lib.EntityFrameworkCore;
+using Lib;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers.Dashboard;
 
-[Route("v1/dashboard")]
+[Route("api/dashboard")]
 [ApiController]
-public class DashboardController : ControllerBase
+public class PageController : ControllerBase
 {
     private readonly Db db;
 
-    public DashboardController(Db db)
+    public PageController(Db db)
     {
         this.db = db;
     }
@@ -39,11 +39,7 @@ public class DashboardController : ControllerBase
         for (int i = 0; i < slug.Length; ++i)
         {
             char c = slug[i];
-
-            if (!(char.IsLetter(c) || char.IsDigit(c) || c == '-'))
-            {
-                return false;
-            }
+            if (!(char.IsLetter(c) || char.IsDigit(c) || c == '-')) return false;
         }
         return true;
     }
