@@ -7,6 +7,11 @@ public interface IStorageFile
     public string Key { get; }
 }
 
+public interface IStorageFileContainer
+{
+    public StorageFile? GetStorageFile();
+}
+
 public record class StorageFile(string Bucket, string Key, string Provider) : IStorageFile;
 
 public interface IStorage
@@ -14,7 +19,6 @@ public interface IStorage
     /// <summary>
     /// Upload file to a storage.
     /// </summary>
-    /// <param name="bucket">Bucket name</param>
     /// <param name="key">Key/path to item</param>
     /// <param name="fileStream">Stream of file</param>
     /// <returns>

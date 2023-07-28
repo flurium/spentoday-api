@@ -3,6 +3,7 @@ using System;
 using Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Data.Migrations
 {
     [DbContext(typeof(Db))]
-    partial class DbModelSnapshot : ModelSnapshot
+    [Migration("20230727171543_UserVersion")]
+    partial class UserVersion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,15 +164,6 @@ namespace Data.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<string>("LogoBucket")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LogoKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LogoProvider")
-                        .HasColumnType("text");
-
                     b.Property<string>("LogoUrl")
                         .IsRequired()
                         .HasColumnType("text");
@@ -277,15 +270,6 @@ namespace Data.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("ImageBucket")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ImageKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ImageProvider")
-                        .HasColumnType("text");
-
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
 
@@ -336,6 +320,35 @@ namespace Data.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("Data.Models.UserTables.UserImage", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Bucket")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserImages");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -566,6 +579,17 @@ namespace Data.Migrations
                     b.Navigation("Shop");
                 });
 
+            modelBuilder.Entity("Data.Models.UserTables.UserImage", b =>
+                {
+                    b.HasOne("Data.Models.UserTables.User", "User")
+                        .WithOne("Image")
+                        .HasForeignKey("Data.Models.UserTables.UserImage", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -644,6 +668,8 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Data.Models.UserTables.User", b =>
                 {
+                    b.Navigation("Image");
+
                     b.Navigation("Shops");
                 });
 #pragma warning restore 612, 618

@@ -1,11 +1,4 @@
-﻿using Backend.Services;
-using Data;
-using Data.Models.ProductTables;
-using Lib;
-using Lib.EntityFrameworkCore;
-using Lib.Storage;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers;
 

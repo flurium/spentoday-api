@@ -12,8 +12,6 @@ public class Db : IdentityDbContext<User>
     {
     }
 
-    public DbSet<UserImage> UserImages { get; set; } = default!;
-
     public DbSet<Shop> Shops { get; set; } = default!;
     public DbSet<ShopDomain> ShopDomains { get; set; } = default!;
     public DbSet<ShopBanner> ShopBanners { get; set; } = default!;
@@ -33,10 +31,6 @@ public class Db : IdentityDbContext<User>
         // User tables
         var user = builder.Entity<User>();
         user.HasKey(x => x.Id);
-
-        var userImage = builder.Entity<UserImage>();
-        userImage.HasKey(x => x.Id);
-        userImage.HasOne(x => x.User).WithOne(x => x.Image).HasForeignKey<UserImage>(x => x.UserId);
 
         // Shop tables
         var shop = builder.Entity<Shop>();

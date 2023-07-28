@@ -2,6 +2,7 @@
 using Data.Models.UserTables;
 using Lib;
 using Lib.Email;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,6 +23,18 @@ namespace Backend.Controllers
             this.email = email;
         }
 
+        [NonAction]
+        public void AddAuthCookie(string token)
+        {
+            Response.Cookies.Append(RefreshOnly.Cookie, token, new()
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTimeOffset.Now.AddDays(30)
+            });
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginInput input)
         {
@@ -31,11 +44,7 @@ namespace Backend.Controllers
             var res = await userManager.CheckPasswordAsync(user, input.Password);
             if (!res) return BadRequest();
 
-            var cookieOptions = new CookieOptions
-            {
-                Expires = DateTimeOffset.Now.AddDays(30),
-            };
-            Response.Cookies.Append(RefreshOnly.Cookie, jwt.Token(user.Id, user.Version), cookieOptions);
+            AddAuthCookie(jwt.Token(user.Id, user.Version));
             return Ok();
         }
 
@@ -64,8 +73,7 @@ namespace Backend.Controllers
                 input.Password.Length < 6 ||
                 !input.Password.Any(char.IsUpper) ||
                 !input.Password.Any(char.IsLower) ||
-                !input.Password.Any(char.IsNumber) ||
-                !input.Password.Any(char.IsPunctuation)
+                !input.Password.Any(char.IsNumber)
             )
             {
                 return BadRequest();
@@ -92,13 +100,21 @@ namespace Backend.Controllers
                 html: $"<a href={confirmationLink}>Confirmation Link</a>"
             );
 
-            var cookieOptions = new CookieOptions
-            {
-                Expires = DateTimeOffset.Now.AddDays(30)
-            };
-            Response.Cookies.Append(RefreshOnly.Cookie, jwt.Token(user.Id, user.Version), cookieOptions);
-
+            AddAuthCookie(jwt.Token(user.Id, user.Version));
             return Ok();
+        }
+
+        [HttpGet("me")]
+        [Authorize]
+        public IActionResult Me()
+        {
+            var uid = User.FindFirst(Jwt.Uid)?.Value;
+            var version = User.FindFirst(Jwt.Version)?.Value;
+            return Ok(new
+            {
+                Uid = uid,
+                Version = version
+            });
         }
 
         [HttpGet("confirm")]
