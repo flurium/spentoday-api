@@ -2,7 +2,7 @@
 
 namespace Data.Models.ProductTables;
 
-public class ProductImage : IStorageFile
+public class ProductImage : IStorageFile, IStorageFileContainer
 {
     public string Id { get; } = Guid.NewGuid().ToString();
 
@@ -19,5 +19,10 @@ public class ProductImage : IStorageFile
         Bucket = bucket;
         Key = key;
         ProductId = productId;
+    }
+
+    public StorageFile? GetStorageFile()
+    {
+        return new StorageFile(Bucket, Key, Provider);
     }
 }
