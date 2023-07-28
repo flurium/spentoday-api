@@ -1,9 +1,10 @@
 ﻿using Data.Models.ProductTables;
 using Data.Models.UserTables;
+using Lib.Storage;
 
 namespace Data.Models.ShopTables;
 
-public class Shop
+public class Shop : IStorageFileContainer
 {
     public string Id { get; } = Guid.NewGuid().ToString();
     public string Name { get; set; }
@@ -23,5 +24,15 @@ public class Shop
         Name = name;
         LogoUrl = logoUrl;
         OwnerId = ownerId;
+    }
+
+    public string? LogoProvider { get; set; }
+    public string? LogoBucket { get; set; }
+    public string? LogoKey { get; set; }
+
+    public StorageFile? GetStorageFile()
+    {
+        if (LogoKey == null || LogoBucket == null || LogoProvider == null) return null;
+        return new StorageFile(LogoBucket, LogoKey, LogoProvider);
     }
 }

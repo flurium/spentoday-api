@@ -12,8 +12,6 @@ public class User : IdentityUser, IStorageFileContainer
 
     public string Name { get; set; }
 
-    public UserImage? Image { get; set; }
-
     public User(string name, string email)
     {
         Name = name;
@@ -27,9 +25,7 @@ public class User : IdentityUser, IStorageFileContainer
 
     public StorageFile? GetStorageFile()
     {
-        if (ImageKey == null) return null;
-        if (ImageBucket == null) return null;
-        if (ImageProvider == null) return null;
+        if (ImageKey == null || ImageBucket == null || ImageProvider == null) return null;
         return new StorageFile(ImageBucket, ImageKey, ImageProvider);
     }
 }
