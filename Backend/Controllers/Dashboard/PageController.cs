@@ -178,13 +178,11 @@ public class DashboardController : ControllerBase
         return saved ? Ok() : Problem();
     }
 
-    // ТИ КТО ТАКОЙ?
-    // ХУЛИ PUT на добавление, ето POST
-    // Во вторих в body надо передавать магаз, а не в пути
 
-    [HttpPut("{shopName}/shop")]
+    public record ShopAdd(string shopName);
+    [HttpPost("addshop")]
     [Authorize]
-    public async Task<IActionResult> AddShop([FromRoute] string shopName, IFormFile file)
+    public async Task<IActionResult> AddShop([FromBody] ShopAdd shop)
     {
         var uid = User.FindFirst(Jwt.Uid);
         if (uid == null) return Unauthorized();
@@ -197,15 +195,17 @@ public class DashboardController : ControllerBase
         //var link = storage.Url(upload);
         //if (link == null) return Problem();
 
-        var shop = new Shop(shopName, uid.Value);
+        var newShop = new Shop(shop.shopName, uid.Value);
 
-        await db.Shops.AddAsync(shop);
+        await db.Shops.AddAsync(newShop);
 
         var saved = await db.Save();
         return saved ? Ok() : Problem();
     }
 
-    // нам не нужна вся инфа скорее всего, создать отдельний класс для етого
+
+    public record ShopOut(string Name, string Id);
+
     [HttpGet("shops")]
     [Authorize]
     public async Task<IActionResult> Shops()
@@ -215,6 +215,7 @@ public class DashboardController : ControllerBase
 
         var shops = await db.Shops
             .Where(x => x.OwnerId == uid.Value)
+            .Select(x => new ShopOut(x.Name, x.Id))
             .QueryMany();
 
         return Ok(shops);
