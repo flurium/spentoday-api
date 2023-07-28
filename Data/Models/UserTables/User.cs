@@ -1,9 +1,10 @@
 ﻿using Data.Models.ShopTables;
+using Lib.Storage;
 using Microsoft.AspNetCore.Identity;
 
 namespace Data.Models.UserTables;
 
-public class User : IdentityUser
+public class User : IdentityUser, IStorageFileContainer
 {
     public int Version { get; set; } = 0;
 
@@ -18,5 +19,17 @@ public class User : IdentityUser
         Name = name;
         Email = email;
         UserName = email;
+    }
+
+    public string? ImageProvider { get; set; }
+    public string? ImageBucket { get; set; }
+    public string? ImageKey { get; set; }
+
+    public StorageFile? GetStorageFile()
+    {
+        if (ImageKey == null) return null;
+        if (ImageBucket == null) return null;
+        if (ImageProvider == null) return null;
+        return new StorageFile(ImageBucket, ImageKey, ImageProvider);
     }
 }
