@@ -8,7 +8,6 @@ public class Shop : IStorageFileContainer
 {
     public string Id { get; } = Guid.NewGuid().ToString();
     public string Name { get; set; }
-    public string LogoUrl { get; set; }
 
     public string OwnerId { get; set; }
     public User Owner { get; } = default!;
@@ -19,10 +18,9 @@ public class Shop : IStorageFileContainer
     public IReadOnlyCollection<ShopBanner> Banners { get; } = default!;
     public IReadOnlyCollection<InfoPage> InfoPages { get; } = default!;
 
-    public Shop(string name, string logoUrl, string ownerId)
+    public Shop(string name, string ownerId)
     {
         Name = name;
-        LogoUrl = logoUrl;
         OwnerId = ownerId;
     }
 
