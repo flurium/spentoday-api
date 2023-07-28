@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 
 namespace Lib;
 
@@ -18,6 +19,23 @@ public static class Http
         setHeaders(client.DefaultRequestHeaders);
 
         return client;
+    }
+
+    /// <summary>Read json from <paramref name="response"/>.</summary>
+    /// <returns>Null if error otherwise data of type <typeparamref name="T"/></returns>
+    public static async Task<T?> JsonResponse<T>(HttpResponseMessage response) where T : class
+    {
+        try
+        {
+            var jsonStream = await response.Content.ReadAsStreamAsync();
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var data = await JsonSerializer.DeserializeAsync<T>(jsonStream, options);
+            return data;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     /// <summary>

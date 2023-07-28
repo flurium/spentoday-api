@@ -12,6 +12,7 @@ public class Shop
     public string OwnerId { get; set; }
     public User Owner { get; } = default!;
 
+    public IReadOnlyCollection<ShopDomain> Domains { get; } = default!;
     public IReadOnlyCollection<SocialMediaLink> SocialMediaLinks { get; } = default!;
     public IReadOnlyCollection<Product> Products { get; } = default!;
     public IReadOnlyCollection<ShopBanner> Banners { get; } = default!;

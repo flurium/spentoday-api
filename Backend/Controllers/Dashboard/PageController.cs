@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace Backend.Controllers;
+namespace Backend.Controllers.Dashboard;
 
 [Route("v1/dashboard")]
 [ApiController]

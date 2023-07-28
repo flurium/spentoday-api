@@ -1,12 +1,11 @@
 ﻿using Data.Models.ShopTables;
-using Lib.Storage;
 using Microsoft.AspNetCore.Identity;
 
 namespace Data.Models.UserTables;
 
 public class User : IdentityUser
 {
-    public int Version = 0;
+    public int Version { get; set; } = 0;
 
     public IReadOnlyCollection<Shop> Shops { get; set; } = default!;
 
@@ -18,5 +17,6 @@ public class User : IdentityUser
     {
         Name = name;
         Email = email;
+        UserName = email;
     }
 }

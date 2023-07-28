@@ -14,7 +14,6 @@ public interface IStorage
     /// <summary>
     /// Upload file to a storage.
     /// </summary>
-    /// <param name="bucket">Bucket name</param>
     /// <param name="key">Key/path to item</param>
     /// <param name="fileStream">Stream of file</param>
     /// <returns>
