@@ -16,15 +16,13 @@ namespace Backend.Controllers.Dashboard;
 [ApiController]
 public class DashboardController : ControllerBase
 {
-   
     private readonly IStorage storage;
     private readonly Db db;
     private readonly ImageService imageService;
     private readonly BackgroundQueue background;
 
-    public DashboardController( IStorage storage, Db db, ImageService imageService, BackgroundQueue background)
+    public DashboardController(IStorage storage, Db db, ImageService imageService, BackgroundQueue background)
     {
-      
         this.storage = storage;
         this.db = db;
         this.imageService = imageService;
@@ -145,11 +143,11 @@ public class DashboardController : ControllerBase
 
         var products = await db.Products
             .Where(x => x.ShopId == shopId)
-            .Include(p=>p.Images)
-            .Include(p=>p.ProductCategories)
+            .Include(p => p.Images)
+            .Include(p => p.ProductCategories)
             .QueryMany();
-        if (products != null) {
-
+        if (products != null)
+        {
             foreach (var product in products)
             {
                 await imageService.SafeDelete(product.Images);
@@ -158,7 +156,6 @@ public class DashboardController : ControllerBase
 
                 var isSaved = await db.Save();
                 if (!isSaved) return Problem();
-               
             }
         }
 
@@ -175,13 +172,15 @@ public class DashboardController : ControllerBase
             db.Shops.Remove(shop);
             var isSaved = await db.Save();
             if (!isSaved) return Problem();
-       
         }
-
 
         var saved = await db.Save();
         return saved ? Ok() : Problem();
     }
+
+    // ТИ КТО ТАКОЙ?
+    // ХУЛИ PUT на добавление, ето POST
+    // Во вторих в body надо передавать магаз, а не в пути
 
     [HttpPut("{shopName}/shop")]
     [Authorize]
@@ -190,15 +189,15 @@ public class DashboardController : ControllerBase
         var uid = User.FindFirst(Jwt.Uid);
         if (uid == null) return Unauthorized();
 
-        var key = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+        //var key = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
 
-        var upload = await storage.Upload(key, file.OpenReadStream());
-        if (upload == null) return Problem();
+        //var upload = await storage.Upload(key, file.OpenReadStream());
+        //if (upload == null) return Problem();
 
-        var link = storage.Url(upload);
-        if (link == null) return Problem();
+        //var link = storage.Url(upload);
+        //if (link == null) return Problem();
 
-        var shop = new Shop(shopName, link, uid.Value);
+        var shop = new Shop(shopName, uid.Value);
 
         await db.Shops.AddAsync(shop);
 
@@ -206,8 +205,7 @@ public class DashboardController : ControllerBase
         return saved ? Ok() : Problem();
     }
 
-
-
+    // нам не нужна вся инфа скорее всего, создать отдельний класс для етого
     [HttpGet("shops")]
     [Authorize]
     public async Task<IActionResult> Shops()
@@ -218,7 +216,7 @@ public class DashboardController : ControllerBase
         var shops = await db.Shops
             .Where(x => x.OwnerId == uid.Value)
             .QueryMany();
-        
+
         return Ok(shops);
     }
 
