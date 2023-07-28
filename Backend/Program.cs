@@ -81,7 +81,7 @@ app.UseCors(options =>
 
             // maybe change in future
             var db = app.Services.GetRequiredService<Db>();
-            var domainAllowed = db.ShopDomains.Any(x => x.Domain == origin);
+            var domainAllowed = db.ShopDomains.Any(x => origin.EndsWith(x.Domain));
             return domainAllowed;
         });
     }
