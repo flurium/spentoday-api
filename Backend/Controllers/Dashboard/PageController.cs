@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers.Dashboard;
 
-[Route("api/dashboard")]
+[Route("v1/dashboard")]
 [ApiController]
 public class PageController : ControllerBase
 {
