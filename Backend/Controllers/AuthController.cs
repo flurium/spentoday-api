@@ -2,7 +2,6 @@
 using Data.Models.UserTables;
 using Lib;
 using Lib.Email;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 

@@ -59,7 +59,7 @@ if (app.Environment.IsProduction()) app.UseDomainCors();
 app.UseCors(options =>
 {
     options
-        .AllowAnyOrigin()
+        .SetIsOriginAllowed(_ => true) // UseDomainCors handle it.
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials();

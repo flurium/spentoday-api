@@ -1,7 +1,5 @@
 ﻿using Data;
-using Data.Models.ShopTables;
 using Lib.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
