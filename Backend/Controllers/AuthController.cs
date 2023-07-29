@@ -104,19 +104,6 @@ namespace Backend.Controllers
             return Ok();
         }
 
-        [HttpGet("me")]
-        [Authorize]
-        public IActionResult Me()
-        {
-            var uid = User.FindFirst(Jwt.Uid)?.Value;
-            var version = User.FindFirst(Jwt.Version)?.Value;
-            return Ok(new
-            {
-                Uid = uid,
-                Version = version
-            });
-        }
-
         [HttpGet("confirm")]
         public async Task<IActionResult> Confirm(string guid, string userEmail)
         {
