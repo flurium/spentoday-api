@@ -11,7 +11,7 @@ public class ProductImage : IStorageFile, IStorageFileContainer
     public string Key { get; set; }
 
     public string ProductId { get; set; }
-    public Product? Product { get; set; }
+    public Product Product { get; } = default!;
 
     public ProductImage(string provider, string bucket, string key, string productId)
     {

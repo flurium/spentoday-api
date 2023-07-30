@@ -7,10 +7,9 @@ namespace Data.Models.UserTables;
 public class User : IdentityUser, IStorageFileContainer
 {
     public int Version { get; set; } = 0;
+    public string Name { get; set; }
 
     public IReadOnlyCollection<Shop> Shops { get; set; } = default!;
-
-    public string Name { get; set; }
 
     public User(string name, string email)
     {

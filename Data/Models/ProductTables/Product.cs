@@ -16,11 +16,11 @@ public class Product
     public string SeoDescription { get; set; } = string.Empty;
     public string SeoSlug { get; set; } = string.Empty;
 
-    public IReadOnlyCollection<ProductImage> Images { get; set; }
-    public IReadOnlyCollection<ProductCategory> ProductCategories { get; set; }
-
     public string ShopId { get; set; }
-    public Shop Shop { get; set; } = default!;
+    public Shop Shop { get; } = default!;
+
+    public IReadOnlyCollection<ProductImage> Images { get; } = default!;
+    public IReadOnlyCollection<ProductCategory> ProductCategories { get; } = default!;
 
     public Product(string name, double price, int amount, string previewImage, string shopId, string? videoUrl = null)
     {

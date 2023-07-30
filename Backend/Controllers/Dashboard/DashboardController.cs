@@ -36,12 +36,9 @@ public class DashboardController : ControllerBase
             .Include(p => p.ProductCategories)
             .QueryMany();
 
-        if (products != null)
+        foreach (var product in products)
         {
-            foreach (var product in products)
-            {
-                await imageService.SafeDelete(product.Images);
-            }
+            if (product.Images != null) await imageService.SafeDelete(product.Images);
         }
 
         var shop = await db.Shops
@@ -51,7 +48,7 @@ public class DashboardController : ControllerBase
 
         if (shop != null)
         {
-            await imageService.SafeDelete(shop.Banners);
+            if (shop.Banners != null) await imageService.SafeDelete(shop.Banners);
             db.Shops.Remove(shop);
             var isSaved = await db.Save();
             if (!isSaved) return Problem();

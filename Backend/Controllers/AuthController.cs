@@ -34,6 +34,8 @@ namespace Backend.Controllers
             });
         }
 
+        public record LoginInput(string Email, string Password);
+
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginInput input)
         {
@@ -47,19 +49,7 @@ namespace Backend.Controllers
             return Ok();
         }
 
-        public class LoginInput
-        {
-            public string Email { get; set; }
-            public string Password { get; set; }
-        }
-
-        public class RegisterInput
-        {
-            public string Email { get; set; }
-            public string Name { get; set; }
-            public string Password { get; set; }
-            public string ConfirmPassword { get; set; }
-        }
+        public record class RegisterInput(string Email, string Name, string Password, string ConfirmPassword);
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterInput input)
@@ -116,10 +106,7 @@ namespace Backend.Controllers
             return Ok();
         }
 
-        public class EmailInput
-        {
-            public string Email { get; set; }
-        }
+        public record EmailInput(string Email);
 
         [HttpPost("forgot")]
         public async Task<IActionResult> ForgotPassword(EmailInput input)
@@ -140,15 +127,7 @@ namespace Backend.Controllers
             return Ok();
         }
 
-        public class ResetPasswordInput
-        {
-            public string Password { get; set; }
-
-            public string ConfirmPassword { get; set; }
-
-            public string Email { get; set; }
-            public string Token { get; set; }
-        }
+        public record ResetPasswordInput(string Password, string ConfirmPassword, string Email, string Token);
 
         [HttpPost("reset")]
         public async Task<IActionResult> ResetPassword(ResetPasswordInput input)
