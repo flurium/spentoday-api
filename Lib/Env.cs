@@ -25,7 +25,13 @@ public static class Env
     }
 
     /// <summary>
-    /// Get environment variable with !, so it will throw if variable isn't found.
+    /// Get required environment variable, throw if variable isn't found.
     /// </summary>
-    public static string Get(string key) => Environment.GetEnvironmentVariable(key)!;
+    public static string GetRequired(string key)
+         => Environment.GetEnvironmentVariable(key)
+        ?? throw new KeyNotFoundException($"Environment variable: {key} wasn't found!");
+
+    /// <summary>Get optional environment variable.</summary>
+    /// <returns>Null if not found, otherwise value</returns>
+    public static string? GetOptional(string key) => Environment.GetEnvironmentVariable(key);
 }
