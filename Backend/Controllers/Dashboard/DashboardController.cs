@@ -30,7 +30,7 @@ public class DashboardController : ControllerBase
         this.background = background;
     }
 
-    [HttpDelete("{shopId}")]
+    [HttpDelete("delete/{shopId}")]
     [Authorize]
     public async Task<IActionResult> DeleteShop([FromRoute] string shopId)
     {

@@ -2,9 +2,10 @@
 using Data;
 using Data.Models.ProductTables;
 using Data.Models.ShopTables;
-using Lib;
 using Lib.EntityFrameworkCore;
+
 using Lib.Storage;
+using Lib;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,8 +19,8 @@ public class PageController : ControllerBase
 {
     private readonly Db db;
 
-    public PageController(IStorage storage, Db db, ImageService imageService, BackgroundQueue background)
-    { 
+    public PageController(Db db)
+    {
         this.db = db;
     }
 
@@ -43,11 +44,7 @@ public class PageController : ControllerBase
         for (int i = 0; i < slug.Length; ++i)
         {
             char c = slug[i];
-
-            if (!(char.IsLetter(c) || char.IsDigit(c) || c == '-'))
-            {
-                return false;
-            }
+            if (!(char.IsLetter(c) || char.IsDigit(c) || c == '-')) return false;
         }
         return true;
     }
@@ -128,5 +125,4 @@ public class PageController : ControllerBase
         return saved ? Ok(page) : Problem();
     }
 
- 
 }
