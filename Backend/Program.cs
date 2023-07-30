@@ -22,8 +22,7 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 // Database
-var dbConnectionString = Env.Get("DB_CONNECTION_STRING");
-builder.Services.AddDbContext<Db>(options => options.UseNpgsql(dbConnectionString));
+builder.Services.AddDbContext<Db>(options => options.UseNpgsql(Secrets.DB_CONNECTION_STRING));
 
 // Infrastructure
 builder.Services.AddEmail();

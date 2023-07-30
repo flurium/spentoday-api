@@ -11,11 +11,7 @@ public static class Auth
 {
     public static void AddJwt(this IServiceCollection services)
     {
-        JwtSecrets jwtSecrets = new(
-            Env.Get("JWT_ISSUER"),
-            Env.Get("JWT_AUDIENCE"),
-            Env.Get("JWT_SECRET")
-        );
+        JwtSecrets jwtSecrets = new(Secrets.JWT_ISSUER, Secrets.JWT_AUDIENCE, Secrets.JWT_SECRET);
         services.AddScoped<Jwt>(_ => new(jwtSecrets));
     }
 
