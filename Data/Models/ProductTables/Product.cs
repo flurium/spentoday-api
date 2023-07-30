@@ -37,4 +37,8 @@ public class Product
         ShopId = shopId;
         VideoUrl = videoUrl;
     }
+
+    public Product()
+    {
+    }
 }
