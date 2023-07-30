@@ -4,13 +4,12 @@ using Data;
 using Data.Models.ProductTables;
 using Data.Models.ShopTables;
 using Lib.EntityFrameworkCore;
-
 using Lib.Storage;
 using Lib;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using static System.Net.Mime.MediaTypeNames;
+
 namespace Backend.Controllers.Dashboard;
 
 [Route("v1/dashboard")]
@@ -26,7 +25,7 @@ public class DashboardController : ControllerBase
     {
         this.storage = storage;
         this.db = db;
-        this.imageService= imageService;
+        this.imageService = imageService;
         this.background = background;
     }
 
@@ -74,10 +73,10 @@ public class DashboardController : ControllerBase
         return saved ? Ok() : Problem();
     }
 
-
     public record ShopOut(string Name, string Id);
 
     public record ShopAdd(string shopName);
+
     [HttpPost("addshop")]
     [Authorize]
     public async Task<IActionResult> AddShop([FromBody] ShopAdd shop)
@@ -100,8 +99,6 @@ public class DashboardController : ControllerBase
         var saved = await db.Save();
         return saved ? Ok(new ShopOut(newShop.Name, newShop.Id)) : Problem();
     }
-
-
 
     [HttpGet("shops")]
     [Authorize]

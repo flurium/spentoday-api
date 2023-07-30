@@ -17,19 +17,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy
-            .SetIsOriginAllowed(origin => true)
-            //.WithOrigins("http://localhost:5174", "http://localhost:3003") // during dev
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-    });
-});
-
 // Logs
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
@@ -54,19 +41,29 @@ builder.Services.AddAuth();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
+else
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-else
-{
-    app.UseHttpsRedirection();
-}
 
 app.UseRouting();
 
-app.UseCors();
+// CORS for origin checking, super important
+if (app.Environment.IsProduction()) app.UseDomainCors();
+
+app.UseCors(options =>
+{
+    options
+        .AllowAnyOrigin()
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+});
 
 app.UseCustomHeaderProtection();
 
