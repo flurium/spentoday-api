@@ -38,7 +38,10 @@ public class Product
         VideoUrl = videoUrl;
     }
 
-    public Product()
+    public Product(string name, string seoSlug, string shopId)
     {
+        Name = name;
+        ShopId = shopId;
+        SeoSlug = seoSlug;
     }
 }
