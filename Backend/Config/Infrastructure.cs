@@ -1,5 +1,4 @@
 ﻿using Backend.Services;
-using Lib;
 using Lib.Email;
 using Lib.Email.Services;
 using Lib.Storage;
