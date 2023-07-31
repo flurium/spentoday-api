@@ -3,7 +3,7 @@ using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Controllers.ShopControllers
+namespace Backend.Controllers.ShopRoutes
 {
     [Route("v1/shop")]
     [ApiController]

@@ -40,4 +40,14 @@ public static class QueryExtension
     {
         return await query.Where(where).ToListAsync().ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Query many items that match <paramref name="where"/> condition with ConfigureAwait(false)
+    /// </summary>
+    /// <param name="where">Condition to filter.</param>
+    /// <returns>List of items</returns>
+    public static async Task<bool> Have<T>(this IQueryable<T> query, Expression<Func<T, bool>> where)
+    {
+        return await query.AnyAsync(where).ConfigureAwait(false);
+    }
 }
