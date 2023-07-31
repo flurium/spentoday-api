@@ -48,9 +48,12 @@ public class ProductController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<Product>> GetProduct(string id)
     {
+        var uid = User.FindFirst(Jwt.Uid)?.Value;
         var product = await db.Products.QueryOne(p => p.Id == id);
 
         if (product == null) return Problem();
+
+        if (product.IsDraft == true && product.Shop.OwnerId != uid) return Problem();
 
         return Ok(product);
     }
