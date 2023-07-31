@@ -65,6 +65,8 @@ public class Db : IdentityDbContext<User>
 
         var category = builder.Entity<Category>();
         category.HasKey(x => x.Id);
+        category.HasOne(x => x.Shop).WithMany(x => x.Categories).HasForeignKey(x => x.ShopId);
+        category.HasOne(x => x.Parent).WithMany(x => x.Subcategories).HasForeignKey(x => x.ParentId);
 
         var productCategory = builder.Entity<ProductCategory>();
         productCategory.HasKey(x => new { x.ProductId, x.CategoryId });
