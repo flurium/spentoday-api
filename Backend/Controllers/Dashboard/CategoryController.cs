@@ -97,6 +97,6 @@ public class CategoryController : ControllerBase
         }
 
         var saved = await db.Save();
-        return saved ? Ok() : Problem();
+        return saved ? Ok(new ShopCategoryOutput(category.Id, category.Name, category.ParentId)) : Problem();
     }
 }
