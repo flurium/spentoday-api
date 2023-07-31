@@ -12,8 +12,6 @@ public class Product
 
     public IReadOnlyCollection<Order> Orders { get; set; }
 
-    public string ShopId { get; set; }
-    public Shop Shop { get; set; }
     public bool IsDraft { get; set; } = true;
     public bool IsArchive { get; set; } = false;
     public string? VideoUrl { get; set; }

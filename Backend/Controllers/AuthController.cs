@@ -101,12 +101,11 @@ namespace Backend.Controllers
         }
 
         [HttpGet("confirm")]
-        public async Task<IActionResult> Confirm(string token, string user)
+        public async Task<IActionResult> Confirm([FromQuery] string token, [FromQuery] string user)
         {
             var u = await userManager.FindByEmailAsync(user);
 
             if (u == null) return BadRequest();
-            //var decodeToken = HttpUtility.HtmlDecode(token);
             var res = await userManager.ConfirmEmailAsync(u, token);
             if (!res.Succeeded) return Problem();
 
@@ -122,7 +121,9 @@ namespace Backend.Controllers
             if (user == null) return Problem();
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
             string baseUrl = Request.Headers["Referer"].ToString();
-            var callback = $"{baseUrl}confirm?token={token}&user={user.Email}";
+
+            var encodedToken = HttpUtility.UrlEncode(token);
+            var callback = $"{baseUrl}confirm?token={encodedToken}&user={user.Email}";
 
             await email.Send(
                 fromEmail: "support@flurium.com",
@@ -156,7 +157,6 @@ namespace Backend.Controllers
             }
             return Ok();
         }
-
 
         //Test method. Will be removed later!!!
         [HttpGet("remove")]
