@@ -17,6 +17,7 @@ public class Shop : IStorageFileContainer
     public IReadOnlyCollection<Product> Products { get; } = default!;
     public IReadOnlyCollection<ShopBanner> Banners { get; } = default!;
     public IReadOnlyCollection<InfoPage> InfoPages { get; } = default!;
+    public IReadOnlyCollection<Category> Categories { get; } = default!;
 
     public Shop(string name, string ownerId)
     {
