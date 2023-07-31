@@ -9,7 +9,13 @@ public class Product
     public double Price { get; set; } = 0;
     public int Amount { get; set; } = 0;
     public string PreviewImage { get; set; }
+
+    public IReadOnlyCollection<Order> Orders { get; set; }
+
+    public string ShopId { get; set; }
+    public Shop Shop { get; set; }
     public bool IsDraft { get; set; } = true;
+    public bool IsArchive { get; set; } = false;
     public string? VideoUrl { get; set; }
 
     public string SeoTitle { get; set; } = string.Empty;
@@ -30,5 +36,12 @@ public class Product
         PreviewImage = previewImage;
         ShopId = shopId;
         VideoUrl = videoUrl;
+    }
+
+    public Product(string name, string seoSlug, string shopId)
+    {
+        Name = name;
+        ShopId = shopId;
+        SeoSlug = seoSlug;
     }
 }
