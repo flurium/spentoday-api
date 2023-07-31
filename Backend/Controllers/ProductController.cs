@@ -1,12 +1,12 @@
-﻿using Data;
+﻿using Backend.Services;
+using Data;
 using Data.Models.ProductTables;
-using Backend.Services;
-using Lib.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
-using Lib.Storage;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
 using Lib;
+using Lib.EntityFrameworkCore;
+using Lib.Storage;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers;
 
@@ -16,44 +16,39 @@ namespace Backend.Controllers;
 public class ProductController : ControllerBase
 {
     private readonly Db db;
-
     private readonly ImageService imageService;
-
     private readonly IStorage storage;
 
-    public ProductController(Db context, ImageService imageService, IStorage storage)
+    public ProductController(Db db, ImageService imageService, IStorage storage)
     {
-        db = context;
+        this.db = db;
         this.imageService = imageService;
         this.storage = storage;
     }
+
+    public record CreateProductInput(string Name, string SeoSlug, string ShopId);
 
     [HttpPost]
     public async Task<IActionResult> CreateProduct([FromBody] CreateProductInput newProduct)
     {
         var uid = User.FindFirst(Jwt.Uid)?.Value;
         var shop = await db.Shops.QueryOne(s => s.Id == newProduct.ShopId && s.OwnerId == uid);
-
         if (shop == null) return Forbid();
 
-        Product product = new Product(newProduct.Name, newProduct.SeoSlug, newProduct.ShopId);
-
-        db.Products.Add(product);
+        var product = new Product(newProduct.Name, newProduct.SeoSlug, newProduct.ShopId);
+        await db.Products.AddAsync(product);
 
         var saved = await db.Save();
-
         return saved ? Ok() : Problem();
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Product>> GetProduct(string id)
     {
-        var uid = User.FindFirst(Jwt.Uid)?.Value;
-        var product = await db.Products.QueryOne(p => p.Id == id);
+        var uid = User.FindFirst(Jwt.Uid)!.Value;
+        var product = await db.Products.QueryOne(p => p.Id == id && p.Shop.OwnerId == uid);
 
-        if (product == null) return Problem();
-
-        if (product.IsDraft == true && product.Shop.OwnerId != uid) return Problem();
+        if (product == null) return NotFound();
 
         return Ok(product);
     }
@@ -61,7 +56,7 @@ public class ProductController : ControllerBase
     [HttpPatch]
     public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductInput patchDoc)
     {
-        var uid = User.FindFirst(Jwt.Uid)?.Value;
+        var uid = User.FindFirst(Jwt.Uid)!.Value;
         var product = await db.Products.QueryOne(p => p.Id == patchDoc.Id && p.Shop.OwnerId == uid);
 
         if (product == null) return Problem();
@@ -85,8 +80,7 @@ public class ProductController : ControllerBase
     {
         var uid = User.FindFirst(Jwt.Uid)?.Value;
         var product = await db.Products.QueryOne(x => x.Id == id && x.Shop.OwnerId == uid);
-
-        if (product == null) return Problem();
+        if (product == null) return NotFound();
 
         product.IsDraft = false;
         var saved = await db.Save();
@@ -95,50 +89,35 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost("{id}/image")]
-    public async Task<IActionResult> UploadProductImage(string id, [FromForm] IFormFile imageFile)
+    public async Task<IActionResult> UploadProductImage([FromRoute] string id, [FromForm] IFormFile imageFile)
     {
-        var uid = User.FindFirst(Jwt.Uid)?.Value;
+        var uid = User.FindFirst(Jwt.Uid)!.Value;
         var product = await db.Products.QueryOne(x => x.Id == id && x.Shop.OwnerId == uid);
-
-        if (product == null) return Problem();
+        if (product == null) return NotFound();
 
         if (!IsImageFile(imageFile)) return BadRequest();
 
-        var fileId = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
-        ProductImage productImage;
+        var fileId = $"{Guid.NewGuid()}{Path.GetExtension(imageFile.FileName)}";
+        var uploadedFile = await storage.Upload(fileId, imageFile.OpenReadStream());
+        if (uploadedFile == null) return Problem();
 
-        using (var stream = imageFile.OpenReadStream())
-        {
-            var uploadedFile = await storage.Upload(fileId, stream);
-
-            if (uploadedFile == null) return Problem();
-
-            productImage = new ProductImage(uploadedFile.Provider, uploadedFile.Bucket, uploadedFile.Key, id);
-            db.ProductImages.Add(productImage);
-        }
-
+        var productImage = new ProductImage(uploadedFile.Provider, uploadedFile.Bucket, uploadedFile.Key, id);
+        await db.ProductImages.AddAsync(productImage);
         var saved = await db.Save();
 
-        if (!saved)
-        {
-            await storage.Delete(productImage);
-            return Problem();
-        }
+        if (saved) return Ok();
 
-        return Ok();
+        await storage.Delete(productImage);
+        return Problem();
     }
 
     [NonAction]
     public static bool IsImageFile(IFormFile file)
     {
-        if (file == null || string.IsNullOrEmpty(file.FileName) || file.Length == 0)
-        {
-            return false;
-        }
+        if (file == null || string.IsNullOrEmpty(file.FileName) || file.Length == 0) return false;
 
         var fileExtension = Path.GetExtension(file.FileName).ToLower();
-        string[] photoExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp", ".tiff", ".ico", ".jfif", ".psd", ".eps", ".pict", ".pic", "pct" }; ;
-
+        string[] photoExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp", ".tiff", ".ico", }; ;
         return photoExtensions.Contains(fileExtension);
     }
 
@@ -146,14 +125,13 @@ public class ProductController : ControllerBase
     public async Task<IActionResult> DeleteProductImage(string id)
     {
         var uid = User.FindFirst(Jwt.Uid)?.Value;
-        var productImagesToDelete = await db.ProductImages.QueryOne(pi => pi.Id == id && pi.Product.Shop.OwnerId == uid);
+        var image = await db.ProductImages.QueryOne(pi => pi.Id == id && pi.Product.Shop.OwnerId == uid);
+        if (image == null) return NotFound();
 
-        if (productImagesToDelete == null) return Problem();
-
-        bool isDeleted = await storage.Delete(productImagesToDelete);
-
+        bool isDeleted = await storage.Delete(image);
         if (!isDeleted) return Problem();
 
+        db.ProductImages.Remove(image);
         var saved = await db.Save();
         return saved ? Ok() : Problem();
     }
@@ -184,22 +162,15 @@ public class ProductController : ControllerBase
     }
 }
 
-public class CreateProductInput
-{
-    public string Name { get; set; }
-    public string SeoSlug { get; set; } = string.Empty;
-    public string ShopId { get; set; }
-}
-
 public class UpdateProductInput
 {
-    public string Id { get; set; }
-    public string Name { get; set; } = null;
+    public string Id { get; set; } = string.Empty;
+    public string? Name { get; set; }
     public double Price { get; set; } = 0;
     public int Amount { get; set; } = 0;
-    public string PreviewImage { get; set; } = null;
-    public string VideoUrl { get; set; } = null;
-    public string SeoTitle { get; set; } = null;
-    public string SeoDescription { get; set; } = null;
-    public string SeoSlug { get; set; } = null;
+    public string? PreviewImage { get; set; }
+    public string? VideoUrl { get; set; }
+    public string? SeoTitle { get; set; }
+    public string? SeoDescription { get; set; }
+    public string? SeoSlug { get; set; }
 }

@@ -15,10 +15,7 @@ public class ImageService
     {
         this.storage = storage;
         this.background = background;
-
     }
-
-
 
     /// <summary>
     /// Safely delete list of files.
@@ -26,7 +23,6 @@ public class ImageService
     /// </summary>
     public async Task SafeDelete(IEnumerable<IStorageFile> files)
     {
-       
         foreach (var file in files)
         {
             var deleted = await storage.Delete(file);

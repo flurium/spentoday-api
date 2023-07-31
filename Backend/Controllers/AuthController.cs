@@ -4,7 +4,6 @@ using Lib;
 using Lib.Email;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Runtime.CompilerServices;
 using System.Web;
 
 namespace Backend.Controllers
