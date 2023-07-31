@@ -4,6 +4,7 @@ using Lib;
 using Lib.Email;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Web;
 
 namespace Backend.Controllers
 {
@@ -79,13 +80,19 @@ namespace Backend.Controllers
             }
 
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-            var confirmationLink = Url.Action("", "confirmation", new { guid = token, userEmail = user.Email }, Request.Scheme, Request.Host.Value);
+
+            string baseUrl = Request.Headers["Referer"].ToString();
+            //string baseUrl = $"{Request.Scheme}://{Request.Host}";
+            string confirmationLink = $"{baseUrl}confirm?token={token}&user={user.Email}";
+
+            //Console.WriteLine(confirmationLink);
+
             await email.Send(
                 fromEmail: "support@flurium.com",
                 fromName: "spentoday",
                 toEmails: new List<string>() { input.Email },
                 subject: "ConfirmationLink",
-                text: $"Go to this link:{confirmationLink}",
+                text: $"Go to this link -> {confirmationLink}",
                 html: $"<a href={confirmationLink}>Confirmation Link</a>"
             );
 
@@ -94,13 +101,13 @@ namespace Backend.Controllers
         }
 
         [HttpGet("confirm")]
-        public async Task<IActionResult> Confirm(string guid, string userEmail)
+        public async Task<IActionResult> Confirm(string token, string user)
         {
-            var user = await userManager.FindByEmailAsync(userEmail);
+            var u = await userManager.FindByEmailAsync(user);
 
-            if (user == null) return BadRequest();
-
-            var res = await userManager.ConfirmEmailAsync(user, guid);
+            if (u == null) return BadRequest();
+            //var decodeToken = HttpUtility.HtmlDecode(token);
+            var res = await userManager.ConfirmEmailAsync(u, token);
             if (!res.Succeeded) return Problem();
 
             return Ok();
@@ -114,15 +121,16 @@ namespace Backend.Controllers
             var user = await userManager.FindByEmailAsync(input.Email);
             if (user == null) return Problem();
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
-            var callback = Url.Action(nameof(ResetPassword), "Account", new { token, email = user.Email }, Request.Scheme);
+            string baseUrl = Request.Headers["Referer"].ToString();
+            var callback = $"{baseUrl}confirm?token={token}&user={user.Email}";
 
             await email.Send(
                 fromEmail: "support@flurium.com",
                 fromName: "spentoday",
                 toEmails: new List<string>() { user.Email },
                 subject: "Reset password token",
-                text: $"Go to this link:{callback}",
-                html: $"Link-> <a href={callback}>Reset Password Link</a>"
+                text: $"Go to this link -> {callback}",
+                html: $"<a href={callback}>Confirmation Link</a>"
             );
             return Ok();
         }
@@ -146,6 +154,17 @@ namespace Backend.Controllers
                 //}
                 return Problem();
             }
+            return Ok();
+        }
+
+
+        //Test method. Will be removed later!!!
+        [HttpGet("remove")]
+        public async Task<IActionResult> Remove()
+        {
+            var user = await userManager.FindByNameAsync("reskator95@gmail.com");
+
+            var res = await userManager.DeleteAsync(user);
             return Ok();
         }
     }
