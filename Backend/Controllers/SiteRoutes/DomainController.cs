@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Controllers.Dashboard;
+namespace Backend.Controllers.SiteRoutes;
 
-[Route("v1/domains")]
+[Route("v1/site/domains")]
 [ApiController]
 public class DomainController : ControllerBase
 {

@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Controllers.Dashboard;
+namespace Backend.Controllers.SiteRoutes;
 
-[Route("v1/dashboard")]
+[Route("v1/site/dashboard")]
 [ApiController]
 public class PageController : ControllerBase
 {

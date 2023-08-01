@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Controllers.Dashboard;
+namespace Backend.Controllers.SiteRoutes;
 
-[Route("v1/products")]
+[Route("v1/site/products")]
 [ApiController]
 [Authorize]
 public class ProductController : ControllerBase

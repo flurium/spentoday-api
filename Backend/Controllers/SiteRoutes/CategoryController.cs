@@ -5,9 +5,9 @@ using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backend.Controllers.Dashboard;
+namespace Backend.Controllers.SiteRoutes;
 
-[Route("v1/categories")]
+[Route("v1/site/categories")]
 [ApiController]
 public class CategoryController : ControllerBase
 {
