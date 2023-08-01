@@ -1,4 +1,5 @@
-﻿using Data;
+﻿using Backend.Services;
+using Data;
 using Data.Models.ShopTables;
 using Lib;
 using Lib.EntityFrameworkCore;
@@ -32,18 +33,6 @@ public class PageController : ControllerBase
         return Ok(pages);
     }
 
-    [NonAction]
-    public bool IsSlugValid(string slug)
-    {
-        slug = slug.ToLower().Trim('-');
-        for (int i = 0; i < slug.Length; ++i)
-        {
-            char c = slug[i];
-            if (!(char.IsLetter(c) || char.IsDigit(c) || c == '-')) return false;
-        }
-        return true;
-    }
-
     public record NewPageInput(string Slug);
 
     /// <returns>
@@ -59,7 +48,7 @@ public class PageController : ControllerBase
     public async Task<IActionResult> NewPage([FromRoute] string shopId, [FromBody] NewPageInput input)
     {
         // validate slug
-        var isValid = IsSlugValid(input.Slug);
+        var isValid = input.Slug.IsSlug();
         if (!isValid) return BadRequest();
 
         var uid = User.FindFirst(Jwt.Uid);
@@ -103,7 +92,7 @@ public class PageController : ControllerBase
 
         if (input.Slug != null)
         {
-            var slugValid = IsSlugValid(input.Slug);
+            var slugValid = input.Slug.IsSlug();
             if (!slugValid) return BadRequest();
 
             var slugTaken = await db.InfoPages.AnyAsync(x => x.ShopId == shopId && x.Slug == input.Slug).ConfigureAwait(false);
