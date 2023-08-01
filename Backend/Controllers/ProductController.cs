@@ -99,7 +99,7 @@ public class ProductController : ControllerBase
 
         if (product == null) return Problem();
 
-        if (!IsImageFile(imageFile)) return BadRequest();
+        if (!imageService.IsImageFile(imageFile)) return BadRequest();
 
         var fileId = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
         ProductImage productImage;
@@ -123,20 +123,6 @@ public class ProductController : ControllerBase
         }
 
         return Ok();
-    }
-
-    [NonAction]
-    public static bool IsImageFile(IFormFile file)
-    {
-        if (file == null || string.IsNullOrEmpty(file.FileName) || file.Length == 0)
-        {
-            return false;
-        }
-
-        var fileExtension = Path.GetExtension(file.FileName).ToLower();
-        string[] photoExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp", ".tiff", ".ico", ".jfif", ".psd", ".eps", ".pict", ".pic", "pct" }; ;
-
-        return photoExtensions.Contains(fileExtension);
     }
 
     [HttpDelete("{id}/image")]
