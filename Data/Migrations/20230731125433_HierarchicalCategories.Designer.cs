@@ -3,6 +3,7 @@ using System;
 using Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Data.Migrations
 {
     [DbContext(typeof(Db))]
-    partial class DbModelSnapshot : ModelSnapshot
+    [Migration("20230731125433_HierarchicalCategories")]
+    partial class HierarchicalCategories
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,29 +44,7 @@ namespace Data.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.HasIndex("ShopId");
-
                     b.ToTable("Categories");
-                });
-
-            modelBuilder.Entity("Data.Models.ProductTables.Order", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProductId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("Data.Models.ProductTables.Product", b =>
@@ -83,6 +63,7 @@ namespace Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("PreviewImage")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<double>("Price")
@@ -502,26 +483,7 @@ namespace Data.Migrations
                         .WithMany("Subcategories")
                         .HasForeignKey("ParentId");
 
-                    b.HasOne("Data.Models.ShopTables.Shop", "Shop")
-                        .WithMany("Categories")
-                        .HasForeignKey("ShopId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Parent");
-
-                    b.Navigation("Shop");
-                });
-
-            modelBuilder.Entity("Data.Models.ProductTables.Order", b =>
-                {
-                    b.HasOne("Data.Models.ProductTables.Product", "Product")
-                        .WithMany("Orders")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Data.Models.ProductTables.Product", b =>
@@ -682,16 +644,12 @@ namespace Data.Migrations
                 {
                     b.Navigation("Images");
 
-                    b.Navigation("Orders");
-
                     b.Navigation("ProductCategories");
                 });
 
             modelBuilder.Entity("Data.Models.ShopTables.Shop", b =>
                 {
                     b.Navigation("Banners");
-
-                    b.Navigation("Categories");
 
                     b.Navigation("Domains");
 

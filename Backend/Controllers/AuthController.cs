@@ -83,7 +83,8 @@ namespace Backend.Controllers
 
             string baseUrl = Request.Headers["Referer"].ToString();
             //string baseUrl = $"{Request.Scheme}://{Request.Host}";
-            string confirmationLink = $"{baseUrl}confirm?token={token}&user={user.Email}";
+            string confirmationLink = $"{baseUrl}account/confirm?token={HttpUtility.UrlEncode(token)}&user={user.Email}";
+            //string confirmationLink = $"{baseUrl}confirm?token ={Uri.EscapeDataString(token)}&user ={Uri.EscapeDataString(user.Email)}";
 
             //Console.WriteLine(confirmationLink);
 
@@ -120,10 +121,10 @@ namespace Backend.Controllers
             var user = await userManager.FindByEmailAsync(input.Email);
             if (user == null) return Problem();
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
             string baseUrl = Request.Headers["Referer"].ToString();
 
-            var encodedToken = HttpUtility.UrlEncode(token);
-            var callback = $"{baseUrl}confirm?token={encodedToken}&user={user.Email}";
+            var callback = $"{baseUrl}account/reset?token={HttpUtility.UrlEncode(token)}&user={user.Email}";
 
             await email.Send(
                 fromEmail: "support@flurium.com",
@@ -131,22 +132,22 @@ namespace Backend.Controllers
                 toEmails: new List<string>() { user.Email },
                 subject: "Reset password token",
                 text: $"Go to this link -> {callback}",
-                html: $"<a href={callback}>Confirmation Link</a>"
+                html: $"<a href={callback}>Password Reset Link</a>"
             );
             return Ok();
         }
 
-        public record ResetPasswordInput(string Password, string ConfirmPassword, string Email, string Token);
+        public record ResetPasswordInput(string email, string token, string password, string confirmPassword);
 
         [HttpPost("reset")]
         public async Task<IActionResult> ResetPassword(ResetPasswordInput input)
         {
-            if (!input.Password.Equals(input.ConfirmPassword)) return BadRequest();
+            if (!input.password.Equals(input.password)) return BadRequest();
 
-            var user = await userManager.FindByEmailAsync(input.Email);
+            var user = await userManager.FindByEmailAsync(input.email);
             if (user == null) return Problem();
 
-            var resetPassResult = await userManager.ResetPasswordAsync(user, input.Token, input.Password);
+            var resetPassResult = await userManager.ResetPasswordAsync(user, input.token, input.password);
             if (!resetPassResult.Succeeded)
             {
                 //foreach (var error in resetPassResult.Errors)
@@ -159,13 +160,13 @@ namespace Backend.Controllers
         }
 
         //Test method. Will be removed later!!!
-        [HttpGet("remove")]
-        public async Task<IActionResult> Remove()
-        {
-            var user = await userManager.FindByNameAsync("reskator95@gmail.com");
+        //[HttpGet("remove")]
+        //public async Task<IActionResult> Remove()
+        //{
+        //    var user = await userManager.FindByNameAsync("reskator95@gmail.com");
 
-            var res = await userManager.DeleteAsync(user);
-            return Ok();
-        }
+        //    var res = await userManager.DeleteAsync(user);
+        //    return Ok();
+        //}
     }
 }
