@@ -37,3 +37,15 @@ public class ImageService
         }
     }
 }
+
+public static class ImageExtension
+{
+    public static bool IsImage(this IFormFile file)
+    {
+        if (file == null || string.IsNullOrEmpty(file.FileName) || file.Length == 0) return false;
+
+        var fileExtension = Path.GetExtension(file.FileName).ToLower();
+        string[] photoExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp", ".tiff", ".ico", }; ;
+        return photoExtensions.Contains(fileExtension);
+    }
+}

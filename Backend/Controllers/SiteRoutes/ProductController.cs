@@ -62,8 +62,11 @@ public class ProductController : ControllerBase
 
     public record GetProductOutput(
         string Id, string Name, double Price, int Amount, bool IsDraft,
-        string SeoTitle, string SeoDescription, string SeoSlug
+        string SeoTitle, string SeoDescription, string SeoSlug,
+        IEnumerable<ProductImageOutput> Images
     );
+
+    public record ProductImageOutput(string Id, string Key, string Bucket, string Provider);
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Product>> GetProduct(string id)
@@ -73,7 +76,8 @@ public class ProductController : ControllerBase
             .Where(x => x.Id == id && x.Shop.OwnerId == uid)
             .Select(x => new GetProductOutput(
                 x.Id, x.Name, x.Price, x.Amount, x.IsDraft,
-                x.SeoTitle, x.SeoDescription, x.SeoSlug
+                x.SeoTitle, x.SeoDescription, x.SeoSlug,
+                x.Images.Select(i => new ProductImageOutput(i.Id, i.Key, i.Bucket, i.Provider))
             ))
             .QueryOne();
 
@@ -81,6 +85,11 @@ public class ProductController : ControllerBase
 
         return Ok(product);
     }
+
+    public record class UpdateProductInput(
+        string Id, string? Name, double? Price, int? Amount,
+        string? PreviewImage, string? SeoTitle, string? SeoDescription, string? SeoSlug
+    );
 
     [HttpPatch]
     public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductInput patchDoc)
@@ -91,8 +100,8 @@ public class ProductController : ControllerBase
         if (product == null) return Problem();
 
         if (patchDoc.Name != null) product.Name = patchDoc.Name;
-        if (patchDoc.Amount != 0) product.Amount = patchDoc.Amount;
-        if (patchDoc.Price != 0) product.Price = patchDoc.Price;
+        if (patchDoc.Amount.HasValue) product.Amount = patchDoc.Amount.Value;
+        if (patchDoc.Price.HasValue) product.Price = patchDoc.Price.Value;
         if (patchDoc.PreviewImage != null) product.PreviewImage = patchDoc.PreviewImage;
         if (patchDoc.SeoTitle != null) product.SeoTitle = patchDoc.SeoTitle;
         if (patchDoc.SeoSlug != null) product.SeoSlug = patchDoc.SeoSlug;
@@ -113,54 +122,6 @@ public class ProductController : ControllerBase
         product.IsDraft = false;
         var saved = await db.Save();
 
-        return saved ? Ok() : Problem();
-    }
-
-    [HttpPost("{id}/image")]
-    public async Task<IActionResult> UploadProductImage([FromRoute] string id, [FromForm] IFormFile imageFile)
-    {
-        var uid = User.FindFirst(Jwt.Uid)!.Value;
-        var product = await db.Products.QueryOne(x => x.Id == id && x.Shop.OwnerId == uid);
-        if (product == null) return NotFound();
-
-        if (!IsImageFile(imageFile)) return BadRequest();
-
-        var fileId = $"{Guid.NewGuid()}{Path.GetExtension(imageFile.FileName)}";
-        var uploadedFile = await storage.Upload(fileId, imageFile.OpenReadStream());
-        if (uploadedFile == null) return Problem();
-
-        var productImage = new ProductImage(uploadedFile.Provider, uploadedFile.Bucket, uploadedFile.Key, id);
-        await db.ProductImages.AddAsync(productImage);
-        var saved = await db.Save();
-
-        if (saved) return Ok();
-
-        await storage.Delete(productImage);
-        return Problem();
-    }
-
-    [NonAction]
-    public static bool IsImageFile(IFormFile file)
-    {
-        if (file == null || string.IsNullOrEmpty(file.FileName) || file.Length == 0) return false;
-
-        var fileExtension = Path.GetExtension(file.FileName).ToLower();
-        string[] photoExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp", ".tiff", ".ico", }; ;
-        return photoExtensions.Contains(fileExtension);
-    }
-
-    [HttpDelete("{id}/image")]
-    public async Task<IActionResult> DeleteProductImage(string id)
-    {
-        var uid = User.FindFirst(Jwt.Uid)?.Value;
-        var image = await db.ProductImages.QueryOne(pi => pi.Id == id && pi.Product.Shop.OwnerId == uid);
-        if (image == null) return NotFound();
-
-        bool isDeleted = await storage.Delete(image);
-        if (!isDeleted) return Problem();
-
-        db.ProductImages.Remove(image);
-        var saved = await db.Save();
         return saved ? Ok() : Problem();
     }
 
@@ -188,16 +149,44 @@ public class ProductController : ControllerBase
         var saved = await db.Save();
         return saved ? Ok() : Problem();
     }
-}
 
-public class UpdateProductInput
-{
-    public string Id { get; set; } = string.Empty;
-    public string? Name { get; set; }
-    public double Price { get; set; } = 0;
-    public int Amount { get; set; } = 0;
-    public string? PreviewImage { get; set; }
-    public string? SeoTitle { get; set; }
-    public string? SeoDescription { get; set; }
-    public string? SeoSlug { get; set; }
+    // IMAGES
+
+    [HttpPost("{id}/image")]
+    public async Task<IActionResult> UploadProductImage(IFormFile file, [FromRoute] string id)
+    {
+        var uid = User.FindFirst(Jwt.Uid)!.Value;
+        var product = await db.Products.QueryOne(x => x.Id == id && x.Shop.OwnerId == uid);
+        if (product == null) return NotFound();
+
+        if (!file.IsImage()) return BadRequest();
+
+        var fileId = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+        var uploadedFile = await storage.Upload(fileId, file.OpenReadStream());
+        if (uploadedFile == null) return Problem();
+
+        var productImage = new ProductImage(uploadedFile.Provider, uploadedFile.Bucket, uploadedFile.Key, id);
+        await db.ProductImages.AddAsync(productImage);
+        var saved = await db.Save();
+
+        if (saved) return Ok();
+
+        await storage.Delete(productImage);
+        return Problem();
+    }
+
+    [HttpDelete("image/{id}")]
+    public async Task<IActionResult> DeleteProductImage([FromRoute] string id)
+    {
+        var uid = User.FindFirst(Jwt.Uid)!.Value;
+        var image = await db.ProductImages.QueryOne(pi => pi.Id == id && pi.Product.Shop.OwnerId == uid);
+        if (image == null) return NotFound();
+
+        bool isDeleted = await storage.Delete(image);
+        if (!isDeleted) return Problem();
+
+        db.ProductImages.Remove(image);
+        var saved = await db.Save();
+        return saved ? Ok() : Problem();
+    }
 }
