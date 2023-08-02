@@ -1,4 +1,5 @@
-﻿using Backend.Services;
+﻿using Backend.Auth;
+using Backend.Services;
 using Data;
 using Data.Models.ProductTables;
 using Lib;
@@ -12,7 +13,6 @@ namespace Backend.Controllers.SiteRoutes;
 
 [Route("v1/site/products")]
 [ApiController]
-[Authorize]
 public class ProductController : ControllerBase
 {
     private readonly Db db;
@@ -26,58 +26,59 @@ public class ProductController : ControllerBase
         this.storage = storage;
     }
 
-    public record ProductListOutput(string Id, string Name, double Price, bool IsDraft);
+    public record ListOutput(string Id, string Name, double Price, bool IsDraft);
 
-    [HttpGet("shop/{shopId}")]
-    public async Task<IActionResult> List([FromRoute] string shopId, [FromQuery] int start = 0, [FromQuery] int count = 10)
+    [HttpGet("shop/{shopId}"), Authorize]
+    public async Task<IActionResult> List(
+        [FromRoute] string shopId, [FromQuery] int start = 0, [FromQuery] int count = 10
+    )
     {
-        var uid = User.FindFirst(Jwt.Uid)!.Value;
-
+        var uid = User.Uid();
         var products = await db.Products
                 .Skip(start).Take(count)
                 .Where(x => x.ShopId == shopId && x.Shop.OwnerId == uid)
-                .Select(x => new ProductListOutput(x.Id, x.Name, x.Price, x.IsDraft))
+                .Select(x => new ListOutput(x.Id, x.Name, x.Price, x.IsDraft))
                 .QueryMany();
 
         return Ok(products);
     }
 
-    public record CreateProductInput(string Name, string SeoSlug, string ShopId);
+    public record CreateInput(string Name, string SeoSlug, string ShopId);
 
-    [HttpPost]
-    public async Task<IActionResult> CreateProduct([FromBody] CreateProductInput input)
+    [HttpPost, Authorize]
+    public async Task<IActionResult> Create([FromBody] CreateInput input)
     {
         if (!input.SeoSlug.IsSlug()) return BadRequest();
 
-        var uid = User.FindFirst(Jwt.Uid)?.Value;
-        var shop = await db.Shops.QueryOne(s => s.Id == input.ShopId && s.OwnerId == uid);
-        if (shop == null) return Forbid();
+        var uid = User.Uid();
+        var ownShop = await db.Shops.Have(x => x.Id == input.ShopId && x.OwnerId == uid);
+        if (!ownShop) return Forbid();
 
         var product = new Product(input.Name, input.SeoSlug, input.ShopId);
         await db.Products.AddAsync(product);
 
         var saved = await db.Save();
-        return saved ? Ok(new ProductListOutput(product.Id, product.Name, product.Price, product.IsDraft)) : Problem();
+        return saved ? Ok(new ListOutput(product.Id, product.Name, product.Price, product.IsDraft)) : Problem();
     }
 
-    public record GetProductOutput(
+    public record OneOutput(
         string Id, string Name, double Price, int Amount, bool IsDraft,
         string SeoTitle, string SeoDescription, string SeoSlug,
-        IEnumerable<ProductImageOutput> Images
+        IEnumerable<ImageOutput> Images
     );
 
-    public record ProductImageOutput(string Id, string Key, string Bucket, string Provider);
+    public record ImageOutput(string Id, string Key, string Bucket, string Provider);
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Product>> GetProduct(string id)
+    [HttpGet("{id}"), Authorize]
+    public async Task<ActionResult<Product>> One(string id)
     {
-        var uid = User.FindFirst(Jwt.Uid)!.Value;
+        var uid = User.Uid();
         var product = await db.Products
             .Where(x => x.Id == id && x.Shop.OwnerId == uid)
-            .Select(x => new GetProductOutput(
+            .Select(x => new OneOutput(
                 x.Id, x.Name, x.Price, x.Amount, x.IsDraft,
                 x.SeoTitle, x.SeoDescription, x.SeoSlug,
-                x.Images.Select(i => new ProductImageOutput(i.Id, i.Key, i.Bucket, i.Provider))
+                x.Images.Select(i => new ImageOutput(i.Id, i.Key, i.Bucket, i.Provider))
             ))
             .QueryOne();
 
@@ -86,18 +87,17 @@ public class ProductController : ControllerBase
         return Ok(product);
     }
 
-    public record class UpdateProductInput(
+    public record class UpdateInput(
         string Id, string? Name, double? Price, int? Amount,
         string? PreviewImage, string? SeoTitle, string? SeoDescription, string? SeoSlug
     );
 
-    [HttpPatch]
-    public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductInput patchDoc)
+    [HttpPatch, Authorize]
+    public async Task<IActionResult> Update([FromBody] UpdateInput patchDoc)
     {
-        var uid = User.FindFirst(Jwt.Uid)!.Value;
+        var uid = User.Uid();
         var product = await db.Products.QueryOne(p => p.Id == patchDoc.Id && p.Shop.OwnerId == uid);
-
-        if (product == null) return Problem();
+        if (product == null) return NotFound();
 
         if (patchDoc.Name != null) product.Name = patchDoc.Name;
         if (patchDoc.Amount.HasValue) product.Amount = patchDoc.Amount.Value;
@@ -108,14 +108,13 @@ public class ProductController : ControllerBase
         if (patchDoc.SeoDescription != null) product.SeoDescription = patchDoc.SeoDescription;
 
         var saved = await db.Save();
-
-        return saved ? Ok(product) : Problem();
+        return saved ? Ok() : Problem();
     }
 
-    [HttpPut("{id}/publish")]
-    public async Task<IActionResult> PublishProduct(string id)
+    [HttpPut("{id}/publish"), Authorize]
+    public async Task<IActionResult> Publish([FromRoute] string id)
     {
-        var uid = User.FindFirst(Jwt.Uid)?.Value;
+        var uid = User.Uid();
         var product = await db.Products.QueryOne(x => x.Id == id && x.Shop.OwnerId == uid);
         if (product == null) return NotFound();
 
@@ -125,10 +124,10 @@ public class ProductController : ControllerBase
         return saved ? Ok() : Problem();
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id}"), Authorize]
     public async Task<IActionResult> DeleteProduct(string id)
     {
-        var uid = User.FindFirst(Jwt.Uid)?.Value;
+        var uid = User.Uid();
         var product = await db.Products.QueryOne(p => p.Id == id && p.Shop.OwnerId == uid);
 
         if (product == null) return Problem();
@@ -152,10 +151,10 @@ public class ProductController : ControllerBase
 
     // IMAGES
 
-    [HttpPost("{id}/image")]
+    [HttpPost("{id}/image"), Authorize]
     public async Task<IActionResult> UploadProductImage(IFormFile file, [FromRoute] string id)
     {
-        var uid = User.FindFirst(Jwt.Uid)!.Value;
+        var uid = User.Uid();
         var product = await db.Products.QueryOne(x => x.Id == id && x.Shop.OwnerId == uid);
         if (product == null) return NotFound();
 
@@ -165,20 +164,20 @@ public class ProductController : ControllerBase
         var uploadedFile = await storage.Upload(fileId, file.OpenReadStream());
         if (uploadedFile == null) return Problem();
 
-        var productImage = new ProductImage(uploadedFile.Provider, uploadedFile.Bucket, uploadedFile.Key, id);
-        await db.ProductImages.AddAsync(productImage);
+        var image = new ProductImage(uploadedFile.Provider, uploadedFile.Bucket, uploadedFile.Key, id);
+        await db.ProductImages.AddAsync(image);
         var saved = await db.Save();
 
-        if (saved) return Ok();
+        if (saved) return Ok(new ImageOutput(image.Id, image.Key, image.Bucket, image.Provider));
 
-        await storage.Delete(productImage);
+        await storage.Delete(image);
         return Problem();
     }
 
-    [HttpDelete("image/{id}")]
+    [HttpDelete("image/{id}"), Authorize]
     public async Task<IActionResult> DeleteProductImage([FromRoute] string id)
     {
-        var uid = User.FindFirst(Jwt.Uid)!.Value;
+        var uid = User.Uid();
         var image = await db.ProductImages.QueryOne(pi => pi.Id == id && pi.Product.Shop.OwnerId == uid);
         if (image == null) return NotFound();
 
