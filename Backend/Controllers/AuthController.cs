@@ -106,7 +106,7 @@ namespace Backend.Controllers
         {
             var u = await userManager.FindByEmailAsync(user);
 
-            if (u == null) return BadRequest();
+            if (u == null) return NotFound();
             var res = await userManager.ConfirmEmailAsync(u, token);
             if (!res.Succeeded) return Problem();
 
@@ -119,7 +119,7 @@ namespace Backend.Controllers
         public async Task<IActionResult> ForgotPassword(EmailInput input)
         {
             var user = await userManager.FindByEmailAsync(input.Email);
-            if (user == null) return Problem();
+            if (user == null) return NotFound();
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
 
             string baseUrl = Request.Headers["Referer"].ToString();
@@ -145,7 +145,7 @@ namespace Backend.Controllers
             if (!input.password.Equals(input.password)) return BadRequest();
 
             var user = await userManager.FindByEmailAsync(input.email);
-            if (user == null) return Problem();
+            if (user == null) return NotFound();
 
             var resetPassResult = await userManager.ResetPasswordAsync(user, input.token, input.password);
             if (!resetPassResult.Succeeded)
