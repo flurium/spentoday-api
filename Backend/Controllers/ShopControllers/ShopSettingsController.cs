@@ -6,15 +6,13 @@ using Lib;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using static Backend.Controllers.Dashboard.DashboardController;
 using Data.Models.ProductTables;
 using Lib.Storage;
 using Data.Models.UserTables;
-using static Backend.Controllers.Dashboard.DomainController;
 
 namespace Backend.Controllers.ShopControllers
 {
-    [Route("v1/shopsettings")]
+    [Route("v1/site/shopsettings")]
     [ApiController]
     public class ShopSettingsController : ControllerBase
     {
@@ -91,26 +89,26 @@ namespace Backend.Controllers.ShopControllers
             return saved ? Ok() : Problem();
         }
 
-
-
+        public record BannerOut(string Url, string Id);
         [HttpPost("{shopId}/addbanner")]
         [Authorize]
-        public async Task<IActionResult> AddBanner([FromForm] IFormFile bannerFile, [FromRoute] string shopId)
+        public async Task<IActionResult> AddBanner(IFormFile file, [FromRoute] string shopId)
         {
             var uid = User.FindFirst(Jwt.Uid);
             if (uid == null) return Unauthorized();
 
-            if (!imageService.IsImageFile(bannerFile)) return BadRequest();
+            var banner = file;
+            if (!imageService.IsImageFile(banner)) return BadRequest();
 
             var shop = await db.Shops
             .QueryOne(x => x.Id == shopId && x.OwnerId == uid.Value);
 
             if (shop == null) return Problem();
 
-            var fileId = Guid.NewGuid().ToString() + Path.GetExtension(bannerFile.FileName);
+            var fileId = Guid.NewGuid().ToString() + Path.GetExtension(banner.FileName);
             ShopBanner shopBanner;
 
-            using (var stream = bannerFile.OpenReadStream())
+            using (var stream = banner.OpenReadStream())
             {
                 var uploadedFile = await storage.Upload(fileId, stream);
 
@@ -127,7 +125,7 @@ namespace Backend.Controllers.ShopControllers
                 await imageService.SafeDeleteOne(shopBanner);
                 return Problem();
             }
-            return Ok(storage.Url(shopBanner));
+            return Ok(new BannerOut(storage.Url(shopBanner), shopBanner.Id));
         }
 
         [HttpDelete("{bannerId}/deletebanner")]
@@ -148,7 +146,7 @@ namespace Backend.Controllers.ShopControllers
             var saved = await db.Save();
             return saved ? Ok() : Problem();
         }
-        public record BannerOut( string Url, string Id);
+        
         [HttpGet("{shopId}/getbanners")]
         [Authorize]
         public async Task<IActionResult> GetBanners([FromRoute] string shopId)
@@ -191,7 +189,7 @@ namespace Backend.Controllers.ShopControllers
 
         [HttpPost("{shopId}/logo")]
         [Authorize]
-        public async Task<IActionResult> UploadLogo([FromRoute] string shopId, [FromForm] IFormFile newLogoFile)
+        public async Task<IActionResult> UploadLogo([FromRoute] string shopId, IFormFile file)
         {
             var uid = User.FindFirst(Jwt.Uid);
             if (uid == null) return Unauthorized();
@@ -201,7 +199,7 @@ namespace Backend.Controllers.ShopControllers
 
             if (shop == null) return Problem();
 
-            if (imageService.IsImageFile(newLogoFile))
+            if (imageService.IsImageFile(file))
             {
                 var logo = shop.GetStorageFile();
                 if (logo != null)
@@ -209,9 +207,9 @@ namespace Backend.Controllers.ShopControllers
                     await imageService.SafeDeleteOne(logo);
                 }
 
-                var fileId = Guid.NewGuid().ToString() + Path.GetExtension(newLogoFile.FileName);
+                var fileId = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
 
-                using (var stream = newLogoFile.OpenReadStream())
+                using (var stream = file.OpenReadStream())
                 {
                     var uploadedFile = await storage.Upload(fileId, stream);
 
@@ -225,13 +223,14 @@ namespace Backend.Controllers.ShopControllers
             else return BadRequest();
 
             var saved = await db.Save();
-            return saved ? Ok() : Problem();
+            return saved ? Ok(storage.Url(shop.GetStorageFile())) : Problem();
         }
 
-        public record ShopOut(string Name, string? Logo);
-        [HttpGet("{shopId}/shop")]
+        
+
+        [HttpGet("{shopId}/getname")]
         [Authorize]
-        public async Task<IActionResult> GetShop([FromRoute] string shopId)
+        public async Task<IActionResult> GetName([FromRoute] string shopId)
         {
             var uid = User.FindFirst(Jwt.Uid);
             if (uid == null) return Unauthorized();
@@ -241,8 +240,24 @@ namespace Backend.Controllers.ShopControllers
 
             if (shop == null) return NotFound();
 
-            var saved = await db.Save();
-            return saved ? Ok(new ShopOut(shop.Name, storage.Url(shop.GetStorageFile()) )) : Problem();
+            return  Ok(shop.Name);
+        }
+
+        [HttpGet("{shopId}/getlogo")]
+        [Authorize]
+        public async Task<IActionResult> GetLogo([FromRoute] string shopId)
+        {
+            var uid = User.FindFirst(Jwt.Uid);
+            if (uid == null) return Unauthorized();
+
+            var shop = await db.Shops
+           .QueryOne(x => x.Id == shopId && x.OwnerId == uid.Value);
+
+            if (shop == null) return Problem();
+            var logo = shop.GetStorageFile();
+            if (logo == null) return NotFound();
+
+            return Ok(storage.Url(logo));
         }
     }
 
