@@ -27,9 +27,10 @@ namespace Backend.Controllers.ShopControllers
             this.imageService = imageService;
             this.storage = storage;
         }
-
         public record LinkIn(string Name, string Link );
         public record LinkOut(string Name, string Link, string Id);
+        public record BannerOut(string Url, string Id);
+        public record ShopUpdate(string Name);
         [HttpPost("{shopId}/addlink")]
         [Authorize]
         public async Task<IActionResult> AddLink([FromBody] LinkIn link, [FromRoute]string shopId)
@@ -69,7 +70,6 @@ namespace Backend.Controllers.ShopControllers
             var saved = await db.Save();
             return saved ? Ok(links) : Problem();
         }
-
         [HttpDelete("{linkId}/deletelink")]
         [Authorize]
         public async Task<IActionResult> DeleteLink([FromRoute] string linkId)
@@ -88,8 +88,6 @@ namespace Backend.Controllers.ShopControllers
             var saved = await db.Save();
             return saved ? Ok() : Problem();
         }
-
-        public record BannerOut(string Url, string Id);
         [HttpPost("{shopId}/addbanner")]
         [Authorize]
         public async Task<IActionResult> AddBanner(IFormFile file, [FromRoute] string shopId)
@@ -127,7 +125,6 @@ namespace Backend.Controllers.ShopControllers
             }
             return Ok(new BannerOut(storage.Url(shopBanner), shopBanner.Id));
         }
-
         [HttpDelete("{bannerId}/deletebanner")]
         [Authorize]
         public async Task<IActionResult> DeleteBanner( [FromRoute] string bannerId)
@@ -146,7 +143,6 @@ namespace Backend.Controllers.ShopControllers
             var saved = await db.Save();
             return saved ? Ok() : Problem();
         }
-        
         [HttpGet("{shopId}/getbanners")]
         [Authorize]
         public async Task<IActionResult> GetBanners([FromRoute] string shopId)
@@ -167,8 +163,6 @@ namespace Backend.Controllers.ShopControllers
             var saved = await db.Save();
             return saved ? Ok(banners) : Problem();
         }
-
-        public record ShopUpdate(string Name);
         [HttpPost("{shopId}/name")]
         [Authorize]
         public async Task<IActionResult> UpdateShopName([FromRoute] string shopId , [FromBody] ShopUpdate shopName)
@@ -186,7 +180,6 @@ namespace Backend.Controllers.ShopControllers
             var saved = await db.Save();
             return saved ? Ok() : Problem();
         }
-
         [HttpPost("{shopId}/logo")]
         [Authorize]
         public async Task<IActionResult> UploadLogo([FromRoute] string shopId, IFormFile file)
@@ -225,9 +218,6 @@ namespace Backend.Controllers.ShopControllers
             var saved = await db.Save();
             return saved ? Ok(storage.Url(shop.GetStorageFile())) : Problem();
         }
-
-        
-
         [HttpGet("{shopId}/getname")]
         [Authorize]
         public async Task<IActionResult> GetName([FromRoute] string shopId)
@@ -242,7 +232,6 @@ namespace Backend.Controllers.ShopControllers
 
             return  Ok(shop.Name);
         }
-
         [HttpGet("{shopId}/getlogo")]
         [Authorize]
         public async Task<IActionResult> GetLogo([FromRoute] string shopId)
