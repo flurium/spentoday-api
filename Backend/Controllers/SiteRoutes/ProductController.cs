@@ -62,30 +62,43 @@ public class ProductController : ControllerBase
         return saved ? Ok(new ListOutput(product.Id, product.Name, product.Price, product.IsDraft)) : Problem();
     }
 
-    public record OneOutput(
-        string Id, string Name, double Price, int Amount, bool IsDraft,
-        string SeoTitle, string SeoDescription, string SeoSlug, string Description,
-        IEnumerable<ImageOutput> Images
-    );
-
     public record ImageOutput(string Id, string Key, string Bucket, string Provider);
+    public record ProductOutput(
+        string Id, string Name, double Price, int Amount, bool IsDraft,
+        string SeoTitle, string SeoDescription, string SeoSlug,
+        string Description, IEnumerable<ImageOutput> Images
+    );
+    public record CategoryOutput(string Id, string Name, bool Assigned);
+    public record OneOutput(ProductOutput Product, IEnumerable<CategoryOutput> Categories);
 
     [HttpGet("{id}"), Authorize]
-    public async Task<ActionResult<Product>> One(string id)
+    public async Task<IActionResult> One(string id)
     {
         var uid = User.Uid();
         var product = await db.Products
             .Where(x => x.Id == id && x.Shop.OwnerId == uid)
-            .Select(x => new OneOutput(
-                x.Id, x.Name, x.Price, x.Amount, x.IsDraft,
-                x.SeoTitle, x.SeoDescription, x.SeoSlug, x.Description,
-                x.Images.Select(i => new ImageOutput(i.Id, i.Key, i.Bucket, i.Provider))
-            ))
+            .Select(x => new
+            {
+                Product = new ProductOutput(
+                    x.Id, x.Name, x.Price, x.Amount, x.IsDraft,
+                    x.SeoTitle, x.SeoDescription, x.SeoSlug, x.Description,
+                    x.Images.Select(i => new ImageOutput(i.Id, i.Key, i.Bucket, i.Provider))
+                ),
+                ShopId = x.ShopId
+            })
             .QueryOne();
-
         if (product == null) return NotFound();
 
-        return Ok(product);
+        var categories = await db.Categories
+            .Where(x => x.ShopId == product.ShopId)
+            .Select(x => new CategoryOutput(
+                x.Id, x.Name,
+                x.ProductCategories.Any(x => x.ProductId == product.Product.Id)
+            ))
+            .QueryMany();
+
+        var output = new OneOutput(product.Product, categories);
+        return Ok(output);
     }
 
     public record class UpdateInput(
