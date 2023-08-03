@@ -10,6 +10,8 @@ public class Product
     public int Amount { get; set; } = 0;
     public string? PreviewImage { get; set; }
 
+    public string Description { get; set; } = string.Empty;
+
     public bool IsDraft { get; set; } = true;
 
     public string SeoTitle { get; set; } = string.Empty;
