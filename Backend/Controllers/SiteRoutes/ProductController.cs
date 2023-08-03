@@ -8,6 +8,7 @@ using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net.WebSockets;
 
 namespace Backend.Controllers.SiteRoutes;
 
@@ -63,7 +64,7 @@ public class ProductController : ControllerBase
 
     public record OneOutput(
         string Id, string Name, double Price, int Amount, bool IsDraft,
-        string SeoTitle, string SeoDescription, string SeoSlug,
+        string SeoTitle, string SeoDescription, string SeoSlug, string Description,
         IEnumerable<ImageOutput> Images
     );
 
@@ -77,7 +78,7 @@ public class ProductController : ControllerBase
             .Where(x => x.Id == id && x.Shop.OwnerId == uid)
             .Select(x => new OneOutput(
                 x.Id, x.Name, x.Price, x.Amount, x.IsDraft,
-                x.SeoTitle, x.SeoDescription, x.SeoSlug,
+                x.SeoTitle, x.SeoDescription, x.SeoSlug, x.Description,
                 x.Images.Select(i => new ImageOutput(i.Id, i.Key, i.Bucket, i.Provider))
             ))
             .QueryOne();
@@ -88,24 +89,25 @@ public class ProductController : ControllerBase
     }
 
     public record class UpdateInput(
-        string Id, string? Name, double? Price, int? Amount,
+        string Id, string? Name, double? Price, int? Amount, string? Description,
         string? PreviewImage, string? SeoTitle, string? SeoDescription, string? SeoSlug
     );
 
     [HttpPatch, Authorize]
-    public async Task<IActionResult> Update([FromBody] UpdateInput patchDoc)
+    public async Task<IActionResult> Update([FromBody] UpdateInput input)
     {
         var uid = User.Uid();
-        var product = await db.Products.QueryOne(p => p.Id == patchDoc.Id && p.Shop.OwnerId == uid);
+        var product = await db.Products.QueryOne(p => p.Id == input.Id && p.Shop.OwnerId == uid);
         if (product == null) return NotFound();
 
-        if (patchDoc.Name != null) product.Name = patchDoc.Name;
-        if (patchDoc.Amount.HasValue) product.Amount = patchDoc.Amount.Value;
-        if (patchDoc.Price.HasValue) product.Price = patchDoc.Price.Value;
-        if (patchDoc.PreviewImage != null) product.PreviewImage = patchDoc.PreviewImage;
-        if (patchDoc.SeoTitle != null) product.SeoTitle = patchDoc.SeoTitle;
-        if (patchDoc.SeoSlug != null) product.SeoSlug = patchDoc.SeoSlug;
-        if (patchDoc.SeoDescription != null) product.SeoDescription = patchDoc.SeoDescription;
+        if (input.Name != null) product.Name = input.Name;
+        if (input.Description != null) product.Description = input.Description;
+        if (input.Amount.HasValue) product.Amount = input.Amount.Value;
+        if (input.Price.HasValue) product.Price = input.Price.Value;
+        if (input.PreviewImage != null) product.PreviewImage = input.PreviewImage;
+        if (input.SeoTitle != null) product.SeoTitle = input.SeoTitle;
+        if (input.SeoSlug != null) product.SeoSlug = input.SeoSlug;
+        if (input.SeoDescription != null) product.SeoDescription = input.SeoDescription;
 
         var saved = await db.Save();
         return saved ? Ok() : Problem();
@@ -154,11 +156,14 @@ public class ProductController : ControllerBase
     [HttpPost("{id}/image"), Authorize]
     public async Task<IActionResult> UploadProductImage(IFormFile file, [FromRoute] string id)
     {
-        var uid = User.Uid();
-        var product = await db.Products.QueryOne(x => x.Id == id && x.Shop.OwnerId == uid);
-        if (product == null) return NotFound();
-
         if (!file.IsImage()) return BadRequest();
+
+        var uid = User.Uid();
+        var ownProduct = await db.Products.Have(x => x.Id == id && x.Shop.OwnerId == uid);
+        if (!ownProduct) return NotFound();
+
+        var imageCount = await db.ProductImages.CountAsync(x => x.ProductId == id).ConfigureAwait(false);
+        if (imageCount >= 12) return Conflict();
 
         var fileId = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
         var uploadedFile = await storage.Upload(fileId, file.OpenReadStream());
