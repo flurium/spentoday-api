@@ -1,11 +1,11 @@
-﻿using Backend.Services;
+﻿using Backend.Auth;
+using Backend.Services;
 using Data;
 using Data.Models.ShopTables;
 using Lib;
 using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers.SiteRoutes;
 
@@ -24,35 +24,52 @@ public class DomainController : ControllerBase
         this.background = background;
     }
 
-    public record ShopDomainOutput(string Domain);
+    public record DomainOutput(string Domain, bool GotStatus, List<DomainVerification>? Verifications);
 
-    [HttpGet("{shopId}")]
-    [Authorize]
+    [HttpGet("{shopId}"), Authorize]
     public async Task<IActionResult> ShopDomains([FromRoute] string shopId)
     {
         var uid = User.FindFirst(Jwt.Uid)!.Value;
         var domains = await db.ShopDomains
             .Where(x => x.ShopId == shopId && x.Shop.OwnerId == uid)
-            .Select(x => new ShopDomainOutput(x.Domain))
+            .Select(x => x.Domain)
             .QueryMany();
-        return Ok(domains);
+
+        List<DomainOutput> output = new(domains.Count);
+        for (int i = 0; i < domains.Count; ++i)
+        {
+            var domain = domains[i];
+            var result = await domainService.GetDomainInfo(domain);
+
+            output.Add(result == null
+                ? new DomainOutput(domain, false, null)
+                : new DomainOutput(domain, true, result.Verification)
+            );
+        }
+
+        return Ok(output);
     }
 
     public record AddDomainInput(string Domain);
-    public record AddDomainOutput(string Domain, List<DomainVerification>? Verifications);
 
-    [HttpPost("{shopId}")]
-    [Authorize]
+    [HttpPost("{shopId}"), Authorize]
     public async Task<IActionResult> AddDomain([FromRoute] string shopId, [FromBody] AddDomainInput input)
     {
         var domain = input.Domain.Trim();
         if (string.IsNullOrEmpty(domain)) return BadRequest();
 
-        var domainTaken = await db.ShopDomains.AnyAsync(x => x.Domain == domain).ConfigureAwait(false);
-        if (domainTaken) return Conflict();
+        var uid = User.Uid();
+        if (domain.EndsWith(".spentoday.com"))
+        {
+            var hasFreeDomain = await db.ShopDomains
+                .Have(x => x.Domain.EndsWith(".spentoday.com") && x.ShopId == shopId && x.Shop.OwnerId == uid);
+            if (hasFreeDomain) return Conflict("has-free-domain");
+        }
 
-        var uid = User.FindFirst(Jwt.Uid)!.Value;
-        var userOwnShop = await db.Shops.AnyAsync(x => x.OwnerId == uid && x.Id == shopId).ConfigureAwait(false);
+        var domainTaken = await db.ShopDomains.Have(x => x.Domain == domain);
+        if (domainTaken) return Conflict("domain-taken");
+
+        var userOwnShop = await db.Shops.Have(x => x.OwnerId == uid && x.Id == shopId);
         if (!userOwnShop) return Forbid();
 
         var domainResponse = await domainService.AddDomainToShop(domain);
@@ -61,11 +78,10 @@ public class DomainController : ControllerBase
         await db.ShopDomains.AddAsync(new ShopDomain(domain, shopId));
         var saved = await db.Save();
 
-        return saved ? Ok(new AddDomainOutput(domain, domainResponse.Verification)) : Problem();
+        return saved ? Ok(new DomainOutput(domain, true, domainResponse.Verification)) : Problem();
     }
 
-    [HttpDelete("{shopId}/{domain}")]
-    [Authorize]
+    [HttpDelete("{shopId}/{domain}"), Authorize]
     public async Task<IActionResult> DeleteDomain([FromRoute] string shopId, [FromRoute] string domain)
     {
         domain = domain.Trim();
@@ -93,17 +109,13 @@ public class DomainController : ControllerBase
         return Ok();
     }
 
-    [HttpPatch("{domain}/verify")]
-    [Authorize]
+    [HttpPatch("{domain}/verify"), Authorize]
     public async Task<IActionResult> VerifyDomain([FromRoute] string domain)
     {
         domain = domain.Trim();
         if (string.IsNullOrEmpty(domain)) return BadRequest();
 
-        var res = await domainService.VerifyDomain(domain);
-        if (res == null) return Problem();
-
-        if (res.Verified) return Ok();
-        return Accepted(new AddDomainOutput(domain, res.Verification));
+        var verified = await domainService.VerifyDomain(domain);
+        return verified ? Ok() : Accepted();
     }
 }

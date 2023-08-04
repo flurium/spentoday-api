@@ -150,17 +150,17 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
-    public record ResetPasswordInput(string email, string token, string password, string confirmPassword);
+    public record ResetPasswordInput(string Email, string Token, string Password, string ConfirmPassword);
 
     [HttpPost("reset")]
     public async Task<IActionResult> ResetPassword(ResetPasswordInput input)
     {
-        if (!input.password.Equals(input.password)) return BadRequest();
+        if (!input.Password.Equals(input.Password)) return BadRequest();
 
-        var user = await userManager.FindByEmailAsync(input.email);
+        var user = await userManager.FindByEmailAsync(input.Email);
         if (user == null) return NotFound();
 
-        var resetPassResult = await userManager.ResetPasswordAsync(user, input.token, input.password);
+        var resetPassResult = await userManager.ResetPasswordAsync(user, input.Token, input.Password);
         if (!resetPassResult.Succeeded)
         {
             //foreach (var error in resetPassResult.Errors)
