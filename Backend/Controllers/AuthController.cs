@@ -73,24 +73,24 @@ public class AuthController : ControllerBase
 
         var user = new User(input.Name, input.Email);
 
-            var res = await userManager.CreateAsync(user, input.Password);
-            if (!res.Succeeded)
-            {
-                return Problem(detail: res.Errors.ElementAt(0).Description, statusCode: 500);
-            }
         var res = await userManager.CreateAsync(user, input.Password);
         if (!res.Succeeded)
         {
-            //var errors = res.Errors.Select(x =>
-            //{
-            //    string? error = null;
-            //    if (x.Code == nameof(IdentityErrorDescriber.DuplicateEmail)) error = "email";
-            //    if (x.Code == nameof(IdentityErrorDescriber.PasswordTooShort)) error = "password-too-short";
-
-            //    return error;
-            //});
-            return Problem();
+            return Problem(detail: res.Errors.ElementAt(0).Description, statusCode: 500);
         }
+
+        //if (!res.Succeeded)
+        //{
+        //    var errors = res.Errors.Select(x =>
+        //    {
+        //        string? error = null;
+        //        if (x.Code == nameof(IdentityErrorDescriber.DuplicateEmail)) error = "email";
+        //        if (x.Code == nameof(IdentityErrorDescriber.PasswordTooShort)) error = "password-too-short";
+
+        //        return error;
+        //    });
+        //    return Problem(errors);
+        //}
 
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
 
