@@ -31,6 +31,7 @@ namespace Backend.Controllers.ShopControllers
         public record LinkOut(string Name, string Link, string Id);
         public record BannerOut(string Url, string Id);
         public record ShopUpdate(string Name);
+        public record ShopOut(string Name,string Logo, List<BannerOut> Banners, List<LinkOut> Links);
         [HttpPost("{shopId}/addlink")]
         [Authorize]
         public async Task<IActionResult> AddLink([FromBody] LinkIn link, [FromRoute]string shopId)
@@ -244,9 +245,42 @@ namespace Backend.Controllers.ShopControllers
 
             if (shop == null) return Problem();
             var logo = shop.GetStorageFile();
-            if (logo == null) return NotFound();
+            if (logo == null) return Ok("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDsRxTnsSBMmVvRxdygcb9ue6xfUYL58YX27JLNLohHQ&s");
 
             return Ok(storage.Url(logo));
+        }
+        [HttpGet("{shopId}/getshop")]
+        [Authorize]
+        public async Task<IActionResult> GetShop([FromRoute] string shopId)
+        {
+            var uid = User.FindFirst(Jwt.Uid);
+            if (uid == null) return Unauthorized();
+
+            var shop = await db.Shops
+           .QueryOne(x => x.Id == shopId && x.OwnerId == uid.Value);
+
+            if (shop == null) return NotFound();
+
+            var banners = await db.ShopBanners
+            .Where(x => x.ShopId == shopId)
+            .Select(x => new BannerOut(storage.Url(x.GetStorageFile()), x.Id))
+            .QueryMany();
+
+            var links = await db.SocialMediaLinks
+           .Where(x => x.ShopId == shopId)
+           .Select(x => new LinkOut(x.Name, x.Link, x.Id))
+           .QueryMany();
+
+            var logoFile = shop.GetStorageFile();
+            string logo = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDsRxTnsSBMmVvRxdygcb9ue6xfUYL58YX27JLNLohHQ&s";
+            if (logoFile != null) logo = storage.Url(logoFile);
+
+            string name = shop.Name;
+
+            var shopOut = new ShopOut(name,logo, banners.ToList(), links.ToList());
+
+            var saved = await db.Save();
+            return saved ? Ok(shopOut) : Problem();
         }
     }
 
