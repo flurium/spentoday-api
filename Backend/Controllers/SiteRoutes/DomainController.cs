@@ -116,6 +116,10 @@ public class DomainController : ControllerBase
         if (string.IsNullOrEmpty(domain)) return BadRequest();
 
         var verified = await domainService.VerifyDomain(domain);
-        return verified ? Ok() : Accepted();
+        if (verified) return Ok();
+
+        var info = await domainService.GetDomainInfo(domain);
+        if (info == null) return Accepted(new DomainOutput(domain, false, null));
+        return Accepted(new DomainOutput(domain, true, info.Verification));
     }
 }
