@@ -37,6 +37,23 @@ public class ImageService
             });
         }
     }
+}
+
+public static class ImageExtension
+{
+    private static readonly string[] photoExtensions = new string[] {
+        ".xbm", ".tif", ".jfif", ".ico", ".tiff", ".gif", ".svg",".jpeg", ".svgz",
+        ".jpg", ".webp", ".png", ".bmp", ".pjp", ".apng", ".pjpeg", ".avif"
+    };
+
+    public static bool IsImage(this IFormFile file)
+    {
+        if (file == null || string.IsNullOrEmpty(file.FileName) || file.Length == 0) return false;
+
+        var fileExtension = Path.GetExtension(file.FileName).ToLower();
+        return photoExtensions.Contains(fileExtension);
+    }
+}
 
     public async Task SafeDeleteOne(IStorageFile file)
     {
