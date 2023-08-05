@@ -1,5 +1,4 @@
 ﻿using Lib.Storage;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Services;
 
@@ -37,6 +36,19 @@ public class ImageService
             });
         }
     }
+
+    public async Task SafeDeleteOne(IStorageFile file)
+    {
+        var deleted = await storage.Delete(file);
+        if (deleted) return;
+
+        background.Enqueue(async (provider) =>
+        {
+            using IServiceScope scope = provider.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<IStorage>();
+            await service.Delete(file);
+        });
+    }
 }
 
 public static class ImageExtension
@@ -51,33 +63,6 @@ public static class ImageExtension
         if (file == null || string.IsNullOrEmpty(file.FileName) || file.Length == 0) return false;
 
         var fileExtension = Path.GetExtension(file.FileName).ToLower();
-        return photoExtensions.Contains(fileExtension);
-    }
-}
-
-    public async Task SafeDeleteOne(IStorageFile file)
-    {
-            var deleted = await storage.Delete(file);
-            if (deleted) return;
-
-            background.Enqueue(async (provider) =>
-            {
-                using IServiceScope scope = provider.CreateScope();
-                var service = scope.ServiceProvider.GetRequiredService<IStorage>();
-                await service.Delete(file);
-            });
-    }
-    
-    public bool IsImageFile(IFormFile file)
-    {
-        if (file == null || string.IsNullOrEmpty(file.FileName) || file.Length == 0)
-        {
-            return false;
-        }
-
-        var fileExtension = Path.GetExtension(file.FileName).ToLower();
-        string[] photoExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp", ".tiff", ".ico", ".jfif", ".psd", ".eps", ".pict", ".pic", "pct" }; ;
-
         return photoExtensions.Contains(fileExtension);
     }
 }

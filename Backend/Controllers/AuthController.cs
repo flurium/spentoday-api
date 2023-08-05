@@ -73,11 +73,6 @@ public class AuthController : ControllerBase
 
         var user = new User(input.Name, input.Email);
 
-            var res = await userManager.CreateAsync(user, input.Password);
-            if (!res.Succeeded)
-            {
-                return Problem(detail: res.Errors.ElementAt(0).Description, statusCode: 500);
-            }
         var res = await userManager.CreateAsync(user, input.Password);
         if (!res.Succeeded)
         {
