@@ -36,6 +36,19 @@ public class ImageService
             });
         }
     }
+
+    public async Task SafeDeleteOne(IStorageFile file)
+    {
+        var deleted = await storage.Delete(file);
+        if (deleted) return;
+
+        background.Enqueue(async (provider) =>
+        {
+            using IServiceScope scope = provider.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<IStorage>();
+            await service.Delete(file);
+        });
+    }
 }
 
 public static class ImageExtension
