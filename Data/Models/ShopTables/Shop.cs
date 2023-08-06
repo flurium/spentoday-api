@@ -4,7 +4,7 @@ using Lib.Storage;
 
 namespace Data.Models.ShopTables;
 
-public class Shop : IStorageFileContainer
+public class Shop : IPossibleStorageFileContainer
 {
     public string Id { get; } = Guid.NewGuid().ToString();
     public string Name { get; set; }

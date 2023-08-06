@@ -28,7 +28,7 @@ public class Storj : IStorage
         this.bucket = bucket;
     }
 
-    public async Task<IStorageFile?> Upload(string key, Stream fileStream)
+    public async Task<StorageFile?> Upload(string key, Stream fileStream)
     {
         try
         {
@@ -51,7 +51,7 @@ public class Storj : IStorage
         }
     }
 
-    public async Task<bool> Delete(IStorageFile file)
+    public async Task<bool> Delete(StorageFile file)
     {
         try
         {
@@ -71,7 +71,7 @@ public class Storj : IStorage
         }
     }
 
-    public string Url(IStorageFile file)
+    public string Url(StorageFile file)
     {
         return $"https://link.storjshare.io/raw/{publicKey}/{file.Bucket}/{file.Key}";
     }

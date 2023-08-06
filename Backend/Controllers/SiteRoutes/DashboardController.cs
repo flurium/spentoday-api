@@ -49,7 +49,7 @@ public class DashboardController : ControllerBase
         {
             if (shop.Banners != null) await imageService.SafeDelete(shop.Banners);
             var logo = shop.GetStorageFile();
-            if (logo != null) await imageService.SafeDeleteOne(logo);
+            if (logo != null) await imageService.SafeDelete(logo);
             db.Shops.Remove(shop);
             var isSaved = await db.Save();
             if (!isSaved) return Problem();
