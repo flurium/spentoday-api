@@ -2,20 +2,17 @@
 
 namespace Backend.Services;
 
-public record DomainServiceSecrets(string Token, string ProjectId, string TeamId);
-public record DomainVerification(string Type, string Domain, string Value, string Reason);
+public record DomainVerification(string Type, string Domain, string Value);
 public record DomainResponse(bool Verified, List<DomainVerification>? Verification);
 
 public class DomainService
 {
     private readonly HttpClient client;
-    private readonly string token;
     private readonly string projectId;
     private readonly string teamId;
 
     public DomainService(HttpClient client, string token, string projectId, string teamId)
     {
-        this.token = token;
         this.projectId = projectId;
         this.teamId = teamId;
 
@@ -36,26 +33,31 @@ public class DomainService
         return data;
     }
 
-    public async Task<DomainResponse?> VerifyDomain(string domain)
+    public async Task<DomainResponse?> GetDomainInfo(string domain)
     {
-        var route = $"/v9/projects/{projectId}/domains/{domain}/verify?teamId={teamId}";
-        var response = await client.PostAsync(route, null);
+        var route = $"/v9/projects/{projectId}/domains/{domain}?teamId={teamId}";
+        var response = await Http.Get(client, route);
+        if (response == null || !response.IsSuccessStatusCode) return null;
 
         var data = await Http.JsonResponse<DomainResponse>(response);
         return data;
     }
 
+    /// <returns>True if verified, otherwise false.</returns>
+    public async Task<bool> VerifyDomain(string domain)
+    {
+        var route = $"/v9/projects/{projectId}/domains/{domain}/verify?teamId={teamId}";
+        var response = await Http.Post(client, route);
+        if (response == null) return false;
+        return response.IsSuccessStatusCode;
+    }
+
+    /// <returns>True if removed, otherwise false.</returns>
     public async Task<bool> RemoveDomainFromShop(string domain)
     {
-        try
-        {
-            var route = $"/v9/projects/{projectId}/domains/{domain}?teamId={teamId}";
-            var response = await client.DeleteAsync(route);
-            return response.IsSuccessStatusCode;
-        }
-        catch
-        {
-            return false;
-        }
+        var route = $"/v9/projects/{projectId}/domains/{domain}?teamId={teamId}";
+        var response = await Http.Delete(client, route);
+        if (response == null) return false;
+        return response.IsSuccessStatusCode;
     }
 }
