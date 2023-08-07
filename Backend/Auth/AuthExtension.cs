@@ -1,5 +1,4 @@
-﻿using Data.Models.UserTables;
-using Lib;
+﻿using Lib;
 using System.Security.Claims;
 
 namespace Backend.Auth;

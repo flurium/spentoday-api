@@ -26,7 +26,7 @@ public static class QueryExtension
     /// Query many items that match where condition with ConfigureAwait(false)
     /// </summary>
     /// <returns>List of item.</returns>
-    public static async Task<IEnumerable<T>> QueryMany<T>(this IQueryable<T> query)
+    public static async Task<List<T>> QueryMany<T>(this IQueryable<T> query)
     {
         return await query.ToListAsync().ConfigureAwait(false);
     }
@@ -36,7 +36,7 @@ public static class QueryExtension
     /// </summary>
     /// <param name="where">Condition to filter.</param>
     /// <returns>List of items</returns>
-    public static async Task<IEnumerable<T>> QueryMany<T>(this IQueryable<T> query, Expression<Func<T, bool>> where)
+    public static async Task<List<T>> QueryMany<T>(this IQueryable<T> query, Expression<Func<T, bool>> where)
     {
         return await query.Where(where).ToListAsync().ConfigureAwait(false);
     }

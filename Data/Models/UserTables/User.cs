@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Data.Models.UserTables;
 
-public class User : IdentityUser, IStorageFileContainer
+public class User : IdentityUser, IPossibleStorageFileContainer
 {
     public int Version { get; set; } = 0;
     public string Name { get; set; }

@@ -21,21 +21,36 @@ public class ImageService
     /// Safely delete list of files.
     /// If some file isn't deleted it adds retry of deletion in background process.
     /// </summary>
-    public async Task SafeDelete(IEnumerable<IStorageFile> files)
+    public async Task SafeDelete(IEnumerable<IStorageFileContainer> files)
     {
         foreach (var file in files)
         {
-            var deleted = await storage.Delete(file);
+            var deleted = await storage.Delete(file.GetStorageFile());
             if (deleted) continue;
 
             background.Enqueue(async (provider) =>
             {
                 using IServiceScope scope = provider.CreateScope();
                 var service = scope.ServiceProvider.GetRequiredService<IStorage>();
-                await service.Delete(file);
+                await service.Delete(file.GetStorageFile());
             });
         }
     }
+
+    public async Task SafeDelete(StorageFile file)
+    {
+        var deleted = await storage.Delete(file);
+        if (deleted) return;
+
+        background.Enqueue(async (provider) =>
+        {
+            using IServiceScope scope = provider.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<IStorage>();
+            await service.Delete(file);
+        });
+    }
+
+    public async Task SafeDelete(IStorageFileContainer file) => await SafeDelete(file.GetStorageFile());
 }
 
 public static class ImageExtension

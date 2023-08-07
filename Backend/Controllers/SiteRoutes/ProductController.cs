@@ -2,13 +2,11 @@
 using Backend.Services;
 using Data;
 using Data.Models.ProductTables;
-using Lib;
 using Lib.EntityFrameworkCore;
 using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Net.WebSockets;
 
 namespace Backend.Controllers.SiteRoutes;
 
@@ -126,7 +124,7 @@ public class ProductController : ControllerBase
         return saved ? Ok() : Problem();
     }
 
-    [HttpPut("{id}/publish"), Authorize]
+    [HttpPost("{id}/publish"), Authorize]
     public async Task<IActionResult> Publish([FromRoute] string id)
     {
         var uid = User.Uid();
@@ -135,7 +133,6 @@ public class ProductController : ControllerBase
 
         product.IsDraft = false;
         var saved = await db.Save();
-
         return saved ? Ok() : Problem();
     }
 
@@ -188,7 +185,7 @@ public class ProductController : ControllerBase
 
         if (saved) return Ok(new ImageOutput(image.Id, image.Key, image.Bucket, image.Provider));
 
-        await storage.Delete(image);
+        await storage.Delete(image.GetStorageFile());
         return Problem();
     }
 
@@ -199,7 +196,7 @@ public class ProductController : ControllerBase
         var image = await db.ProductImages.QueryOne(pi => pi.Id == id && pi.Product.Shop.OwnerId == uid);
         if (image == null) return NotFound();
 
-        bool isDeleted = await storage.Delete(image);
+        bool isDeleted = await storage.Delete(image.GetStorageFile());
         if (!isDeleted) return Problem();
 
         db.ProductImages.Remove(image);

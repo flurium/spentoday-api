@@ -33,7 +33,6 @@ public class DashboardController : ControllerBase
         var products = await db.Products
             .Where(x => x.ShopId == shopId)
             .Include(p => p.Images)
-            .Include(p => p.ProductCategories)
             .QueryMany();
 
         foreach (var product in products)
@@ -49,6 +48,8 @@ public class DashboardController : ControllerBase
         if (shop != null)
         {
             if (shop.Banners != null) await imageService.SafeDelete(shop.Banners);
+            var logo = shop.GetStorageFile();
+            if (logo != null) await imageService.SafeDelete(logo);
             db.Shops.Remove(shop);
             var isSaved = await db.Save();
             if (!isSaved) return Problem();
