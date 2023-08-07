@@ -73,23 +73,25 @@ public class AuthController : ControllerBase
 
         var user = new User(input.Name, input.Email);
 
-        var res = await userManager.CreateAsync(user, input.Password);
-        if (!res.Succeeded)
-        {
-            return Problem(detail: res.Errors.ElementAt(0).Description, statusCode: 500);
-        }
+            var res = await userManager.CreateAsync(user, input.Password);
+            if (!res.Succeeded)
+            {
+                return Problem(detail: res.Errors.ElementAt(0).Description, statusCode: 500);
+            }
 
+            //TO DO!
+        //var res = await userManager.CreateAsync(user, input.Password);
         //if (!res.Succeeded)
         //{
-        //    var errors = res.Errors.Select(x =>
-        //    {
-        //        string? error = null;
-        //        if (x.Code == nameof(IdentityErrorDescriber.DuplicateEmail)) error = "email";
-        //        if (x.Code == nameof(IdentityErrorDescriber.PasswordTooShort)) error = "password-too-short";
+        //    //var errors = res.Errors.Select(x =>
+        //    //{
+        //    //    string? error = null;
+        //    //    if (x.Code == nameof(IdentityErrorDescriber.DuplicateEmail)) error = "email";
+        //    //    if (x.Code == nameof(IdentityErrorDescriber.PasswordTooShort)) error = "password-too-short";
 
-        //        return error;
-        //    });
-        //    return Problem(errors);
+        //    //    return error;
+        //    //});
+        //    return Problem();
         //}
 
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -155,7 +157,7 @@ public class AuthController : ControllerBase
     [HttpPost("reset")]
     public async Task<IActionResult> ResetPassword(ResetPasswordInput input)
     {
-        if (!input.Password.Equals(input.Password)) return BadRequest();
+        if (!input.Password.Equals(input.ConfirmPassword)) return BadRequest();
 
         var user = await userManager.FindByEmailAsync(input.Email);
         if (user == null) return NotFound();
