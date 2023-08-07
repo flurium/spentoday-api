@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using static Backend.Controllers.SiteRoutes.ProductController;
 
 namespace Backend.Controllers.SiteRoutes
 {
@@ -29,6 +28,19 @@ namespace Backend.Controllers.SiteRoutes
             this.userManager = userManager;
             this.imageService = imageService;
             this.storage = storage;
+        }
+
+        public record OneUser(string Name, string? ImageUrl);
+
+        [HttpGet("user"), Authorize]
+        public async Task<IActionResult> GetUser()
+        {
+            var uid = User.Uid();
+            var user = await userManager.FindByIdAsync(uid);
+
+            if (user == null) return NotFound();
+            var file = user.GetStorageFile();
+            return Ok(new OneUser(Name: user.Name, ImageUrl: storage.Url(file)));
         }
 
         [HttpPost("image"), Authorize]
@@ -58,37 +70,39 @@ namespace Backend.Controllers.SiteRoutes
             return Problem();
         }
 
+        public record NameInput(string Name);
+
         [HttpPost("name"), Authorize]
-        public async Task<IActionResult> ChangeUserName(string name)
+        public async Task<IActionResult> ChangeUserName(NameInput input)
         {
             var uid = User.Uid();
             var user = await userManager.FindByIdAsync(uid);
             if (user == null) return NotFound();
 
-            user.Name = name;
+            user.Name = input.Name;
             var res = await userManager.UpdateAsync(user);
             if (res.Succeeded) return Ok();
 
             return Problem();
         }
 
-        public record class PasswordInput(string currentPassword, string newPassword, string confirmPassword);
+        public record class PasswordInput(string CurrentPassword, string NewPassword, string ConfirmPassword);
 
         [HttpPost("password"), Authorize]
         public async Task<IActionResult> ChangePassword(PasswordInput input)
         {
-            if (!input.newPassword.Equals(input.confirmPassword)) return BadRequest("confirmPassword");
+            if (!input.NewPassword.Equals(input.ConfirmPassword)) return BadRequest("confirmPassword");
             var uid = User.Uid();
             var user = await userManager.FindByIdAsync(uid);
             if (user == null) return NotFound();
 
-            var res = await userManager.ChangePasswordAsync(user, input.currentPassword, input.newPassword);
+            var res = await userManager.ChangePasswordAsync(user, input.CurrentPassword, input.NewPassword);
             if (res.Succeeded) return Ok();
 
             return Problem();
         }
 
-        public record class DeleteInput(string email, string password);
+        public record class DeleteInput(string Email, string Password);
 
         [HttpPost("delete"), Authorize]
         public async Task<IActionResult> DeleteAccount(DeleteInput input)
@@ -97,7 +111,7 @@ namespace Backend.Controllers.SiteRoutes
             var user = await userManager.FindByIdAsync(uid);
             if (user == null) return NotFound();
 
-            if (user.Email.Equals(input.email) && await userManager.CheckPasswordAsync(user, input.password))
+            if (user.Email.Equals(input.Email) && await userManager.CheckPasswordAsync(user, input.Password))
             {
                 await userManager.DeleteAsync(user);
                 Response.Cookies.Delete(RefreshOnly.Cookie);
