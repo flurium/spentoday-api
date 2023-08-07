@@ -40,7 +40,8 @@ namespace Backend.Controllers.SiteRoutes
 
             if (user == null) return NotFound();
             var file = user.GetStorageFile();
-            return Ok(new OneUser(Name: user.Name, ImageUrl: storage.Url(file)));
+         
+            return Ok(new OneUser(Name: user.Name, ImageUrl: file != null? storage.Url(file): null));
         }
 
         [HttpPost("image"), Authorize]
