@@ -1,4 +1,6 @@
-﻿namespace Data.Models.ProductTables;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Data.Models.ProductTables;
 
 public class ProductCategory
 {
@@ -8,9 +10,12 @@ public class ProductCategory
     public string CategoryId { get; set; }
     public Category Category { get; } = default!;
 
-    public ProductCategory(string productId, string categoryId)
+    public int Order { get; set; }
+
+    public ProductCategory(string productId, string categoryId, int order)
     {
         ProductId = productId;
         CategoryId = categoryId;
+        Order = order;
     }
 }

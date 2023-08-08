@@ -7,7 +7,7 @@ using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backend.Controllers.ShopControllers;
+namespace Backend.Controllers.SiteRoutes;
 
 [Route("v1/site/shopsettings")]
 [ApiController]

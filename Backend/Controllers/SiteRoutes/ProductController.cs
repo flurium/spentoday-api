@@ -7,6 +7,8 @@ using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Transactions;
+using static Backend.Services.CategoryService;
 
 namespace Backend.Controllers.SiteRoutes;
 
@@ -17,12 +19,14 @@ public class ProductController : ControllerBase
     private readonly Db db;
     private readonly ImageService imageService;
     private readonly IStorage storage;
+    private readonly CategoryService categoryService;
 
-    public ProductController(Db db, ImageService imageService, IStorage storage)
+    public ProductController(Db db, ImageService imageService, IStorage storage, CategoryService categoryService)
     {
         this.db = db;
         this.imageService = imageService;
         this.storage = storage;
+        this.categoryService = categoryService;
     }
 
     public record ListOutput(string Id, string Name, double Price, bool IsDraft);
@@ -66,8 +70,8 @@ public class ProductController : ControllerBase
         string SeoTitle, string SeoDescription, string SeoSlug,
         string Description, IEnumerable<ImageOutput> Images
     );
-    public record CategoryOutput(string Id, string Name, bool Assigned);
-    public record OneOutput(ProductOutput Product, IEnumerable<CategoryOutput> Categories);
+    public record CategoryOutput(string Id, string Name);
+    public record OneOutput(ProductOutput Product, IEnumerable<CategoryOutput> Categories, string? CategoryId);
 
     [HttpGet("{id}"), Authorize]
     public async Task<IActionResult> One(string id)
@@ -87,15 +91,16 @@ public class ProductController : ControllerBase
             .QueryOne();
         if (product == null) return NotFound();
 
+        var productCategory = await db.ProductCategories
+            .Where(x => x.ProductId == id).OrderByDescending(x => x.Order)
+            .Select(x => x.CategoryId).QueryOne();
+
         var categories = await db.Categories
             .Where(x => x.ShopId == product.ShopId)
-            .Select(x => new CategoryOutput(
-                x.Id, x.Name,
-                x.ProductCategories.Any(x => x.ProductId == product.Product.Id)
-            ))
+            .Select(x => new CategoryOutput(x.Id, x.Name))
             .QueryMany();
 
-        var output = new OneOutput(product.Product, categories);
+        var output = new OneOutput(product.Product, categories, productCategory);
         return Ok(output);
     }
 
@@ -200,6 +205,48 @@ public class ProductController : ControllerBase
         if (!isDeleted) return Problem();
 
         db.ProductImages.Remove(image);
+        var saved = await db.Save();
+        return saved ? Ok() : Problem();
+    }
+
+    // CATEGORIES
+
+    public record ChangeProductCategoryInput(string ProductId, string? CategoryId);
+
+    [HttpPatch("categories"), Authorize]
+    public async Task<IActionResult> Category([FromBody] ChangeProductCategoryInput input)
+    {
+        var uid = User.Uid();
+
+        var own = await db.Products.Have(x => x.Id == input.ProductId && x.Shop.OwnerId == uid);
+        if (!own) return NotFound();
+
+        // [Parent of new category, another category]
+        var currentProductCategories = await db.ProductCategories
+            .QueryMany(x => x.ProductId == input.ProductId);
+
+        db.ProductCategories.RemoveRange(currentProductCategories);
+        var deleted = await db.Save();
+        if (!deleted) return Problem();
+        if (input.CategoryId == null) return Ok();
+
+        var category = await db.Categories.QueryOne(x => x.Id == input.CategoryId && x.Shop.OwnerId == uid);
+        if (category == null) return Problem();
+
+        var categories = await categoryService.CategoryParentIds(category.ParentId);
+        if (categories == null) return Problem();
+        // add new category to list
+        categories.AddLast(category.Id);
+
+        var newProductCategories = new List<ProductCategory>(categories.Count);
+        int order = 0;
+        foreach (var categoryId in categories)
+        {
+            newProductCategories.Add(new ProductCategory(input.ProductId, categoryId, order));
+            order += 1;
+        }
+        await db.AddRangeAsync(newProductCategories);
+
         var saved = await db.Save();
         return saved ? Ok() : Problem();
     }
