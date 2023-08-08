@@ -6,7 +6,6 @@ using Lib;
 using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers.SiteRoutes;
 
@@ -101,15 +100,5 @@ public class CategoryController : ControllerBase
 
         var saved = await db.Save();
         return saved ? Ok(new ShopCategoryOutput(category.Id, category.Name, category.ParentId)) : Problem();
-    }
-
-    [HttpGet("trcstnmcrnstuucusotnoc")]
-    public async Task<IActionResult> Too()
-    {
-        var res = await db.Products.Include(x => x.ProductCategories).ThenInclude(x => x.Category).QueryMany();
-
-        var c = await db.Categories.Include(x => x.Parent).QueryMany();
-
-        return Ok(res);
     }
 }

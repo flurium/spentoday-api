@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Data.Models.ProductTables;
+﻿namespace Data.Models.ProductTables;
 
 public class ProductCategory
 {

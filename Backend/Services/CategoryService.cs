@@ -2,7 +2,6 @@
 using Data.Models.ProductTables;
 using Lib.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using static Backend.Services.CategoryService;
 
 namespace Backend.Services;
 
@@ -31,13 +30,6 @@ public class CategoryService
             CategoriesToAdd = categoriesToAdd;
             CategoriesToDelete = categoriesToDelete;
         }
-    }
-
-    public async Task<CategoryIds?> MainCategory(string uid, string categoryId)
-    {
-        return await db.Categories
-            .Where(x => x.Id == categoryId && x.Shop.OwnerId == uid)
-            .Select(x => new CategoryIds(x.Id, x.ParentId)).QueryOne();
     }
 
     public async Task<CategoryIds?> ParentCategory(string parentId)

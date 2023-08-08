@@ -7,8 +7,6 @@ using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Transactions;
-using static Backend.Services.CategoryService;
 
 namespace Backend.Controllers.SiteRoutes;
 
