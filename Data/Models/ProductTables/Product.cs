@@ -22,7 +22,7 @@ public class Product
     public Shop Shop { get; } = default!;
 
     public IReadOnlyCollection<ProductImage> Images { get; } = default!;
-    public IReadOnlyCollection<ProductCategory> ProductCategories { get; } = default!;
+    public List<ProductCategory> ProductCategories { get; set; } = default!;
     public IReadOnlyCollection<Order> Orders { get; } = default!;
 
     public Product(string name, string seoSlug, string shopId)

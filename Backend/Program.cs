@@ -32,6 +32,7 @@ builder.Services.AddDomainService();
 builder.Services.AddSingleton<BackgroundQueue>();
 builder.Services.AddHostedService<BackgroundQueue.Runner>();
 builder.Services.AddScoped<ImageService>();
+builder.Services.AddScoped<CategoryService>();
 
 // Authentication
 builder.Services.AddJwt();
