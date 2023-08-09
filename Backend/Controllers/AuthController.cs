@@ -55,44 +55,37 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterInput input)
     {
-        if (!input.Email.Contains('@'))
-        {
-            return BadRequest();
-        }
-        if (
-            input.Password.Length < 6 ||
-            !input.Password.Any(char.IsUpper) ||
-            !input.Password.Any(char.IsLower) ||
-            !input.Password.Any(char.IsNumber)
-        )
-        {
-            return BadRequest();
-        }
-
         if (!input.Password.Equals(input.ConfirmPassword)) return BadRequest("confirmPassword");
 
         var user = new User(input.Name, input.Email);
 
-            var res = await userManager.CreateAsync(user, input.Password);
-            if (!res.Succeeded)
-            {
-                return Problem(detail: res.Errors.ElementAt(0).Description, statusCode: 500);
-            }
-
-            //TO DO!
         //var res = await userManager.CreateAsync(user, input.Password);
         //if (!res.Succeeded)
         //{
-        //    //var errors = res.Errors.Select(x =>
-        //    //{
-        //    //    string? error = null;
-        //    //    if (x.Code == nameof(IdentityErrorDescriber.DuplicateEmail)) error = "email";
-        //    //    if (x.Code == nameof(IdentityErrorDescriber.PasswordTooShort)) error = "password-too-short";
-
-        //    //    return error;
-        //    //});
-        //    return Problem();
+        //    return Problem(detail: res.Errors.ElementAt(0).Description, statusCode: 500);
         //}
+
+        //TO DO!
+        var res = await userManager.CreateAsync(user, input.Password);
+        if (!res.Succeeded)
+        {
+            var errors = res.Errors.Select(x =>
+            {
+                string? error = null;
+                if (x.Code == nameof(IdentityErrorDescriber.DuplicateUserName)) error = "email";
+                if (x.Code == nameof(IdentityErrorDescriber.DuplicateEmail)) error = "email";
+                if (x.Code == nameof(IdentityErrorDescriber.PasswordTooShort)) error = "password-too-short";
+                if (x.Code == nameof(IdentityErrorDescriber.InvalidEmail)) error = "@";
+                if (x.Code == nameof(IdentityErrorDescriber.PasswordRequiresDigit)) error = "digit";
+                if (x.Code == nameof(IdentityErrorDescriber.PasswordRequiresLower)) error = "lower";
+                if (x.Code == nameof(IdentityErrorDescriber.PasswordRequiresUpper)) error = "upper";
+                if (x.Code == nameof(IdentityErrorDescriber.PasswordRequiresNonAlphanumeric)) error = "nonAlphanumeric";
+
+                return error;
+
+            });
+            return StatusCode(500 ,errors);
+        }
 
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
 
@@ -173,14 +166,4 @@ public class AuthController : ControllerBase
         }
         return Ok();
     }
-
-    //Test method. Will be removed later!!!
-    //[HttpGet("remove")]
-    //public async Task<IActionResult> Remove()
-    //{
-    //    var user = await userManager.FindByNameAsync("reskator95@gmail.com");
-
-    //    var res = await userManager.DeleteAsync(user);
-    //    return Ok();
-    //}
 }
