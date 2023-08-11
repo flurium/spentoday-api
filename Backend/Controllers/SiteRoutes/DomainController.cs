@@ -75,7 +75,7 @@ public class DomainController : ControllerBase
         var domainResponse = await domainService.AddDomainToShop(domain);
         if (domainResponse == null) return Problem();
 
-        await db.ShopDomains.AddAsync(new ShopDomain(domain, shopId));
+        await db.ShopDomains.AddAsync(new ShopDomain(domain, shopId, domainResponse.Verified));
         var saved = await db.Save();
 
         return saved ? Ok(new DomainOutput(domain, true, domainResponse.Verification)) : Problem();
@@ -115,8 +115,14 @@ public class DomainController : ControllerBase
         domain = domain.Trim();
         if (string.IsNullOrEmpty(domain)) return BadRequest();
 
+        var uid = User.Uid();
+        var shopDomain = await db.ShopDomains.QueryOne(x => x.Domain == domain && x.Shop.OwnerId == uid);
+
         var verified = await domainService.VerifyDomain(domain);
-        if (verified) return Ok();
+        if (verified)
+        {
+            return Ok();
+        }
 
         var info = await domainService.GetDomainInfo(domain);
         if (info == null) return Accepted(new DomainOutput(domain, false, null));

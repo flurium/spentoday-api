@@ -7,9 +7,12 @@ public class ShopDomain
     public string ShopId { get; set; }
     public Shop Shop { get; } = default!;
 
-    public ShopDomain(string domain, string shopId)
+    public bool Verified { get; set; } = false;
+
+    public ShopDomain(string domain, string shopId, bool verified)
     {
         Domain = domain;
         ShopId = shopId;
+        Verified = verified;
     }
 }
