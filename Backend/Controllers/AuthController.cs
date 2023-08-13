@@ -156,7 +156,9 @@ public class AuthController : ControllerBase
         if (user == null) return NotFound();
 
         var resetPassResult = await userManager.ResetPasswordAsync(user, input.Token, input.Password);
-        if (!resetPassResult.Succeeded)
+        user.Version++;
+        var changeVersionResult = await userManager.UpdateAsync(user);
+        if (!resetPassResult.Succeeded || !changeVersionResult.Succeeded)
         {
             //foreach (var error in resetPassResult.Errors)
             //{

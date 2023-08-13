@@ -98,7 +98,9 @@ namespace Backend.Controllers.SiteRoutes
             if (user == null) return NotFound();
 
             var res = await userManager.ChangePasswordAsync(user, input.CurrentPassword, input.NewPassword);
-            if (res.Succeeded) return Ok();
+            user.Version++;
+            var changeVersionResult = await userManager.UpdateAsync(user);
+            if (res.Succeeded && changeVersionResult.Succeeded) return Ok();
 
             return Problem();
         }
