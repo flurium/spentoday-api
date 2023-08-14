@@ -12,4 +12,9 @@ public class ShopDomain
         Domain = domain;
         ShopId = shopId;
     }
+
+    public bool IsOwned(string domain)
+    {
+        return Domain == domain;
+    }
 }

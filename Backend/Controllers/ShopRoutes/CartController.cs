@@ -28,13 +28,8 @@ public class CartController : ControllerBase
     [HttpPost("local")]
     public async Task<IActionResult> LocalList([FromBody] LocalListInput input)
     {
-        // TODO: check shop
-
         var products = await db.Products
-            .Where(x => !x.IsDraft
-                && input.Ids.Contains(x.Id)
-            //    && x.Shop.Domains.Any(x => x.Domain == input.Domain)
-            )
+            .Where(x => !x.IsDraft && input.Ids.Contains(x.Id) && x.Shop.OwnDomain(input.Domain))
             .Select(x => new LocalListOutput(x.Id, x.Name, x.Price))
             .QueryMany();
         return Ok(products);
