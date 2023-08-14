@@ -34,4 +34,11 @@ public class Shop : IPossibleStorageFileContainer
         if (LogoKey == null || LogoBucket == null || LogoProvider == null) return null;
         return new StorageFile(LogoBucket, LogoKey, LogoProvider);
     }
+
+    public bool OwnDomain(string domain)
+    {
+        return Domains.Any(x => x.Domain == domain
+        // && x.Verified
+        );
+    }
 }
