@@ -4,7 +4,7 @@ using Lib.Storage;
 
 namespace Data.Models.ShopTables;
 
-public class Shop : IStorageFileContainer
+public class Shop : IPossibleStorageFileContainer
 {
     public string Id { get; } = Guid.NewGuid().ToString();
     public string Name { get; set; }
@@ -33,5 +33,12 @@ public class Shop : IStorageFileContainer
     {
         if (LogoKey == null || LogoBucket == null || LogoProvider == null) return null;
         return new StorageFile(LogoBucket, LogoKey, LogoProvider);
+    }
+
+    public bool OwnDomain(string domain)
+    {
+        return Domains.Any(x => x.Domain == domain
+        // && x.Verified
+        );
     }
 }

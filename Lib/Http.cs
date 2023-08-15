@@ -32,10 +32,19 @@ public static class Http
             var data = await JsonSerializer.DeserializeAsync<T>(jsonStream, options);
             return data;
         }
-        catch
-        {
-            return null;
-        }
+        catch { return null; }
+    }
+
+    public static async Task<HttpResponseMessage?> Get(HttpClient client, string route)
+    {
+        try { return await client.GetAsync(route); }
+        catch { return null; }
+    }
+
+    public static async Task<HttpResponseMessage?> Post(HttpClient client, string route)
+    {
+        try { return await client.PostAsync(route, null); }
+        catch { return null; }
     }
 
     /// <summary>
@@ -49,10 +58,13 @@ public static class Http
         {
             return await client.PostAsync(url, new StringContent(body, Encoding.UTF8, "application/json"));
         }
-        catch
-        {
-            return null;
-        }
+        catch { return null; }
+    }
+
+    public static async Task<HttpResponseMessage?> Delete(HttpClient client, string route)
+    {
+        try { return await client.DeleteAsync(route); }
+        catch { return null; }
     }
 
     /// <summary>Check if status code is successful.</summary>

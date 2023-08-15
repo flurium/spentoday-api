@@ -2,7 +2,7 @@
 
 namespace Data.Models.ShopTables;
 
-public class ShopBanner : IStorageFile, IStorageFileContainer
+public class ShopBanner : IStorageFileContainer
 {
     public string Id { get; } = Guid.NewGuid().ToString();
 
@@ -21,7 +21,7 @@ public class ShopBanner : IStorageFile, IStorageFileContainer
         ShopId = shopId;
     }
 
-    public StorageFile? GetStorageFile()
+    public StorageFile GetStorageFile()
     {
         return new StorageFile(Bucket, Key, Provider);
     }

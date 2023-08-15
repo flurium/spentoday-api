@@ -10,6 +10,8 @@ public class Product
     public int Amount { get; set; } = 0;
     public string? PreviewImage { get; set; }
 
+    public string Description { get; set; } = string.Empty;
+
     public bool IsDraft { get; set; } = true;
 
     public string SeoTitle { get; set; } = string.Empty;
@@ -20,7 +22,7 @@ public class Product
     public Shop Shop { get; } = default!;
 
     public IReadOnlyCollection<ProductImage> Images { get; } = default!;
-    public IReadOnlyCollection<ProductCategory> ProductCategories { get; } = default!;
+    public List<ProductCategory> ProductCategories { get; set; } = default!;
     public IReadOnlyCollection<Order> Orders { get; } = default!;
 
     public Product(string name, string seoSlug, string shopId)

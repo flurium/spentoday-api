@@ -1,18 +1,16 @@
 ﻿namespace Lib.Storage;
 
-public interface IStorageFile
+public interface IStorageFileContainer
 {
-    public string Provider { get; }
-    public string Bucket { get; }
-    public string Key { get; }
+    public StorageFile GetStorageFile();
 }
 
-public interface IStorageFileContainer
+public interface IPossibleStorageFileContainer
 {
     public StorageFile? GetStorageFile();
 }
 
-public record class StorageFile(string Bucket, string Key, string Provider) : IStorageFile;
+public record class StorageFile(string Bucket, string Key, string Provider);
 
 public interface IStorage
 {
@@ -25,17 +23,17 @@ public interface IStorage
     /// Bucket name, path and provider. Provider is used for migrations,
     /// multistorage usage, creating link to the file.
     /// </returns>
-    public Task<IStorageFile?> Upload(string key, Stream fileStream);
+    public Task<StorageFile?> Upload(string key, Stream fileStream);
 
     /// <param name="bucket">Bucket name</param>
     /// <param name="key">Key/path to item</param>
     /// <returns>True if success, false if failed</returns>
-    public Task<bool> Delete(IStorageFile file);
+    public Task<bool> Delete(StorageFile file);
 
     /// <summary>
     /// Create url to a public item. Not signed url!
     /// This method must not make request to a server.
     /// You can to create this function of the frontend and use it from there.
     /// </summary>
-    public string Url(IStorageFile file);
+    public string Url(StorageFile file);
 }

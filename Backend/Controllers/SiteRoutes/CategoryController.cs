@@ -1,4 +1,6 @@
-﻿using Data;
+﻿using Backend.Auth;
+using Backend.Services;
+using Data;
 using Data.Models.ProductTables;
 using Lib;
 using Lib.EntityFrameworkCore;
@@ -12,10 +14,12 @@ namespace Backend.Controllers.SiteRoutes;
 public class CategoryController : ControllerBase
 {
     private readonly Db db;
+    private readonly CategoryService categoryService;
 
-    public CategoryController(Db db)
+    public CategoryController(Db db, CategoryService categoryService)
     {
         this.db = db;
+        this.categoryService = categoryService;
     }
 
     public record ShopCategoryOutput(string Id, string Name, string? ParentId);
@@ -77,8 +81,7 @@ public class CategoryController : ControllerBase
     [HttpPatch, Authorize]
     public async Task<IActionResult> EditCategory([FromBody] EditCategoryInput input)
     {
-        var uid = User.FindFirst(Jwt.Uid)?.Value;
-        if (uid == null) Forbid();
+        var uid = User.Uid();
 
         var category = await db.Categories.QueryOne(x => x.Id == input.Id && x.Shop.OwnerId == uid);
         if (category == null) return NotFound();
@@ -92,8 +95,7 @@ public class CategoryController : ControllerBase
         }
         else if (parentId != string.Empty)
         {
-            var parentExist = await db.Categories.Have(x => x.Id == parentId && x.Shop.OwnerId == uid);
-            if (parentExist) category.ParentId = parentId;
+            await categoryService.ChangeCategoryParent(uid, category, parentId);
         }
 
         var saved = await db.Save();
