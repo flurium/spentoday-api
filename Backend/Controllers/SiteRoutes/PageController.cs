@@ -101,6 +101,10 @@ public class PageController : ControllerBase
             .QueryOne(x => x.ShopId == shopId && x.Slug == slug && x.Shop.OwnerId == uid.Value);
         if (page == null) return NotFound();
 
+        if (input.Title != null && input.Title != "") page.Title = input.Title;
+        if (input.Description != null && input.Description != "") page.Description = input.Description;
+        if (input.Content != null && input.Content != "") page.Content = input.Content;
+
         if (input.Slug != null && input.Slug != "")
         {
             var slugValid = IsSlugValid(input.Slug);
@@ -109,13 +113,23 @@ public class PageController : ControllerBase
             var slugTaken = await db.InfoPages.AnyAsync(x => x.ShopId == shopId && x.Slug == input.Slug).ConfigureAwait(false);
             if (slugTaken) return Conflict();
 
-            page.Slug = input.Slug;
+            db.InfoPages.Remove(page);
+
+            await db.Save();
+
+            var newPage = new InfoPage(input.Slug, shopId);
+            newPage.Title = page.Title;
+            newPage.Description = page.Description;
+            newPage.Content = page.Content;
+
+            await db.InfoPages.AddAsync(newPage);
+
+            var isSaved = await db.Save();
+
+            return isSaved ? Ok(new PageOutput(newPage.Slug, newPage.Title, newPage.Content, newPage.Description)) : Problem();
         }
 
-        if (input.Title != null && input.Title != "") page.Title = input.Title;
-        if (input.Description != null && input.Description != "") page.Description = input.Description;
-        if (input.Content != null && input.Content != "") page.Content = input.Content;
-
+        page.UpdatedAt = DateTime.Now.ToUniversalTime();
         var saved = await db.Save();
         return saved ? Ok(new PageOutput(page.Slug, page.Title, page.Content, page.Description)) : Problem();
     }
