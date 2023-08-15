@@ -26,12 +26,12 @@ public class PageController : ControllerBase
     {
         var pages = await db.InfoPages
             .Where(x => x.ShopId == shopId)
-            .Select(x => new PagesOutput(x.Slug, x.Title, x.UpdatedAt))
+            .Select(x => new PagesOutput(x.Slug, x.Title, x.UpdatedAt.ToLocalTime()))
             .QueryMany();
 
         return Ok(pages);
     }
-
+ 
     [NonAction]
     public bool IsSlugValid(string slug)
     {
@@ -79,7 +79,7 @@ public class PageController : ControllerBase
     }
 
     public record UpdatePageInput(string? Slug, string? Title, string? Description, string? Content);
-
+    public record PageOutput(string Slug, string? Title, string? Content, string? Description);
     /// <response code="401">User is unauthorized.</response>
     /// <response code="404">Page isn't found.</response>
     /// <response code="400">Slug isn't valid.</response>
@@ -101,7 +101,7 @@ public class PageController : ControllerBase
             .QueryOne(x => x.ShopId == shopId && x.Slug == slug && x.Shop.OwnerId == uid.Value);
         if (page == null) return NotFound();
 
-        if (input.Slug != null)
+        if (input.Slug != null && input.Slug != "")
         {
             var slugValid = IsSlugValid(input.Slug);
             if (!slugValid) return BadRequest();
@@ -112,11 +112,22 @@ public class PageController : ControllerBase
             page.Slug = input.Slug;
         }
 
-        if (input.Title != null) page.Title = input.Title;
-        if (input.Description != null) page.Description = input.Description;
-        if (input.Content != null) page.Content = input.Content;
+        if (input.Title != null && input.Title != "") page.Title = input.Title;
+        if (input.Description != null && input.Description != "") page.Description = input.Description;
+        if (input.Content != null && input.Content != "") page.Content = input.Content;
 
         var saved = await db.Save();
-        return saved ? Ok(page) : Problem();
+        return saved ? Ok(new PageOutput(page.Slug, page.Title, page.Content, page.Description)) : Problem();
+    }
+    [HttpGet("{shopId}/page/{slug}")]
+    [Authorize]
+    public async Task<IActionResult> Page([FromRoute] string shopId, [FromRoute] string slug)
+    {
+        var page = await db.InfoPages
+            .Where(x => x.ShopId == shopId && x.Slug == slug)
+            .Select(x => new PageOutput(x.Slug, x.Title, x.Content, x.Description))
+            .QueryOne();
+
+        return Ok(page);
     }
 }
