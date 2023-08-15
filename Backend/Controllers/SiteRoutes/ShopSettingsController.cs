@@ -77,7 +77,7 @@ namespace Backend.Controllers.SiteRoutes
             if (uid == null) return Unauthorized();
 
             var banner = file;
-            if (!imageService.IsImageFile(banner)) return BadRequest();
+            if (!ImageExtension.IsImage(banner)) return BadRequest();
 
             var shop = await db.Shops
             .QueryOne(x => x.Id == shopId && x.OwnerId == uid.Value);
@@ -101,10 +101,10 @@ namespace Backend.Controllers.SiteRoutes
 
             if (!saved)
             {
-                await imageService.SafeDeleteOne(shopBanner);
+                await imageService.SafeDelete(shopBanner);
                 return Problem();
             }
-            return Ok(new BannerOut(storage.Url(shopBanner), shopBanner.Id));
+            return Ok(new BannerOut(storage.Url(shopBanner.GetStorageFile()), shopBanner.Id));
         }
         [HttpDelete("banner/{bannerId}")]
         [Authorize]
@@ -119,7 +119,7 @@ namespace Backend.Controllers.SiteRoutes
 
             if (banner == null) return Problem();
 
-            await imageService.SafeDeleteOne(banner);
+            await imageService.SafeDelete(banner);
             db.ShopBanners.Remove(banner);
             var saved = await db.Save();
             return saved ? Ok() : Problem();
@@ -153,12 +153,12 @@ namespace Backend.Controllers.SiteRoutes
 
             if (shop == null) return Problem();
 
-            if (imageService.IsImageFile(file))
+            if (ImageExtension.IsImage(file))
             {
                 var logo = shop.GetStorageFile();
                 if (logo != null)
                 {
-                    await imageService.SafeDeleteOne(logo);
+                    await imageService.SafeDelete(logo);
                 }
 
                 var fileId = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
