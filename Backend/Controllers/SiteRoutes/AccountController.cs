@@ -1,15 +1,11 @@
 ﻿using Backend.Auth;
 using Backend.Services;
 using Data;
-using Data.Models.ProductTables;
 using Data.Models.UserTables;
-using Lib.EntityFrameworkCore;
 using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers.SiteRoutes
 {
@@ -40,8 +36,8 @@ namespace Backend.Controllers.SiteRoutes
 
             if (user == null) return NotFound();
             var file = user.GetStorageFile();
-         
-            return Ok(new OneUser(Name: user.Name, ImageUrl: file != null? storage.Url(file): null));
+
+            return Ok(new OneUser(Name: user.Name, ImageUrl: file != null ? storage.Url(file) : null));
         }
 
         [HttpPost("image"), Authorize]
@@ -64,7 +60,7 @@ namespace Backend.Controllers.SiteRoutes
             user.ImageKey = uploadedFile.Key;
 
             var res = await userManager.UpdateAsync(user);
-            
+
             if (res.Succeeded) return Ok(storage.Url(uploadedFile));
 
             await storage.Delete(uploadedFile);
