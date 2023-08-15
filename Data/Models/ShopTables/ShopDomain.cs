@@ -15,4 +15,9 @@ public class ShopDomain
         ShopId = shopId;
         Verified = verified;
     }
+
+    public bool IsOwned(string domain)
+    {
+        return Domain == domain;
+    }
 }
