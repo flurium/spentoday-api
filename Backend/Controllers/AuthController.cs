@@ -76,7 +76,6 @@ public class AuthController : ControllerBase
                 if (x.Code == nameof(IdentityErrorDescriber.PasswordRequiresNonAlphanumeric)) error = "nonAlphanumeric";
 
                 return error;
-
             });
             return StatusCode(500 ,errors);
         }

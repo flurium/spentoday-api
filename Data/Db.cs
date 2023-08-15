@@ -38,7 +38,7 @@ public class Db : IdentityDbContext<User>
         shop.HasOne(x => x.Owner).WithMany(x => x.Shops).HasForeignKey(x => x.OwnerId);
 
         var shopDomain = builder.Entity<ShopDomain>();
-        shopDomain.HasKey(x => x.Domain);
+        shopDomain.HasKey(x => new { x.Domain, x.ShopId });
         shopDomain.HasOne(x => x.Shop).WithMany(x => x.Domains).HasForeignKey(x => x.ShopId);
 
         var shopBanner = builder.Entity<ShopBanner>();
