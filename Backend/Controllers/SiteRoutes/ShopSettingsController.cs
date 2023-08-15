@@ -1,211 +1,217 @@
 ﻿using Backend.Services;
 using Data;
 using Data.Models.ShopTables;
-using Lib;
 using Lib.EntityFrameworkCore;
-using Lib.Storage;
+using Lib;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Data.Models.ProductTables;
+using Lib.Storage;
+using Data.Models.UserTables;
+using Backend.Auth;
 
-namespace Backend.Controllers.SiteRoutes;
-
-[Route("v1/site/shopsettings")]
-[ApiController]
-public class ShopSettingsController : ControllerBase
+namespace Backend.Controllers.SiteRoutes
 {
-    private readonly Db db;
-    private readonly ImageService imageService;
-
-    private readonly IStorage storage;
-
-    public ShopSettingsController(Db context, ImageService imageService, IStorage storage)
+    [Route("v1/site/shopsettings")]
+    [ApiController]
+    public class ShopSettingsController : ControllerBase
     {
-        db = context;
-        this.imageService = imageService;
-        this.storage = storage;
-    }
+        private readonly Db db;
+        private readonly ImageService imageService;
 
-    public record LinkIn(string Name, string Link);
-    public record LinkOut(string Name, string Link, string Id);
-    public record BannerOut(string Url, string Id);
-    public record ShopUpdate(string Name);
-    public record ShopOut(string Name, string Logo, List<BannerOut> Banners, List<LinkOut> Links);
+        private readonly IStorage storage;
 
-    [HttpPost("{shopId}/addlink")]
-    [Authorize]
-    public async Task<IActionResult> AddLink([FromBody] LinkIn link, [FromRoute] string shopId)
-    {
-        var uid = User.FindFirst(Jwt.Uid);
-        if (uid == null) return Unauthorized();
-
-        var shop = await db.Shops
-        .QueryOne(x => x.Id == shopId && x.OwnerId == uid.Value);
-
-        if (shop == null) return Problem();
-
-        var newLink = new SocialMediaLink(link.Name, link.Link, shopId);
-
-        await db.SocialMediaLinks.AddAsync(newLink);
-
-        var saved = await db.Save();
-        return saved ? Ok(new LinkOut(newLink.Name, newLink.Link, newLink.Id)) : Problem();
-    }
-
-    [HttpDelete("{linkId}/deletelink")]
-    [Authorize]
-    public async Task<IActionResult> DeleteLink([FromRoute] string linkId)
-    {
-        var uid = User.FindFirst(Jwt.Uid);
-        if (uid == null) return Unauthorized();
-
-        var link = await db.SocialMediaLinks
-       .Where(x => x.Id == linkId)
-       .QueryOne();
-
-        if (link == null) return NotFound();
-
-        db.SocialMediaLinks.Remove(link);
-
-        var saved = await db.Save();
-        return saved ? Ok() : Problem();
-    }
-
-    [HttpPost("{shopId}/addbanner")]
-    [Authorize]
-    public async Task<IActionResult> AddBanner(IFormFile file, [FromRoute] string shopId)
-    {
-        var uid = User.FindFirst(Jwt.Uid);
-        if (uid == null) return Unauthorized();
-
-        var banner = file;
-        if (!banner.IsImage()) return BadRequest();
-
-        var shop = await db.Shops
-        .QueryOne(x => x.Id == shopId && x.OwnerId == uid.Value);
-
-        if (shop == null) return Problem();
-
-        var fileId = Guid.NewGuid().ToString() + Path.GetExtension(banner.FileName);
-        ShopBanner shopBanner;
-
-        using (var stream = banner.OpenReadStream())
+        public ShopSettingsController(Db context, ImageService imageService, IStorage storage)
         {
-            var uploadedFile = await storage.Upload(fileId, stream);
-
-            if (uploadedFile == null) return Problem();
-
-            shopBanner = new ShopBanner(uploadedFile.Provider, uploadedFile.Bucket, uploadedFile.Key, shopId);
-            await db.ShopBanners.AddAsync(shopBanner);
+            db = context;
+            this.imageService = imageService;
+            this.storage = storage;
         }
-
-        var saved = await db.Save();
-
-        if (!saved)
+        public record LinkIn(string Name, string Link);
+        public record LinkOut(string Name, string Link, string Id);
+        public record BannerOut(string Url, string Id);
+        public record ShopUpdate(string Name);
+        public record ShopOut(string Name, string Logo, List<BannerOut> Banners, List<LinkOut> Links);
+        [HttpPost("{shopId}/link")]
+        [Authorize]
+        public async Task<IActionResult> AddLink([FromBody] LinkIn link, [FromRoute] string shopId)
         {
-            await imageService.SafeDelete(shopBanner);
-            return Problem();
+            var uid = User.Uid();
+            if (uid == null) return Unauthorized();
+
+            var shop = await db.Shops
+            .QueryOne(x => x.Id == shopId && x.OwnerId == uid);
+
+            if (shop == null) return Problem();
+
+            var newLink = new SocialMediaLink(link.Name, link.Link, shopId);
+
+            await db.SocialMediaLinks.AddAsync(newLink);
+
+            var saved = await db.Save();
+            return saved ? Ok(new LinkOut(newLink.Name, newLink.Link, newLink.Id)) : Problem();
         }
-        return Ok(new BannerOut(storage.Url(shopBanner.GetStorageFile()), shopBanner.Id));
-    }
+        [HttpDelete("link/{linkId}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteLink([FromRoute] string linkId)
+        {
+            var uid = User.Uid();
+            if (uid == null) return Unauthorized();
 
-    [HttpDelete("{bannerId}/deletebanner")]
-    [Authorize]
-    public async Task<IActionResult> DeleteBanner([FromRoute] string bannerId)
-    {
-        var uid = User.FindFirst(Jwt.Uid);
-        if (uid == null) return Unauthorized();
+            var link = await db.SocialMediaLinks
+           .Where(x => x.Id == linkId)
+           .QueryOne();
 
-        var banner = await db.ShopBanners
-       .Where(x => x.Id == bannerId)
-       .QueryOne();
+            if (link == null) return NotFound();
 
-        if (banner == null) return Problem();
+            db.SocialMediaLinks.Remove(link);
 
-        await imageService.SafeDelete(banner);
-        db.ShopBanners.Remove(banner);
-        var saved = await db.Save();
-        return saved ? Ok() : Problem();
-    }
+            var saved = await db.Save();
+            return saved ? Ok() : Problem();
+        }
+        [HttpPost("{shopId}/banner")]
+        [Authorize]
+        public async Task<IActionResult> AddBanner(IFormFile file, [FromRoute] string shopId)
+        {
+            var uid = User.Uid();
+            if (uid == null) return Unauthorized();
 
-    [HttpPost("{shopId}/name")]
-    [Authorize]
-    public async Task<IActionResult> UpdateShopName([FromRoute] string shopId, [FromBody] ShopUpdate shopName)
-    {
-        var uid = User.FindFirst(Jwt.Uid);
-        if (uid == null) return Unauthorized();
+            var banner = file;
+            if (!ImageExtension.IsImage(banner)) return BadRequest();
 
-        var shop = await db.Shops
-       .QueryOne(x => x.Id == shopId && x.OwnerId == uid.Value);
+            var shop = await db.Shops
+            .QueryOne(x => x.Id == shopId && x.OwnerId == uid);
 
-        if (shop == null) return NotFound();
+            if (shop == null) return Problem();
 
-        shop.Name = shopName.Name;
+            var fileId = Guid.NewGuid().ToString() + Path.GetExtension(banner.FileName);
+            ShopBanner shopBanner;
 
-        var saved = await db.Save();
-        return saved ? Ok() : Problem();
-    }
+            using (var stream = banner.OpenReadStream())
+            {
+                var uploadedFile = await storage.Upload(fileId, stream);
 
-    [HttpPost("{shopId}/logo")]
-    [Authorize]
-    public async Task<IActionResult> UploadLogo([FromRoute] string shopId, IFormFile file)
-    {
-        var uid = User.FindFirst(Jwt.Uid);
-        if (uid == null) return Unauthorized();
+                if (uploadedFile == null) return Problem();
 
-        var shop = await db.Shops
-       .QueryOne(x => x.Id == shopId && x.OwnerId == uid.Value);
+                shopBanner = new ShopBanner(uploadedFile.Provider, uploadedFile.Bucket, uploadedFile.Key, shopId);
+                await db.ShopBanners.AddAsync(shopBanner);
+            }
 
-        if (shop == null) return Problem();
+            var saved = await db.Save();
 
-        if (!file.IsImage()) return BadRequest();
+            if (!saved)
+            {
+                await imageService.SafeDelete(shopBanner);
+                return Problem();
+            }
+            return Ok(new BannerOut(storage.Url(shopBanner.GetStorageFile()), shopBanner.Id));
+        }
+        [HttpDelete("banner/{bannerId}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteBanner([FromRoute] string bannerId)
+        {
+            var uid = User.Uid();
+            if (uid == null) return Unauthorized();
 
-        var logo = shop.GetStorageFile();
-        if (logo != null) await imageService.SafeDelete(logo);
+            var banner = await db.ShopBanners
+           .Where(x => x.Id == bannerId)
+           .QueryOne();
 
-        var fileId = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            if (banner == null) return Problem();
 
-        var uploadedFile = await storage.Upload(fileId, file.OpenReadStream());
-        if (uploadedFile == null) return Problem();
+            await imageService.SafeDelete(banner);
+            db.ShopBanners.Remove(banner);
+            var saved = await db.Save();
+            return saved ? Ok() : Problem();
+        }
+        [HttpPost("{shopId}/name")]
+        [Authorize]
+        public async Task<IActionResult> UpdateShopName([FromRoute] string shopId, [FromBody] ShopUpdate shopName)
+        {
+            var uid = User.Uid();
+            if (uid == null) return Unauthorized();
 
-        shop.LogoBucket = uploadedFile.Bucket;
-        shop.LogoKey = uploadedFile.Key;
-        shop.LogoProvider = uploadedFile.Provider;
+            var shop = await db.Shops
+           .QueryOne(x => x.Id == shopId && x.OwnerId == uid);
 
-        var saved = await db.Save();
-        return saved ? Ok(storage.Url(uploadedFile)) : Problem();
-    }
+            if (shop == null) return NotFound();
 
-    [HttpGet("{shopId}/getshop")]
-    [Authorize]
-    public async Task<IActionResult> GetShop([FromRoute] string shopId)
-    {
-        var uid = User.FindFirst(Jwt.Uid);
-        if (uid == null) return Unauthorized();
+            shop.Name = shopName.Name;
 
-        var shop = await db.Shops
-       .QueryOne(x => x.Id == shopId && x.OwnerId == uid.Value);
+            var saved = await db.Save();
+            return saved ? Ok() : Problem();
+        }
+        [HttpPost("{shopId}/logo")]
+        [Authorize]
+        public async Task<IActionResult> UploadLogo([FromRoute] string shopId, IFormFile file)
+        {
+            var uid = User.Uid();
+            if (uid == null) return Unauthorized();
 
-        if (shop == null) return NotFound();
+            var shop = await db.Shops
+           .QueryOne(x => x.Id == shopId && x.OwnerId == uid);
 
-        var banners = await db.ShopBanners
-        .Where(x => x.ShopId == shopId)
-        .Select(x => new BannerOut(storage.Url(x.GetStorageFile()), x.Id))
-        .QueryMany();
+            if (shop == null) return Problem();
 
-        var links = await db.SocialMediaLinks
-       .Where(x => x.ShopId == shopId)
-       .Select(x => new LinkOut(x.Name, x.Link, x.Id))
-       .QueryMany();
+            if (ImageExtension.IsImage(file))
+            {
+                var logo = shop.GetStorageFile();
+                if (logo != null)
+                {
+                    await imageService.SafeDelete(logo);
+                }
 
-        var logoFile = shop.GetStorageFile();
-        string logo = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDsRxTnsSBMmVvRxdygcb9ue6xfUYL58YX27JLNLohHQ&s";
-        if (logoFile != null) logo = storage.Url(logoFile);
+                var fileId = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
 
-        string name = shop.Name;
+                using (var stream = file.OpenReadStream())
+                {
+                    var uploadedFile = await storage.Upload(fileId, stream);
 
-        var shopOut = new ShopOut(name, logo, banners.ToList(), links.ToList());
+                    if (uploadedFile == null) return Problem();
 
-        var saved = await db.Save();
-        return saved ? Ok(shopOut) : Problem();
+                    shop.LogoBucket = uploadedFile.Bucket;
+                    shop.LogoKey = uploadedFile.Key;
+                    shop.LogoProvider = uploadedFile.Provider;
+                }
+            }
+            else return BadRequest();
+
+            var saved = await db.Save();
+            return saved ? Ok(storage.Url(shop.GetStorageFile())) : Problem();
+        }
+        [HttpGet("shop/{shopId}")]
+        [Authorize]
+        public async Task<IActionResult> GetShop([FromRoute] string shopId)
+        {
+            var uid = User.Uid();
+            if (uid == null) return Unauthorized();
+
+            var shop = await db.Shops
+           .QueryOne(x => x.Id == shopId && x.OwnerId == uid);
+
+            if (shop == null) return NotFound();
+
+            var banners = await db.ShopBanners
+            .Where(x => x.ShopId == shopId)
+            .Select(x => new BannerOut(storage.Url(x.GetStorageFile()), x.Id))
+            .QueryMany();
+
+            var links = await db.SocialMediaLinks
+           .Where(x => x.ShopId == shopId)
+           .Select(x => new LinkOut(x.Name, x.Link, x.Id))
+           .QueryMany();
+
+            var logoFile = shop.GetStorageFile();
+            string logo = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDsRxTnsSBMmVvRxdygcb9ue6xfUYL58YX27JLNLohHQ&s";
+            if (logoFile != null) logo = storage.Url(logoFile);
+
+            string name = shop.Name;
+
+            var shopOut = new ShopOut(name, logo, banners.ToList(), links.ToList());
+
+            var saved = await db.Save();
+            return saved ? Ok(shopOut) : Problem();
+        }
     }
 }

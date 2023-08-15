@@ -6,7 +6,7 @@ public class InfoPage
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
-    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    public DateTime UpdatedAt { get; set; } = DateTime.Now.ToUniversalTime();
 
     public string ShopId { get; set; }
     public Shop Shop { get; } = default!;
