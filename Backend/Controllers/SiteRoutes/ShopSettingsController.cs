@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Data.Models.ProductTables;
 using Lib.Storage;
 using Data.Models.UserTables;
+using Backend.Auth;
 
 namespace Backend.Controllers.SiteRoutes
 {
@@ -36,11 +37,11 @@ namespace Backend.Controllers.SiteRoutes
         [Authorize]
         public async Task<IActionResult> AddLink([FromBody] LinkIn link, [FromRoute] string shopId)
         {
-            var uid = User.FindFirst(Jwt.Uid);
+            var uid = User.Uid();
             if (uid == null) return Unauthorized();
 
             var shop = await db.Shops
-            .QueryOne(x => x.Id == shopId && x.OwnerId == uid.Value);
+            .QueryOne(x => x.Id == shopId && x.OwnerId == uid);
 
             if (shop == null) return Problem();
 
@@ -55,7 +56,7 @@ namespace Backend.Controllers.SiteRoutes
         [Authorize]
         public async Task<IActionResult> DeleteLink([FromRoute] string linkId)
         {
-            var uid = User.FindFirst(Jwt.Uid);
+            var uid = User.Uid();
             if (uid == null) return Unauthorized();
 
             var link = await db.SocialMediaLinks
@@ -73,14 +74,14 @@ namespace Backend.Controllers.SiteRoutes
         [Authorize]
         public async Task<IActionResult> AddBanner(IFormFile file, [FromRoute] string shopId)
         {
-            var uid = User.FindFirst(Jwt.Uid);
+            var uid = User.Uid();
             if (uid == null) return Unauthorized();
 
             var banner = file;
             if (!ImageExtension.IsImage(banner)) return BadRequest();
 
             var shop = await db.Shops
-            .QueryOne(x => x.Id == shopId && x.OwnerId == uid.Value);
+            .QueryOne(x => x.Id == shopId && x.OwnerId == uid);
 
             if (shop == null) return Problem();
 
@@ -110,7 +111,7 @@ namespace Backend.Controllers.SiteRoutes
         [Authorize]
         public async Task<IActionResult> DeleteBanner([FromRoute] string bannerId)
         {
-            var uid = User.FindFirst(Jwt.Uid);
+            var uid = User.Uid();
             if (uid == null) return Unauthorized();
 
             var banner = await db.ShopBanners
@@ -128,11 +129,11 @@ namespace Backend.Controllers.SiteRoutes
         [Authorize]
         public async Task<IActionResult> UpdateShopName([FromRoute] string shopId, [FromBody] ShopUpdate shopName)
         {
-            var uid = User.FindFirst(Jwt.Uid);
+            var uid = User.Uid();
             if (uid == null) return Unauthorized();
 
             var shop = await db.Shops
-           .QueryOne(x => x.Id == shopId && x.OwnerId == uid.Value);
+           .QueryOne(x => x.Id == shopId && x.OwnerId == uid);
 
             if (shop == null) return NotFound();
 
@@ -145,11 +146,11 @@ namespace Backend.Controllers.SiteRoutes
         [Authorize]
         public async Task<IActionResult> UploadLogo([FromRoute] string shopId, IFormFile file)
         {
-            var uid = User.FindFirst(Jwt.Uid);
+            var uid = User.Uid();
             if (uid == null) return Unauthorized();
 
             var shop = await db.Shops
-           .QueryOne(x => x.Id == shopId && x.OwnerId == uid.Value);
+           .QueryOne(x => x.Id == shopId && x.OwnerId == uid);
 
             if (shop == null) return Problem();
 
@@ -183,11 +184,11 @@ namespace Backend.Controllers.SiteRoutes
         [Authorize]
         public async Task<IActionResult> GetShop([FromRoute] string shopId)
         {
-            var uid = User.FindFirst(Jwt.Uid);
+            var uid = User.Uid();
             if (uid == null) return Unauthorized();
 
             var shop = await db.Shops
-           .QueryOne(x => x.Id == shopId && x.OwnerId == uid.Value);
+           .QueryOne(x => x.Id == shopId && x.OwnerId == uid);
 
             if (shop == null) return NotFound();
 

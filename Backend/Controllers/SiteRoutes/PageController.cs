@@ -1,4 +1,5 @@
-﻿using Data;
+﻿using Backend.Auth;
+using Data;
 using Data.Models.ShopTables;
 using Lib;
 using Lib.EntityFrameworkCore;
@@ -26,7 +27,7 @@ public class PageController : ControllerBase
     {
         var pages = await db.InfoPages
             .Where(x => x.ShopId == shopId)
-            .Select(x => new PagesOutput(x.Slug, x.Title, x.UpdatedAt.ToLocalTime()))
+            .Select(x => new PagesOutput(x.Slug, x.Title, x.UpdatedAt))
             .QueryMany();
 
         return Ok(pages);
@@ -79,7 +80,7 @@ public class PageController : ControllerBase
     }
 
     public record UpdatePageInput(string? Slug, string? Title, string? Description, string? Content);
-    public record PageOutput(string Slug, string? Title, string? Content, string? Description);
+    public record PageOutput(string Slug, string Title, string Content, string Description);
     /// <response code="401">User is unauthorized.</response>
     /// <response code="404">Page isn't found.</response>
     /// <response code="400">Slug isn't valid.</response>
@@ -94,23 +95,22 @@ public class PageController : ControllerBase
         [FromBody] UpdatePageInput input
     )
     {
-        var uid = User.FindFirst(Jwt.Uid);
+        var uid = User.Uid();
         if (uid == null) return Unauthorized();
 
         var page = await db.InfoPages
-            .QueryOne(x => x.ShopId == shopId && x.Slug == slug && x.Shop.OwnerId == uid.Value);
+            .QueryOne(x => x.ShopId == shopId && x.Slug == slug && x.Shop.OwnerId == uid);
         if (page == null) return NotFound();
+        if (input.Title != null) page.Title = input.Title;
+        if (input.Description != null) page.Description = input.Description;
+        if (input.Content != null) page.Content = input.Content;
 
-        if (input.Title != null && input.Title != "") page.Title = input.Title;
-        if (input.Description != null && input.Description != "") page.Description = input.Description;
-        if (input.Content != null && input.Content != "") page.Content = input.Content;
-
-        if (input.Slug != null && input.Slug != "")
+        if (input.Slug != null)
         {
             var slugValid = IsSlugValid(input.Slug);
             if (!slugValid) return BadRequest();
 
-            var slugTaken = await db.InfoPages.AnyAsync(x => x.ShopId == shopId && x.Slug == input.Slug).ConfigureAwait(false);
+            var slugTaken = await db.InfoPages.Have(x => x.ShopId == shopId && x.Slug == input.Slug);
             if (slugTaken) return Conflict();
 
             db.InfoPages.Remove(page);
@@ -137,8 +137,10 @@ public class PageController : ControllerBase
     [Authorize]
     public async Task<IActionResult> Page([FromRoute] string shopId, [FromRoute] string slug)
     {
+        var uid = User.Uid();
+        if (uid == null) return Unauthorized();
         var page = await db.InfoPages
-            .Where(x => x.ShopId == shopId && x.Slug == slug)
+            .Where(x => x.ShopId == shopId && x.Slug == slug && x.Shop.OwnerId == uid)
             .Select(x => new PageOutput(x.Slug, x.Title, x.Content, x.Description))
             .QueryOne();
 
