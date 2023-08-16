@@ -1,4 +1,5 @@
 ﻿using Data;
+using Data.Models.ProductTables;
 using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +30,8 @@ public class CartController : ControllerBase
     public async Task<IActionResult> LocalList([FromBody] LocalListInput input)
     {
         var products = await db.Products
-            .Where(x => !x.IsDraft && input.Ids.Contains(x.Id) && x.Shop.OwnDomain(input.Domain))
+            .OwnedBy(input.Domain)
+            .Where(x => !x.IsDraft && input.Ids.Contains(x.Id))
             .Select(x => new LocalListOutput(x.Id, x.Name, x.Price))
             .QueryMany();
         return Ok(products);

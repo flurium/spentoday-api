@@ -1,6 +1,7 @@
 ﻿using Data.Models.ProductTables;
 using Data.Models.UserTables;
 using Lib.Storage;
+using System.Linq.Expressions;
 
 namespace Data.Models.ShopTables;
 
@@ -33,12 +34,5 @@ public class Shop : IPossibleStorageFileContainer
     {
         if (LogoKey == null || LogoBucket == null || LogoProvider == null) return null;
         return new StorageFile(LogoBucket, LogoKey, LogoProvider);
-    }
-
-    public bool OwnDomain(string domain)
-    {
-        return Domains.Any(x => x.Domain == domain
-        // && x.Verified
-        );
     }
 }

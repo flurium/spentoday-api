@@ -1,4 +1,5 @@
 ﻿using Data.Models.ShopTables;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Data.Models.ProductTables;
 
@@ -30,5 +31,14 @@ public class Product
         Name = name;
         ShopId = shopId;
         SeoSlug = seoSlug;
+    }
+}
+
+public static class ProductExtension
+{
+    public static IQueryable<Product> OwnedBy(this IQueryable<Product> query, string shopDomain)
+    {
+        // && x.Verified
+        return query.Where(x => x.Shop.Domains.Any(x => x.Domain == shopDomain));
     }
 }
