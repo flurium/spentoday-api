@@ -1,15 +1,11 @@
-﻿using Backend.Services;
+﻿using Backend.Auth;
+using Backend.Services;
 using Data;
 using Data.Models.ShopTables;
 using Lib.EntityFrameworkCore;
-using Lib;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Data.Models.ProductTables;
 using Lib.Storage;
-using Data.Models.UserTables;
-using Backend.Auth;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers.SiteRoutes
 {
@@ -28,11 +24,13 @@ namespace Backend.Controllers.SiteRoutes
             this.imageService = imageService;
             this.storage = storage;
         }
+
         public record LinkIn(string Name, string Link);
         public record LinkOut(string Name, string Link, string Id);
         public record BannerOut(string Url, string Id);
         public record ShopUpdate(string Name);
         public record ShopOut(string Name, string Logo, List<BannerOut> Banners, List<LinkOut> Links);
+
         [HttpPost("{shopId}/link")]
         [Authorize]
         public async Task<IActionResult> AddLink([FromBody] LinkIn link, [FromRoute] string shopId)
@@ -52,6 +50,7 @@ namespace Backend.Controllers.SiteRoutes
             var saved = await db.Save();
             return saved ? Ok(new LinkOut(newLink.Name, newLink.Link, newLink.Id)) : Problem();
         }
+
         [HttpDelete("link/{linkId}")]
         [Authorize]
         public async Task<IActionResult> DeleteLink([FromRoute] string linkId)
@@ -70,6 +69,7 @@ namespace Backend.Controllers.SiteRoutes
             var saved = await db.Save();
             return saved ? Ok() : Problem();
         }
+
         [HttpPost("{shopId}/banner")]
         [Authorize]
         public async Task<IActionResult> AddBanner(IFormFile file, [FromRoute] string shopId)
@@ -107,6 +107,7 @@ namespace Backend.Controllers.SiteRoutes
             }
             return Ok(new BannerOut(storage.Url(shopBanner.GetStorageFile()), shopBanner.Id));
         }
+
         [HttpDelete("banner/{bannerId}")]
         [Authorize]
         public async Task<IActionResult> DeleteBanner([FromRoute] string bannerId)
@@ -125,6 +126,7 @@ namespace Backend.Controllers.SiteRoutes
             var saved = await db.Save();
             return saved ? Ok() : Problem();
         }
+
         [HttpPost("{shopId}/name")]
         [Authorize]
         public async Task<IActionResult> UpdateShopName([FromRoute] string shopId, [FromBody] ShopUpdate shopName)
@@ -142,6 +144,7 @@ namespace Backend.Controllers.SiteRoutes
             var saved = await db.Save();
             return saved ? Ok() : Problem();
         }
+
         [HttpPost("{shopId}/logo")]
         [Authorize]
         public async Task<IActionResult> UploadLogo([FromRoute] string shopId, IFormFile file)
@@ -180,6 +183,7 @@ namespace Backend.Controllers.SiteRoutes
             var saved = await db.Save();
             return saved ? Ok(storage.Url(shop.GetStorageFile())) : Problem();
         }
+
         [HttpGet("shop/{shopId}")]
         [Authorize]
         public async Task<IActionResult> GetShop([FromRoute] string shopId)

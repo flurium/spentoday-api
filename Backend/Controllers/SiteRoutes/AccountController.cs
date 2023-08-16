@@ -93,11 +93,10 @@ public class AccountController : ControllerBase
         var user = await userManager.FindByIdAsync(uid);
         if (user == null) return NotFound();
 
-
-            var res = await userManager.ChangePasswordAsync(user, input.CurrentPassword, input.NewPassword);
-            user.Version++;
-            var changeVersionResult = await userManager.UpdateAsync(user);
-            if (res.Succeeded && changeVersionResult.Succeeded) return Ok();
+        var res = await userManager.ChangePasswordAsync(user, input.CurrentPassword, input.NewPassword);
+        user.Version++;
+        var changeVersionResult = await userManager.UpdateAsync(user);
+        if (res.Succeeded && changeVersionResult.Succeeded) return Ok();
 
         return Problem();
     }

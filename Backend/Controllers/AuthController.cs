@@ -77,7 +77,7 @@ public class AuthController : ControllerBase
 
                 return error;
             });
-            return StatusCode(500 ,errors);
+            return StatusCode(500, errors);
         }
 
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);

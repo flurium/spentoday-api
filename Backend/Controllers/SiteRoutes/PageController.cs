@@ -32,7 +32,7 @@ public class PageController : ControllerBase
 
         return Ok(pages);
     }
- 
+
     [NonAction]
     public bool IsSlugValid(string slug)
     {
@@ -81,6 +81,7 @@ public class PageController : ControllerBase
 
     public record UpdatePageInput(string? Slug, string? Title, string? Description, string? Content);
     public record PageOutput(string Slug, string Title, string Content, string Description);
+
     /// <response code="401">User is unauthorized.</response>
     /// <response code="404">Page isn't found.</response>
     /// <response code="400">Slug isn't valid.</response>
@@ -133,6 +134,7 @@ public class PageController : ControllerBase
         var saved = await db.Save();
         return saved ? Ok(new PageOutput(page.Slug, page.Title, page.Content, page.Description)) : Problem();
     }
+
     [HttpGet("{shopId}/page/{slug}")]
     [Authorize]
     public async Task<IActionResult> Page([FromRoute] string shopId, [FromRoute] string slug)
