@@ -35,6 +35,16 @@ public class Shop : IPossibleStorageFileContainer
         if (LogoKey == null || LogoBucket == null || LogoProvider == null) return null;
         return new StorageFile(LogoBucket, LogoKey, LogoProvider);
     }
+
+}
+
+public static class ShopExtension
+{
+    public static IQueryable<Shop> OwnedBy(this IQueryable<Shop> query, string shopDomain)
+    {
+        return query.Where(x => x.Domains.Any(x => x.Domain == shopDomain));
+    }
+}
 }
 
 public static class ShopExtensions
