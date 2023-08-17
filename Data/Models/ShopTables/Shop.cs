@@ -36,3 +36,13 @@ public class Shop : IPossibleStorageFileContainer
         return new StorageFile(LogoBucket, LogoKey, LogoProvider);
     }
 }
+
+public static class ShopExtensions
+{
+    public static IQueryable<Shop> WithDomain(this IQueryable<Shop> query, string Domain)
+    {
+        return query.Where(x => x.Domains.Any(x => x.Domain == Domain
+        //&& x.Verified
+        ));
+    }
+}
