@@ -1,5 +1,4 @@
 ﻿using Data.Models.ShopTables;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Data.Models.ProductTables;
 

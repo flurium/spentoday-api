@@ -1,7 +1,6 @@
 ﻿using Data.Models.ProductTables;
 using Data.Models.UserTables;
 using Lib.Storage;
-using System.Linq.Expressions;
 
 namespace Data.Models.ShopTables;
 
@@ -35,7 +34,6 @@ public class Shop : IPossibleStorageFileContainer
         if (LogoKey == null || LogoBucket == null || LogoProvider == null) return null;
         return new StorageFile(LogoBucket, LogoKey, LogoProvider);
     }
-
 }
 
 public static class ShopExtension
@@ -44,11 +42,7 @@ public static class ShopExtension
     {
         return query.Where(x => x.Domains.Any(x => x.Domain == shopDomain));
     }
-}
-}
 
-public static class ShopExtensions
-{
     public static IQueryable<Shop> WithDomain(this IQueryable<Shop> query, string Domain)
     {
         return query.Where(x => x.Domains.Any(x => x.Domain == Domain

@@ -1,14 +1,11 @@
-﻿using Backend.Auth;
-using Backend.Services;
+﻿using Backend.Services;
 using Data;
 using Data.Models.ProductTables;
 using Lib.EntityFrameworkCore;
 using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using static Backend.Controllers.SiteRoutes.ProductController;
 
 namespace Backend.Controllers.ShopRoutes
 {
@@ -42,6 +39,5 @@ namespace Backend.Controllers.ShopRoutes
 
             return Ok(products);
         }
-
     }
 }
