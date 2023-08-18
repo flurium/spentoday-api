@@ -34,6 +34,9 @@ public class Shop : IPossibleStorageFileContainer
         if (LogoKey == null || LogoBucket == null || LogoProvider == null) return null;
         return new StorageFile(LogoBucket, LogoKey, LogoProvider);
     }
+
+    public string? TopBannerId { get; set; }
+
 }
 
 public static class ShopExtension
