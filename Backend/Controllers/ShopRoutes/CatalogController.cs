@@ -1,6 +1,7 @@
 ﻿using Backend.Services;
 using Data;
 using Data.Models.ProductTables;
+using Data.Models.ShopTables;
 using Lib.EntityFrameworkCore;
 using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
@@ -26,16 +27,19 @@ namespace Backend.Controllers.ShopRoutes
             this.categoryService = categoryService;
         }
 
+        public record class CatalogInput(string Search = "", int Start = 0,  int Count = 10);
+
         [HttpPost("{domain}"), Authorize]
-        public async Task<IActionResult> List([FromRoute] string domain, [FromBody] string search, [FromBody] int start = 0, [FromBody] int count = 10)
+        public async Task<IActionResult> List([FromRoute]string domain, [FromBody] CatalogInput input)
         {
-            var shop = await db.Shops.QueryOne(x => x.Domains.Any(x => x.IsOwned(domain)));
+            var shop = await db.Shops.OwnedBy(domain).QueryOne();
+
             if (shop == null) return Problem();
             IQueryable<Product> query = db.Products.Where(x => x.ShopId == shop.Id);
 
-            query = query.Where(x => x.Name.Contains(search)).OrderBy(x => x.Name.StartsWith(search));
+            query = query.Where(x => x.Name.Contains(input.Search)).OrderBy(x => x.Name.StartsWith(input.Search)).Skip(input.Start).Take(input.Count);
 
-            var products = await query.ToListAsync();
+            var products = await query.QueryMany();
 
             return Ok(products);
         }
