@@ -24,6 +24,8 @@ public class Db : IdentityDbContext<User>
     public DbSet<ProductImage> ProductImages { get; set; } = default!;
     public DbSet<Order> Orders { get; set; } = default!;
 
+    public DbSet<Question> Questions { get; set; } = default!;
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -31,6 +33,9 @@ public class Db : IdentityDbContext<User>
         // User tables
         var user = builder.Entity<User>();
         user.HasKey(x => x.Id);
+
+        var question = builder.Entity<Question>();
+        question.HasKey(x => x.Id);
 
         // Shop tables
         var shop = builder.Entity<Shop>();
