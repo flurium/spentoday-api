@@ -1,5 +1,6 @@
 ﻿using Data;
 using Data.Models.UserTables;
+using Lib.Email;
 using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,9 +12,13 @@ namespace Backend.Controllers.SiteRoutes;
 public class QuestionController : ControllerBase
 {
     private readonly Db db;
+    private readonly IEmailSender emailSender;
 
-    public QuestionController(Db db)
-    { this.db = db; }
+    public QuestionController(Db db, IEmailSender email)
+    {
+        this.db = db;
+        this.emailSender = email;
+    }
 
     public record QuestionInput(string Email, string Content);
 
@@ -28,6 +33,8 @@ public class QuestionController : ControllerBase
 
         await db.Questions.AddAsync(new Question(email, content));
         var saved = await db.Save();
+
+        await emailSender.Send(email, "Spentoday", new List<string> { "roman@flurium.com" }, "Question on Spentoday", content, content);
 
         return saved ? Ok() : Problem();
     }
