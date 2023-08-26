@@ -1,11 +1,7 @@
 ﻿using Backend.Services;
 using Data;
-using Data.Models.ProductTables;
-using Lib.EntityFrameworkCore;
 using Lib.Storage;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers.ShopRoutes
 {

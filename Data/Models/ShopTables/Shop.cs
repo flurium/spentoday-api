@@ -36,7 +36,6 @@ public class Shop : IPossibleStorageFileContainer
     }
 
     public string? TopBannerId { get; set; }
-
 }
 
 public static class ShopExtension

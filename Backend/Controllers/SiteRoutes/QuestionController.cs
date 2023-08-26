@@ -2,7 +2,6 @@
 using Data.Models.UserTables;
 using Lib.Email;
 using Lib.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers.SiteRoutes;
