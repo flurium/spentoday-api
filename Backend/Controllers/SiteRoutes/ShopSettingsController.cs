@@ -183,7 +183,66 @@ namespace Backend.Controllers.SiteRoutes
             return saved ? Ok(storage.Url(shop.GetStorageFile())) : Problem();
         }
 
+
+        [HttpPost("{shopId}/top")]
+        [Authorize]
+        public async Task<IActionResult> UploadTopBanner([FromRoute] string shopId, IFormFile file)
+        {
+            var uid = User.Uid();
+            if (uid == null) return Unauthorized();
+
+            var shop = await db.Shops
+           .QueryOne(x => x.Id == shopId && x.OwnerId == uid);
+
+            if (shop == null) return Problem();
+
+            if (ImageExtension.IsImage(file))
+            {
+                var topId= shop.TopBannerId;
+                var fileId = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                if (topId!= null)
+                {
+                    var top = await db.ShopBanners.QueryOne(x=>x.Id== topId && x.ShopId == shop.Id);
+                    if (top != null)
+                    {
+                        await imageService.SafeDelete(top.GetStorageFile());
+
+                        using (var stream = file.OpenReadStream())
+                        {
+                            var uploadedFile = await storage.Upload(fileId, stream);
+
+                            if (uploadedFile == null) return Problem();
+
+                            top.Bucket = uploadedFile.Bucket;
+                            top.Key = uploadedFile.Key;
+                            top.Provider = uploadedFile.Provider;
+                        }
+                    }
+                }
+                else
+                {
+                    using (var stream = file.OpenReadStream())
+                    {
+                    var uploadedFile = await storage.Upload(fileId, stream);
+
+                    if (uploadedFile == null) return Problem();
+
+                    var newTop = new ShopBanner(uploadedFile.Provider, uploadedFile.Bucket, uploadedFile.Key,shop.Id);
+                    await db.ShopBanners.AddAsync(newTop);
+                    shop.TopBannerId = newTop.Id;
+                    }
+                }
+
+            }
+            else return BadRequest();
+
+            var saved = await db.Save();
+            var banner = await db.ShopBanners.QueryOne(x => x.Id == shop.TopBannerId);
+            return saved ? Ok(storage.Url(banner.GetStorageFile())) : Problem();
+        }
+
         public record ShopOut(string Name, string Logo, List<BannerOut> Banners, List<LinkOut> Links);
+
 
         [HttpGet("shop/{shopId}")]
         [Authorize]
@@ -198,7 +257,7 @@ namespace Backend.Controllers.SiteRoutes
             if (shop == null) return NotFound();
 
             var banners = await db.ShopBanners
-            .Where(x => x.ShopId == shopId)
+            .Where(x => x.ShopId == shop.Id && x.Id != shop.TopBannerId)
             .Select(x => new BannerOut(storage.Url(x.GetStorageFile()), x.Id))
             .QueryMany();
 
@@ -211,9 +270,19 @@ namespace Backend.Controllers.SiteRoutes
             string logo = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDsRxTnsSBMmVvRxdygcb9ue6xfUYL58YX27JLNLohHQ&s";
             if (logoFile != null) logo = storage.Url(logoFile);
 
+            var topBanner = await db.ShopBanners.QueryOne(x=> x.Id == shop.TopBannerId);
+            StorageFile topBannerFile = null;
+            if (topBanner != null)
+            {
+                topBannerFile = topBanner.GetStorageFile();
+            }
+
+            string top = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDsRxTnsSBMmVvRxdygcb9ue6xfUYL58YX27JLNLohHQ&s";
+            if (topBannerFile != null) top = storage.Url(topBannerFile);
+
             string name = shop.Name;
 
-            var shopOut = new ShopOut(name, logo, banners.ToList(), links.ToList());
+            var shopOut = new ShopOut(name, logo, top, banners.ToList(), links.ToList());
 
             var saved = await db.Save();
             return saved ? Ok(shopOut) : Problem();
