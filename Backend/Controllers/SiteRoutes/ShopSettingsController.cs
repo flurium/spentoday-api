@@ -29,7 +29,6 @@ namespace Backend.Controllers.SiteRoutes
         public record LinkOut(string Name, string Link, string Id);
         public record BannerOut(string Url, string Id);
         public record ShopUpdate(string Name);
-        public record ShopOut(string Name, string Logo, string TopBanner, List<BannerOut> Banners, List<LinkOut> Links);
 
         [HttpPost("{shopId}/link")]
         [Authorize]
@@ -184,6 +183,7 @@ namespace Backend.Controllers.SiteRoutes
             return saved ? Ok(storage.Url(shop.GetStorageFile())) : Problem();
         }
 
+
         [HttpPost("{shopId}/top")]
         [Authorize]
         public async Task<IActionResult> UploadTopBanner([FromRoute] string shopId, IFormFile file)
@@ -240,6 +240,9 @@ namespace Backend.Controllers.SiteRoutes
             var banner = await db.ShopBanners.QueryOne(x => x.Id == shop.TopBannerId);
             return saved ? Ok(storage.Url(banner.GetStorageFile())) : Problem();
         }
+
+        public record ShopOut(string Name, string Logo, List<BannerOut> Banners, List<LinkOut> Links);
+
 
         [HttpGet("shop/{shopId}")]
         [Authorize]
