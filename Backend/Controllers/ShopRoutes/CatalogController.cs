@@ -28,6 +28,7 @@ namespace Backend.Controllers.ShopRoutes
         }
 
         public record class CatalogInput(string Search = "", int Start = 0,  int Count = 10);
+        public record ProductsOutput(string Id, string Name, double Price, StorageFile? Image);
 
         [HttpPost("{domain}"), Authorize]
         public async Task<IActionResult> List([FromRoute]string domain, [FromBody] CatalogInput input)
@@ -35,11 +36,16 @@ namespace Backend.Controllers.ShopRoutes
             var shop = await db.Shops.OwnedBy(domain).QueryOne();
 
             if (shop == null) return Problem();
-            IQueryable<Product> query = db.Products.Where(x => x.ShopId == shop.Id);
+            //IQueryable<Product> query = db.Products.Where(x => x.ShopId == shop.Id).Include(x => x.Images);
 
-            query = query.Where(x => x.Name.Contains(input.Search)).OrderBy(x => x.Name.StartsWith(input.Search)).Skip(input.Start).Take(input.Count);
+            IQueryable<Product> query = db.Products.Where(x => x.ShopId == shop.Id && x.Name.Contains(input.Search))
+                .Include(x => x.Images)
+                .OrderBy(x => x.Name.StartsWith(input.Search))
+                .Skip(input.Start)
+                .Take(input.Count);
 
-            var products = await query.QueryMany();
+            
+            var products = await query.Select(x => new ProductsOutput(x.Id, x.Name, x.Price, x.Images.Select(x => x.GetStorageFile()).FirstOrDefault())).QueryMany();
 
             return Ok(products);
         }
