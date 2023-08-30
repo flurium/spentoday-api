@@ -40,11 +40,6 @@ public class Shop : IPossibleStorageFileContainer
 
 public static class ShopExtension
 {
-    public static IQueryable<Shop> OwnedBy(this IQueryable<Shop> query, string shopDomain)
-    {
-        return query.Where(x => x.Domains.Any(x => x.Domain == shopDomain));
-    }
-
     public static IQueryable<Shop> WithDomain(this IQueryable<Shop> query, string Domain)
     {
         return query.Where(x => x.Domains.Any(x => x.Domain == Domain
