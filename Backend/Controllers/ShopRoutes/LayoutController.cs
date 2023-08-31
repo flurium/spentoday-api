@@ -41,7 +41,7 @@ public class LayoutController : ControllerBase
         var shop = await db.Shops.WithDomain(domain).QueryOne();
         if (shop == null) return NotFound();
 
-        var categories = await db.Categories.Where(x => x.ShopId == shop.Id).Select(x => new LayoutCategory(x.Id, x.Name)).QueryMany();
+        var categories = await db.Categories.Where(x => x.ShopId == shop.Id && x.ParentId == null).Select(x => new LayoutCategory(x.Id, x.Name)).QueryMany();
 
         var infoPage = await db.InfoPages.Where(x => x.ShopId == shop.Id).Select(x => new LayoutPage(x.Slug, x.Title)).QueryMany();
 
