@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Data.Migrations
 {
     [DbContext(typeof(Db))]
-    [Migration("20230831030135_orderProducts")]
-    partial class orderProducts
+    [Migration("20230831062501_RemoveOrderProductFK")]
+    partial class RemoveOrderProductFK
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -99,7 +99,6 @@ namespace Data.Migrations
                         .HasColumnType("double precision");
 
                     b.Property<string>("ProductId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -573,9 +572,7 @@ namespace Data.Migrations
 
                     b.HasOne("Data.Models.ProductTables.Product", "Product")
                         .WithMany("OrderProducts")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProductId");
 
                     b.Navigation("Order");
 

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Data.Migrations
 {
     [DbContext(typeof(Db))]
-    [Migration("20230831053211_OrderUpdate")]
-    partial class OrderUpdate
+    [Migration("20230831061710_OrderNewFields")]
+    partial class OrderNewFields
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -55,9 +55,11 @@ namespace Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Adress")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Comment")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
@@ -65,12 +67,20 @@ namespace Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("FullName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PostIndex")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProductId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("Orders");
                 });
@@ -95,7 +105,6 @@ namespace Data.Migrations
                         .HasColumnType("double precision");
 
                     b.Property<string>("ProductId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -559,6 +568,17 @@ namespace Data.Migrations
                     b.Navigation("Shop");
                 });
 
+            modelBuilder.Entity("Data.Models.ProductTables.Order", b =>
+                {
+                    b.HasOne("Data.Models.ProductTables.Product", "Product")
+                        .WithMany("Orders")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("Data.Models.ProductTables.OrderProduct", b =>
                 {
                     b.HasOne("Data.Models.ProductTables.Order", "Order")
@@ -569,9 +589,7 @@ namespace Data.Migrations
 
                     b.HasOne("Data.Models.ProductTables.Product", "Product")
                         .WithMany("OrderProducts")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProductId");
 
                     b.Navigation("Order");
 
@@ -742,6 +760,8 @@ namespace Data.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("OrderProducts");
+
+                    b.Navigation("Orders");
 
                     b.Navigation("ProductCategories");
                 });

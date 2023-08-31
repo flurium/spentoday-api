@@ -4,23 +4,10 @@
 
 namespace Data.Migrations
 {
-    public partial class orderProducts : Migration
+    public partial class OrderNewFields : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Orders_Products_ProductId",
-                table: "Orders");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Orders_ProductId",
-                table: "Orders");
-
-            migrationBuilder.RenameColumn(
-                name: "ProductId",
-                table: "Orders",
-                newName: "PostIndex");
-
             migrationBuilder.AddColumn<string>(
                 name: "Adress",
                 table: "Orders",
@@ -42,6 +29,13 @@ namespace Data.Migrations
                 nullable: false,
                 defaultValue: "");
 
+            migrationBuilder.AddColumn<string>(
+                name: "PostIndex",
+                table: "Orders",
+                type: "text",
+                nullable: false,
+                defaultValue: "");
+
             migrationBuilder.CreateTable(
                 name: "OrderProducts",
                 columns: table => new
@@ -51,7 +45,7 @@ namespace Data.Migrations
                     Amount = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     OrderId = table.Column<string>(type: "text", nullable: false),
-                    ProductId = table.Column<string>(type: "text", nullable: false)
+                    ProductId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -66,8 +60,7 @@ namespace Data.Migrations
                         name: "FK_OrderProducts_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -98,23 +91,9 @@ namespace Data.Migrations
                 name: "FullName",
                 table: "Orders");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.DropColumn(
                 name: "PostIndex",
-                table: "Orders",
-                newName: "ProductId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Orders_ProductId",
-                table: "Orders",
-                column: "ProductId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Orders_Products_ProductId",
-                table: "Orders",
-                column: "ProductId",
-                principalTable: "Products",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                table: "Orders");
         }
     }
 }

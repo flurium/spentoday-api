@@ -3,6 +3,7 @@ using System;
 using Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Data.Migrations
 {
     [DbContext(typeof(Db))]
-    partial class DbModelSnapshot : ModelSnapshot
+    [Migration("20230831062126_OptionalProductOrder")]
+    partial class OptionalProductOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,7 +74,12 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("ProductId")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("Orders");
                 });
@@ -560,6 +567,15 @@ namespace Data.Migrations
                     b.Navigation("Shop");
                 });
 
+            modelBuilder.Entity("Data.Models.ProductTables.Order", b =>
+                {
+                    b.HasOne("Data.Models.ProductTables.Product", "Product")
+                        .WithMany("Orders")
+                        .HasForeignKey("ProductId");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("Data.Models.ProductTables.OrderProduct", b =>
                 {
                     b.HasOne("Data.Models.ProductTables.Order", "Order")
@@ -741,6 +757,8 @@ namespace Data.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("OrderProducts");
+
+                    b.Navigation("Orders");
 
                     b.Navigation("ProductCategories");
                 });
