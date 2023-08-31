@@ -26,7 +26,7 @@ namespace Backend.Controllers.ShopRoutes
             this.categoryService = categoryService;
         }
 
-        [HttpPost("{domain}"), Authorize]
+       /* [HttpPost("{domain}"), Authorize]
         public async Task<IActionResult> List([FromRoute] string domain, [FromBody] string search, [FromBody] int start = 0, [FromBody] int count = 10)
         {
             var shop = await db.Shops.QueryOne(x => x.Domains.Any(x => x.IsOwned(domain)));
@@ -38,6 +38,6 @@ namespace Backend.Controllers.ShopRoutes
             var products = await query.ToListAsync();
 
             return Ok(products);
-        }
+        }*/
     }
 }

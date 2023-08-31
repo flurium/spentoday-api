@@ -23,6 +23,7 @@ public class Db : IdentityDbContext<User>
     public DbSet<Product> Products { get; set; } = default!;
     public DbSet<ProductImage> ProductImages { get; set; } = default!;
     public DbSet<Order> Orders { get; set; } = default!;
+    public DbSet<OrderProduct> OrderProducts { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -76,6 +77,10 @@ public class Db : IdentityDbContext<User>
 
         var order = builder.Entity<Order>();
         order.HasKey(o => o.Id);
-        order.HasOne(o => o.Product).WithMany(p => p.Orders).HasForeignKey(o => o.ProductId);
+
+        var orderProduct = builder.Entity<OrderProduct>();
+        orderProduct.HasKey(o => o.Id);
+        orderProduct.HasOne(x => x.Order).WithMany(x => x.OrderProducts).HasForeignKey(x => x.OrderId);
+        orderProduct.HasOne(x => x.Product).WithMany(x => x.OrderProducts).HasForeignKey(x => x.ProductId);
     }
 }
