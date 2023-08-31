@@ -1,6 +1,7 @@
 ﻿using Backend.Auth;
 using Data;
 using Data.Models.ProductTables;
+using Data.Models.ShopTables;
 using Lib.Email;
 using Lib.EntityFrameworkCore;
 using Lib.Storage;
@@ -27,12 +28,14 @@ namespace Backend.Controllers.ShopRoutes
         public record OrderList(string Name, double Price, string Id, int Amount);
         public record OrderInput(string Email, List<OrderList> Orders,string FullName, string Phone, string Adress, string PostIndex, string Comment);
 
-        [HttpPost("new")]
-        public async Task<IActionResult> New([FromBody] OrderInput input)
-        {           
-            var product = await db.Products.QueryOne(x=> x.Id == input.Orders.First().Id);
+        [HttpPost("{domain}/new")]
+        public async Task<IActionResult> New([FromBody] OrderInput input, [FromRoute] string domain)
+        {    
+            var shop = await db.Shops
+            .WithDomain(domain)
+            .Include(x=>x.Owner)
+            .QueryOne();
 
-            var shop = await db.Shops.QueryOne(x=>x.Id == product.ShopId);
             if (shop == null) return NotFound();
 
             var Message = "";
