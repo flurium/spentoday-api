@@ -3,6 +3,7 @@ using System;
 using Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Data.Migrations
 {
     [DbContext(typeof(Db))]
-    partial class DbModelSnapshot : ModelSnapshot
+    [Migration("20230818074052_TopBanner")]
+    partial class TopBanner
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,60 +54,19 @@ namespace Data.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<string>("Adress")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Comment")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PostIndex")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("Data.Models.ProductTables.OrderProduct", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Amount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("OrderId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("double precision");
-
                     b.Property<string>("ProductId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderProducts");
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("Data.Models.ProductTables.Product", b =>
@@ -332,44 +293,6 @@ namespace Data.Migrations
                     b.HasIndex("ShopId");
 
                     b.ToTable("SocialMediaLinks");
-                });
-
-            modelBuilder.Entity("Data.Models.ShopTables.Subscription", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ShopId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShopId");
-
-                    b.ToTable("ShopSubscriptions");
-                });
-
-            modelBuilder.Entity("Data.Models.UserTables.Question", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Questions");
                 });
 
             modelBuilder.Entity("Data.Models.UserTables.User", b =>
@@ -601,19 +524,13 @@ namespace Data.Migrations
                     b.Navigation("Shop");
                 });
 
-            modelBuilder.Entity("Data.Models.ProductTables.OrderProduct", b =>
+            modelBuilder.Entity("Data.Models.ProductTables.Order", b =>
                 {
-                    b.HasOne("Data.Models.ProductTables.Order", "Order")
-                        .WithMany("OrderProducts")
-                        .HasForeignKey("OrderId")
+                    b.HasOne("Data.Models.ProductTables.Product", "Product")
+                        .WithMany("Orders")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Data.Models.ProductTables.Product", "Product")
-                        .WithMany("OrderProducts")
-                        .HasForeignKey("ProductId");
-
-                    b.Navigation("Order");
 
                     b.Navigation("Product");
                 });
@@ -714,17 +631,6 @@ namespace Data.Migrations
                     b.Navigation("Shop");
                 });
 
-            modelBuilder.Entity("Data.Models.ShopTables.Subscription", b =>
-                {
-                    b.HasOne("Data.Models.ShopTables.Shop", "Shop")
-                        .WithMany("Subscriptions")
-                        .HasForeignKey("ShopId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Shop");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -783,16 +689,11 @@ namespace Data.Migrations
                     b.Navigation("Subcategories");
                 });
 
-            modelBuilder.Entity("Data.Models.ProductTables.Order", b =>
-                {
-                    b.Navigation("OrderProducts");
-                });
-
             modelBuilder.Entity("Data.Models.ProductTables.Product", b =>
                 {
                     b.Navigation("Images");
 
-                    b.Navigation("OrderProducts");
+                    b.Navigation("Orders");
 
                     b.Navigation("ProductCategories");
                 });
@@ -810,8 +711,6 @@ namespace Data.Migrations
                     b.Navigation("Products");
 
                     b.Navigation("SocialMediaLinks");
-
-                    b.Navigation("Subscriptions");
                 });
 
             modelBuilder.Entity("Data.Models.UserTables.User", b =>

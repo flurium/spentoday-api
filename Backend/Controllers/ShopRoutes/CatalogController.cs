@@ -1,11 +1,7 @@
 ﻿using Backend.Services;
 using Data;
-using Data.Models.ProductTables;
-using Lib.EntityFrameworkCore;
 using Lib.Storage;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers.ShopRoutes
 {
@@ -26,6 +22,7 @@ namespace Backend.Controllers.ShopRoutes
             this.categoryService = categoryService;
         }
 
+
        /* [HttpPost("{domain}"), Authorize]
         public async Task<IActionResult> List([FromRoute] string domain, [FromBody] string search, [FromBody] int start = 0, [FromBody] int count = 10)
         {
@@ -33,11 +30,14 @@ namespace Backend.Controllers.ShopRoutes
             if (shop == null) return Problem();
             IQueryable<Product> query = db.Products.Where(x => x.ShopId == shop.Id);
 
+
             query = query.Where(x => x.Name.Contains(search)).OrderBy(x => x.Name.StartsWith(search));
 
-            var products = await query.ToListAsync();
+           var products = await query.ToListAsync();
+
 
             return Ok(products);
         }*/
+
     }
 }
