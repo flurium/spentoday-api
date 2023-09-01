@@ -3,6 +3,7 @@ using System;
 using Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Data.Migrations
 {
     [DbContext(typeof(Db))]
-    partial class DbModelSnapshot : ModelSnapshot
+    [Migration("20230831062501_RemoveOrderProductFK")]
+    partial class RemoveOrderProductFK
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -254,9 +256,6 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("TopBannerId")
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
                     b.HasIndex("OwnerId");
@@ -332,44 +331,6 @@ namespace Data.Migrations
                     b.HasIndex("ShopId");
 
                     b.ToTable("SocialMediaLinks");
-                });
-
-            modelBuilder.Entity("Data.Models.ShopTables.Subscription", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ShopId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShopId");
-
-                    b.ToTable("ShopSubscriptions");
-                });
-
-            modelBuilder.Entity("Data.Models.UserTables.Question", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Questions");
                 });
 
             modelBuilder.Entity("Data.Models.UserTables.User", b =>
@@ -714,17 +675,6 @@ namespace Data.Migrations
                     b.Navigation("Shop");
                 });
 
-            modelBuilder.Entity("Data.Models.ShopTables.Subscription", b =>
-                {
-                    b.HasOne("Data.Models.ShopTables.Shop", "Shop")
-                        .WithMany("Subscriptions")
-                        .HasForeignKey("ShopId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Shop");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -810,8 +760,6 @@ namespace Data.Migrations
                     b.Navigation("Products");
 
                     b.Navigation("SocialMediaLinks");
-
-                    b.Navigation("Subscriptions");
                 });
 
             modelBuilder.Entity("Data.Models.UserTables.User", b =>

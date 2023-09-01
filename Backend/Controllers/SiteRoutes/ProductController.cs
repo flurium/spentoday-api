@@ -147,7 +147,7 @@ public class ProductController : ControllerBase
 
         if (product == null) return Problem();
 
-        bool canDeleteProduct = !await db.Orders.AnyAsync(o => o.ProductId == id);
+        bool canDeleteProduct = !await db.OrderProducts.Have(o => o.ProductId == id);
 
         if (canDeleteProduct)
         {
