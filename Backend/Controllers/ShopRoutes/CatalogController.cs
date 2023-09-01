@@ -27,10 +27,10 @@ namespace Backend.Controllers.ShopRoutes
             this.categoryService = categoryService;
         }
 
-        public record class CatalogInput(string Search = "", int Start = 0,  int Count = 10);
+        public record class CatalogInput(string Search = "", int Start = 0,  int Count = 10, int? Min = null, int? Max = null);
         public record ProductsOutput(string Id, string Name, double Price, StorageFile? Image);
 
-        [HttpPost("{domain}"), Authorize]
+        [HttpPost("{domain}")]
         public async Task<IActionResult> List([FromRoute]string domain, [FromBody] CatalogInput input)
         {
             var shop = await db.Shops.OwnedBy(domain).QueryOne();
@@ -44,7 +44,10 @@ namespace Backend.Controllers.ShopRoutes
                 .Skip(input.Start)
                 .Take(input.Count);
 
-            
+            if (input.Min != null && input.Min > 0) query = query.Where(x => x.Price >= input.Min);
+
+            if (input.Max != null && input.Max > 0) query = query.Where(x => x.Price <= input.Max);
+
             var products = await query.Select(x => new ProductsOutput(x.Id, x.Name, x.Price, x.Images.Select(x => x.GetStorageFile()).FirstOrDefault())).QueryMany();
 
             return Ok(products);
