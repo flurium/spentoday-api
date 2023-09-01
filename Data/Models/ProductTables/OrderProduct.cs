@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Data.Models.ProductTables;
+﻿namespace Data.Models.ProductTables;
 
 public class OrderProduct
 {
