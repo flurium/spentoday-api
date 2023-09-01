@@ -27,7 +27,7 @@ namespace Backend.Controllers.ShopRoutes
             this.categoryService = categoryService;
         }
 
-        public record class CatalogInput(string Search = "", int Start = 0,  int Count = 10, int? Min = null, int? Max = null);
+        public record class CatalogInput(string Search = "", int Start = 0,  int Count = 10, int? Min = null, int? Max = null, int? Order = 0);
         public record ProductsOutput(string Id, string Name, double Price, StorageFile? Image);
 
         [HttpPost("{domain}")]
@@ -47,6 +47,11 @@ namespace Backend.Controllers.ShopRoutes
             if (input.Min != null && input.Min > 0) query = query.Where(x => x.Price >= input.Min);
 
             if (input.Max != null && input.Max > 0) query = query.Where(x => x.Price <= input.Max);
+
+            if (input.Order != 0)
+            {
+                query = input.Order == 1 ? query.OrderBy(x => x.Price) : query.OrderBy(x => x.Price).Reverse();
+            }
 
             var products = await query.Select(x => new ProductsOutput(x.Id, x.Name, x.Price, x.Images.Select(x => x.GetStorageFile()).FirstOrDefault())).QueryMany();
 
