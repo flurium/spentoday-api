@@ -3,6 +3,7 @@ using Data.Models.ShopTables;
 using Data.Models.UserTables;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Data.Common;
 
 namespace Data;
 
@@ -17,6 +18,7 @@ public class Db : IdentityDbContext<User>
     public DbSet<ShopBanner> ShopBanners { get; set; } = default!;
     public DbSet<InfoPage> InfoPages { get; set; } = default!;
     public DbSet<SocialMediaLink> SocialMediaLinks { get; set; } = default!;
+    public DbSet<Subscription> ShopSubscriptions { get; set; } = default!;
 
     public DbSet<Category> Categories { get; set; } = default!;
     public DbSet<ProductCategory> ProductCategories { get; set; } = default!;
@@ -26,6 +28,8 @@ public class Db : IdentityDbContext<User>
     public DbSet<Order> Orders { get; set; } = default!;
     public DbSet<OrderProduct> OrderProducts { get; set; } = default!;
 
+    public DbSet<Question> Questions { get; set; } = default!;
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -33,6 +37,9 @@ public class Db : IdentityDbContext<User>
         // User tables
         var user = builder.Entity<User>();
         user.HasKey(x => x.Id);
+
+        var question = builder.Entity<Question>();
+        question.HasKey(x => x.Id);
 
         // Shop tables
         var shop = builder.Entity<Shop>();
@@ -55,6 +62,10 @@ public class Db : IdentityDbContext<User>
         infoPage.HasKey(x => new { x.Slug, x.ShopId });
         infoPage.HasOne(x => x.Shop).WithMany(x => x.InfoPages).HasForeignKey(x => x.ShopId);
         infoPage.Property(x => x.Content).HasColumnType("text");
+
+        var subscription = builder.Entity<Subscription>();
+        subscription.HasKey(x => x.Id);
+        subscription.HasOne(x => x.Shop).WithMany(x => x.Subscriptions).HasForeignKey(x => x.ShopId);
 
         // Product tables
         var product = builder.Entity<Product>();

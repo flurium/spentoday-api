@@ -1,8 +1,10 @@
-﻿using Data;
+﻿using Amazon.Auth.AccessControlPolicy;
+using Data;
 using Data.Models.ShopTables;
 using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Controllers.ShopRoutes;
 
@@ -41,5 +43,42 @@ public class LayoutController : ControllerBase
             .QueryOne();
         if (shop == null) return NotFound();
         return Ok(shop);
+    }
+
+    public class SubscribeInput
+    {
+        public string Email { get; set; }
+        public string ShopId { get; set; }
+
+        public SubscribeInput(string email, string shopId)
+        {
+            ShopId = shopId;
+            Email = email;
+        }
+    };
+
+    [NonAction]
+    public bool IsValidEmail(string email) => new EmailAddressAttribute().IsValid(email);
+
+    [HttpPost("subscribe")]
+    public async Task<IActionResult> Subscribe([FromBody] SubscribeInput input)
+    {
+        input.Email = input.Email.Trim();
+        if (!IsValidEmail(input.Email)) return BadRequest();
+
+        input.ShopId = input.ShopId.Trim();
+        if (string.IsNullOrEmpty(input.ShopId)) return NotFound();
+
+        var shopExist = await db.Shops.Have(x => x.Id == input.ShopId);
+        if (!shopExist) return NotFound();
+
+        var subscriptionExist = await db.ShopSubscriptions.Have(x => x.Email == input.Email && x.ShopId == input.ShopId);
+        if (subscriptionExist) return Ok();
+
+        var subscription = new Subscription(input.Email, input.ShopId);
+        await db.ShopSubscriptions.AddAsync(subscription);
+        var saved = await db.Save();
+
+        return saved ? Ok() : Problem();
     }
 }
