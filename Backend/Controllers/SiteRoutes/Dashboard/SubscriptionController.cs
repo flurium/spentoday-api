@@ -17,7 +17,7 @@ public class SubscriptionController : ControllerBase
         this.db = db;
     }
 
-    public record struct ListSubscription(string Id, string Email);
+    public record struct ListSubscription(string Id, string Email, DateTime Date);
 
     [HttpGet("{shopId}"), Authorize]
     public async Task<IActionResult> List([FromRoute] string shopId)
@@ -26,7 +26,7 @@ public class SubscriptionController : ControllerBase
 
         var subscriptions = await db.ShopSubscriptions
             .Where(x => x.ShopId == shopId && x.Shop.OwnerId == uid)
-            .Select(x => new ListSubscription(x.Id, x.Email))
+            .Select(x => new ListSubscription(x.Id, x.Email, x.Date))
             .QueryMany();
 
         return Ok(subscriptions);
