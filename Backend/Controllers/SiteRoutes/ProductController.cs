@@ -36,8 +36,8 @@ public class ProductController : ControllerBase
     {
         var uid = User.Uid();
         var products = await db.Products
-                .Skip(start).Take(count)
                 .Where(x => x.ShopId == shopId && x.Shop.OwnerId == uid)
+                .Skip(start).Take(count)
                 .Select(x => new ListOutput(x.Id, x.Name, x.Price, x.IsDraft))
                 .QueryMany();
 
