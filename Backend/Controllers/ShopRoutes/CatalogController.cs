@@ -40,9 +40,7 @@ namespace Backend.Controllers.ShopRoutes
 
             IQueryable<Product> query = db.Products.Where(x => x.ShopId == shop.Id && x.Name.Contains(input.Search))
                 .Include(x => x.Images)
-                .OrderBy(x => x.Name.StartsWith(input.Search))
-                .Skip(input.Start)
-                .Take(input.Count);
+                .OrderBy(x => x.Name.StartsWith(input.Search));              
 
             if (input.Min != null && input.Min > 0) query = query.Where(x => x.Price >= input.Min);
 
@@ -52,6 +50,8 @@ namespace Backend.Controllers.ShopRoutes
             {
                 query = input.Order == 1 ? query.OrderBy(x => x.Price) : query.OrderBy(x => x.Price).Reverse();
             }
+
+            query = query.Skip(input.Start).Take(input.Count);
 
             var products = await query.Select(x => new ProductsOutput(x.Id, x.Name, x.Price, x.Images.Select(x => x.GetStorageFile()).FirstOrDefault())).QueryMany();
 
