@@ -1,12 +1,8 @@
 ﻿using Data;
-using Data.Models.ProductTables;
 using Data.Models.ShopTables;
 using Lib.EntityFrameworkCore;
-using Lib.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using static Backend.Controllers.ShopRoutes.ShopController;
 
 namespace Backend.Controllers.ShopRoutes;
 
