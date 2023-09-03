@@ -36,8 +36,8 @@ public class ProductController : ControllerBase
     {
         var uid = User.Uid();
         var products = await db.Products
-                .Skip(start).Take(count)
                 .Where(x => x.ShopId == shopId && x.Shop.OwnerId == uid)
+                .Skip(start).Take(count)
                 .Select(x => new ListOutput(x.Id, x.Name, x.Price, x.IsDraft))
                 .QueryMany();
 
@@ -147,7 +147,7 @@ public class ProductController : ControllerBase
 
         if (product == null) return Problem();
 
-        bool canDeleteProduct = !await db.Orders.AnyAsync(o => o.ProductId == id);
+        bool canDeleteProduct = !await db.OrderProducts.Have(o => o.ProductId == id);
 
         if (canDeleteProduct)
         {

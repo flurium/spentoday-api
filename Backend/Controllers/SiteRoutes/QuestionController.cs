@@ -30,11 +30,14 @@ public class QuestionController : ControllerBase
         var content = input.Content.Trim();
         if (string.IsNullOrEmpty(content)) return BadRequest();
 
-        await db.Questions.AddAsync(new Question(email, content));
+        var question = new Question(email, content);
+        await db.Questions.AddAsync(question);
         var saved = await db.Save();
+        if (!saved) return Problem();
 
-        await emailSender.Send(email, "Spentoday", new List<string> { "roman@flurium.com" }, "Question on Spentoday", content, content);
+        var text = $"Email: {email}\nId:{question.Id}\nContent:{content}";
+        await emailSender.Send(email, "Spentoday", new List<string> { "roman@flurium.com" }, "Question on Spentoday", text, text);
 
-        return saved ? Ok() : Problem();
+        return Ok();
     }
 }

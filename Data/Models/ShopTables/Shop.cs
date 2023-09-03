@@ -19,6 +19,8 @@ public class Shop : IPossibleStorageFileContainer
     public IReadOnlyCollection<InfoPage> InfoPages { get; } = default!;
     public IReadOnlyCollection<Category> Categories { get; } = default!;
 
+    public IReadOnlyCollection<Subscription> Subscriptions { get; } = default!;
+
     public Shop(string name, string ownerId)
     {
         Name = name;
@@ -40,15 +42,10 @@ public class Shop : IPossibleStorageFileContainer
 
 public static class ShopExtension
 {
-    public static IQueryable<Shop> OwnedBy(this IQueryable<Shop> query, string shopDomain)
-    {
-        return query.Where(x => x.Domains.Any(x => x.Domain == shopDomain));
-    }
-
     public static IQueryable<Shop> WithDomain(this IQueryable<Shop> query, string Domain)
     {
         return query.Where(x => x.Domains.Any(x => x.Domain == Domain
-        //&& x.Verified
+            && x.Verified
         ));
     }
 }
