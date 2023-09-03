@@ -3,6 +3,7 @@ using System;
 using Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Data.Migrations
 {
     [DbContext(typeof(Db))]
-    partial class DbModelSnapshot : ModelSnapshot
+    [Migration("20230831062126_OptionalProductOrder")]
+    partial class OptionalProductOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,7 +74,12 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("ProductId")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("Orders");
                 });
@@ -254,9 +261,6 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("TopBannerId")
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
                     b.HasIndex("OwnerId");
@@ -332,47 +336,6 @@ namespace Data.Migrations
                     b.HasIndex("ShopId");
 
                     b.ToTable("SocialMediaLinks");
-                });
-
-            modelBuilder.Entity("Data.Models.ShopTables.Subscription", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ShopId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShopId");
-
-                    b.ToTable("ShopSubscriptions");
-                });
-
-            modelBuilder.Entity("Data.Models.UserTables.Question", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Questions");
                 });
 
             modelBuilder.Entity("Data.Models.UserTables.User", b =>
@@ -604,6 +567,15 @@ namespace Data.Migrations
                     b.Navigation("Shop");
                 });
 
+            modelBuilder.Entity("Data.Models.ProductTables.Order", b =>
+                {
+                    b.HasOne("Data.Models.ProductTables.Product", "Product")
+                        .WithMany("Orders")
+                        .HasForeignKey("ProductId");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("Data.Models.ProductTables.OrderProduct", b =>
                 {
                     b.HasOne("Data.Models.ProductTables.Order", "Order")
@@ -717,17 +689,6 @@ namespace Data.Migrations
                     b.Navigation("Shop");
                 });
 
-            modelBuilder.Entity("Data.Models.ShopTables.Subscription", b =>
-                {
-                    b.HasOne("Data.Models.ShopTables.Shop", "Shop")
-                        .WithMany("Subscriptions")
-                        .HasForeignKey("ShopId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Shop");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -797,6 +758,8 @@ namespace Data.Migrations
 
                     b.Navigation("OrderProducts");
 
+                    b.Navigation("Orders");
+
                     b.Navigation("ProductCategories");
                 });
 
@@ -813,8 +776,6 @@ namespace Data.Migrations
                     b.Navigation("Products");
 
                     b.Navigation("SocialMediaLinks");
-
-                    b.Navigation("Subscriptions");
                 });
 
             modelBuilder.Entity("Data.Models.UserTables.User", b =>
