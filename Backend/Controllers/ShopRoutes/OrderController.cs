@@ -1,14 +1,10 @@
-﻿using Backend.Auth;
-using Data;
+﻿using Data;
 using Data.Models.ProductTables;
 using Data.Models.ShopTables;
 using Lib.Email;
 using Lib.EntityFrameworkCore;
-using Lib.Storage;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using static Backend.Controllers.ShopRoutes.CartController;
 
 namespace Backend.Controllers.ShopRoutes
 {
@@ -26,31 +22,31 @@ namespace Backend.Controllers.ShopRoutes
         }
 
         public record OrderList(string Name, double Price, string Id, int Amount);
-        public record OrderInput(string Email, List<OrderList> Orders,string FullName, string Phone, string Adress, string PostIndex, string Comment);
+        public record OrderInput(string Email, List<OrderList> Orders, string FullName, string Phone, string Adress, string PostIndex, string Comment);
 
         [HttpPost("{domain}/new")]
         public async Task<IActionResult> New([FromBody] OrderInput input, [FromRoute] string domain)
-        {    
+        {
             var shop = await db.Shops
             .WithDomain(domain)
-            .Include(x=>x.Owner)
+            .Include(x => x.Owner)
             .QueryOne();
 
             if (shop == null) return NotFound();
 
             var Message = "";
             var newOrder = new Order(input.Email, input.Adress, input.FullName, input.PostIndex, input.Comment);
-            foreach(var order in input.Orders)
+            foreach (var order in input.Orders)
             {
                 var part = $"Назва: {order.Name} Ціна:{order.Price} Кількість: {order.Amount} <br/>";
                 Message += part;
 
-                var OrderProduct = new OrderProduct(order.Price,order.Amount,order.Name, order.Id, newOrder.Id);
+                var OrderProduct = new OrderProduct(order.Price, order.Amount, order.Name, order.Id, newOrder.Id);
                 await db.OrderProducts.AddAsync(OrderProduct);
             }
             await db.Orders.AddAsync(newOrder);
             var save = await db.Save();
-            if(!save) return Problem();
+            if (!save) return Problem();
 
             await email.Send(
              fromEmail: "support@flurium.com",

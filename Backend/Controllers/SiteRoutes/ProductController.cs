@@ -36,8 +36,8 @@ public class ProductController : ControllerBase
     {
         var uid = User.Uid();
         var products = await db.Products
-                .Skip(start).Take(count)
                 .Where(x => x.ShopId == shopId && x.Shop.OwnerId == uid)
+                .Skip(start).Take(count)
                 .Select(x => new ListOutput(x.Id, x.Name, x.Price, x.IsDraft))
                 .QueryMany();
 
@@ -54,6 +54,8 @@ public class ProductController : ControllerBase
         var uid = User.Uid();
         var ownShop = await db.Shops.Have(x => x.Id == input.ShopId && x.OwnerId == uid);
         if (!ownShop) return Forbid();
+
+        if (await PlanLimits.ReachedProductLimit(db, uid)) return Forbid();
 
         var product = new Product(input.Name, input.SeoSlug, input.ShopId);
         await db.Products.AddAsync(product);

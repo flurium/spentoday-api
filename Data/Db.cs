@@ -3,7 +3,6 @@ using Data.Models.ShopTables;
 using Data.Models.UserTables;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Data.Common;
 
 namespace Data;
 
