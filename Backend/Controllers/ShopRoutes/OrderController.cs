@@ -25,8 +25,8 @@ namespace Backend.Controllers.ShopRoutes
             this.email = email;
         }
 
-        public record OrderList(string Name, double Price, string Id, int Amount);
-        public record OrderInput(string Email, List<OrderList> Orders,string FullName, string Phone, string Adress, string PostIndex, string Comment);
+        public record ProductList(string Name, double Price, string Id, int Amount);
+        public record OrderInput(string Email, List<ProductList> Products,string FullName, string Phone, string Adress, string PostIndex, string Comment);
 
         [HttpPost("{domain}/new")]
         public async Task<IActionResult> New([FromBody] OrderInput input, [FromRoute] string domain)
@@ -40,12 +40,12 @@ namespace Backend.Controllers.ShopRoutes
 
             var Message = "";
             var newOrder = new Order(input.Email, input.Adress, input.FullName, input.PostIndex, input.Comment);
-            foreach(var order in input.Orders)
+            foreach(var product in input.Products)
             {
-                var part = $"Назва: {order.Name} Ціна:{order.Price} Кількість: {order.Amount} <br/>";
+                var part = $"Назва: {product.Name} Ціна:{product.Price} Кількість: {product.Amount} <br/>";
                 Message += part;
 
-                var OrderProduct = new OrderProduct(order.Price,order.Amount,order.Name, order.Id, newOrder.Id);
+                var OrderProduct = new OrderProduct(product.Price, product.Amount, product.Name, product.Id, newOrder.Id);
                 await db.OrderProducts.AddAsync(OrderProduct);
             }
             await db.Orders.AddAsync(newOrder);
