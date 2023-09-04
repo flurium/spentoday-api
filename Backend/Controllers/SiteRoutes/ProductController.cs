@@ -55,6 +55,8 @@ public class ProductController : ControllerBase
         var ownShop = await db.Shops.Have(x => x.Id == input.ShopId && x.OwnerId == uid);
         if (!ownShop) return Forbid();
 
+        if (await PlanLimits.ReachedProductLimit(db, uid)) return Forbid();
+
         var product = new Product(input.Name, input.SeoSlug, input.ShopId);
         await db.Products.AddAsync(product);
 

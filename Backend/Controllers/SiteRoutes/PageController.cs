@@ -1,4 +1,5 @@
 ﻿using Backend.Auth;
+using Backend.Services;
 using Data;
 using Data.Models.ShopTables;
 using Lib;
@@ -63,13 +64,14 @@ public class PageController : ControllerBase
         var isValid = IsSlugValid(input.Slug);
         if (!isValid) return BadRequest();
 
-        var uid = User.FindFirst(Jwt.Uid);
-        if (uid == null) return Unauthorized();
+        var uid = User.Uid();
 
-        var ownShop = await db.Shops.AnyAsync(x => x.OwnerId == uid.Value && x.Id == shopId).ConfigureAwait(false);
+        if (await PlanLimits.ReachedPagesLimit(db, uid)) return Forbid();
+
+        var ownShop = await db.Shops.Have(x => x.OwnerId == uid && x.Id == shopId);
         if (!ownShop) return NotFound();
 
-        var slugTaken = await db.InfoPages.AnyAsync(x => x.ShopId == shopId && x.Slug == input.Slug).ConfigureAwait(false);
+        var slugTaken = await db.InfoPages.Have(x => x.ShopId == shopId && x.Slug == input.Slug);
         if (slugTaken) return Conflict();
 
         var newInfoPage = new InfoPage(input.Slug, shopId);
@@ -97,11 +99,11 @@ public class PageController : ControllerBase
     )
     {
         var uid = User.Uid();
-        if (uid == null) return Unauthorized();
 
         var page = await db.InfoPages
             .QueryOne(x => x.ShopId == shopId && x.Slug == slug && x.Shop.OwnerId == uid);
         if (page == null) return NotFound();
+
         if (input.Title != null) page.Title = input.Title;
         if (input.Description != null) page.Description = input.Description;
         if (input.Content != null) page.Content = input.Content;
@@ -116,23 +118,21 @@ public class PageController : ControllerBase
 
             db.InfoPages.Remove(page);
 
-            await db.Save();
-
-            var newPage = new InfoPage(input.Slug, shopId);
-            newPage.Title = page.Title;
-            newPage.Description = page.Description;
-            newPage.Content = page.Content;
+            var newPage = new InfoPage(input.Slug, shopId)
+            {
+                Title = page.Title,
+                Description = page.Description,
+                Content = page.Content
+            };
 
             await db.InfoPages.AddAsync(newPage);
-
-            var isSaved = await db.Save();
-
-            return isSaved ? Ok(new PageOutput(newPage.Slug, newPage.Title, newPage.Content, newPage.Description)) : Problem();
         }
 
-        page.UpdatedAt = DateTime.Now.ToUniversalTime();
+        page.UpdatedAt = DateTime.UtcNow;
         var saved = await db.Save();
-        return saved ? Ok(new PageOutput(page.Slug, page.Title, page.Content, page.Description)) : Problem();
+        if (!saved) return Problem();
+
+        return Ok(new PageOutput(page.Slug, page.Title, page.Content, page.Description));
     }
 
     [HttpGet("{shopId}/page/{slug}")]
