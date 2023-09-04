@@ -116,8 +116,6 @@ public class PageController : ControllerBase
 
             db.InfoPages.Remove(page);
 
-            await db.Save();
-
             var newPage = new InfoPage(input.Slug, shopId);
             newPage.Title = page.Title;
             newPage.Description = page.Description;

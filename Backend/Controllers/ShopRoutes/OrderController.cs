@@ -42,7 +42,7 @@ namespace Backend.Controllers.ShopRoutes
             var newOrder = new Order(input.Email, input.Adress, input.FullName, input.PostIndex, input.Comment);
             foreach(var order in input.Orders)
             {
-                var part = $"Name: {order.Name} Price:{order.Price} Amount: {order.Amount} \n";
+                var part = $"Назва: {order.Name} Ціна:{order.Price} Кількість: {order.Amount} <br/>";
                 Message += part;
 
                 var OrderProduct = new OrderProduct(order.Price,order.Amount,order.Name, order.Id, newOrder.Id);
@@ -56,18 +56,18 @@ namespace Backend.Controllers.ShopRoutes
              fromEmail: "support@flurium.com",
              fromName: "spentoday",
              toEmails: new List<string>() { input.Email },
-             subject: "Order",
-             text: $"Your order is {Message}, seller email ->{shop.Owner.Email}",
-             html: $""
+             subject: "Замовлення",
+             text: $"",
+             html: $"Ваше замовлення: {Message}, email продавця ->{shop.Owner.Email}"
             );
 
             await email.Send(
              fromEmail: "support@flurium.com",
              fromName: "spentoday",
              toEmails: new List<string>() { shop.Owner.Email },
-             subject: "Order",
-             text: $"new Order to {Message}\n customer`s contacts :\n Email: {input.Email}\n Phone: {input.Phone}\n {input.FullName} \n PostIndex:{input.PostIndex} \n Adress:{input.Adress} \n Comment{input.Comment} ",
-             html: $""
+             subject: "Замовлення",
+             text: $"",
+             html: $"Нове замовлення на {Message} Контакт покупця -  Email: {input.Email} <br/> Телефон: {input.Phone} <br/> Ім'я: {input.FullName} <br/> Поштовий індекс: {input.PostIndex} <br/> Адреса: {input.Adress} <br/> Коммент: {input.Comment} "
             );
 
             return Ok();
