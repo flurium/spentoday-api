@@ -1,5 +1,7 @@
 ﻿using Backend.Auth;
+using Backend.Services;
 using Data;
+using Data.Models.ShopTables;
 using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -44,5 +46,48 @@ public class SubscriptionController : ControllerBase
         db.ShopSubscriptions.Remove(subscription);
         var saved = await db.Save();
         return saved ? Ok() : Problem();
+    }
+
+    public class SubscriptionInput
+    {
+        public string Email { get; set; }
+        public string ShopId { get; set; }
+
+        public SubscriptionInput(string email, string shopId)
+        {
+            ShopId = shopId;
+            Email = email;
+        }
+
+        public bool IsValid()
+        {
+            Email = Email.Trim();
+            if (string.IsNullOrEmpty(Email)) return false;
+            if (!Email.IsValidEmail()) return false;
+            ShopId = ShopId.Trim();
+            if (string.IsNullOrEmpty(ShopId)) return false;
+            return true;
+        }
+    };
+
+    [HttpPost, Authorize]
+    public async Task<IActionResult> Add([FromBody] SubscriptionInput input)
+    {
+        var uid = User.Uid();
+        if (!input.IsValid()) return BadRequest();
+
+        var own = await db.Shops.Have(x => x.Id == input.ShopId && x.OwnerId == uid);
+        if (!own) return Forbid();
+
+        var exists = await db.ShopSubscriptions
+            .Have(x => x.ShopId == input.ShopId && x.Email == input.Email);
+        if (exists) return Conflict();
+
+        var subscription = new Subscription(input.Email, input.ShopId);
+        await db.ShopSubscriptions.AddAsync(subscription);
+        var saved = await db.Save();
+        if (!saved) return Problem();
+
+        return Ok(new ListSubscription(subscription.Id, subscription.Email, subscription.Date));
     }
 }

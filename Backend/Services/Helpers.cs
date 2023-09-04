@@ -1,4 +1,7 @@
-﻿namespace Backend.Services;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+
+namespace Backend.Services;
 
 public static class SlugExtension
 {
@@ -10,5 +13,13 @@ public static class SlugExtension
             if (!(char.IsLetter(c) || char.IsDigit(c) || c == '-')) return false;
         }
         return true;
+    }
+}
+
+public static class EmailExtension
+{
+    public static bool IsValidEmail(this string email)
+    {
+        return new EmailAddressAttribute().IsValid(email);
     }
 }
