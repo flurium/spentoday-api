@@ -4,9 +4,7 @@ using Data.Models.ProductTables;
 using Data.Models.ShopTables;
 using Lib.EntityFrameworkCore;
 using Lib.Storage;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers.ShopRoutes
 {
@@ -55,7 +53,7 @@ namespace Backend.Controllers.ShopRoutes
 
             var products = await query.Select(x => new ProductsOutput(x.Id, x.Name, x.Price, x.Images.Select(x => x.GetStorageFile()).FirstOrDefault())).QueryMany();
 
-            return Ok(products);
-        }
+             return Ok(products);
+         }*/
     }
 }

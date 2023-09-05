@@ -1,4 +1,5 @@
-﻿using Backend.Services;
+﻿using Backend.Auth;
+using Backend.Services;
 using Data;
 using Data.Models.ShopTables;
 using Lib;
@@ -60,17 +61,16 @@ public class DashboardController : ControllerBase
     }
 
     public record ShopOut(string Name, string Id);
-
     public record ShopAdd(string ShopName);
 
     [HttpPost("addshop")]
     [Authorize]
     public async Task<IActionResult> AddShop([FromBody] ShopAdd shop)
     {
-        var uid = User.FindFirst(Jwt.Uid);
-        if (uid == null) return Unauthorized();
+        var uid = User.Uid();
+        if (await PlanLimits.ReachedShopLimit(db, uid)) return Forbid();
 
-        var newShop = new Shop(shop.ShopName, uid.Value);
+        var newShop = new Shop(shop.ShopName, uid);
 
         await db.Shops.AddAsync(newShop);
 
