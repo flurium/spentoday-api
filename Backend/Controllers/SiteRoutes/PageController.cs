@@ -76,7 +76,7 @@ public class PageController : ControllerBase
         await db.InfoPages.AddAsync(newInfoPage);
         var saved = await db.Save();
 
-        return saved ? Ok(newInfoPage) : Problem();
+        return saved ? Ok(new PagesOutput(newInfoPage.Slug, newInfoPage.Title, newInfoPage.UpdatedAt)) : Problem();
     }
 
     public record UpdatePageInput(string? Slug, string? Title, string? Description, string? Content);
@@ -116,12 +116,14 @@ public class PageController : ControllerBase
 
             db.InfoPages.Remove(page);
 
+
             var newPage = new InfoPage(input.Slug, shopId)
             {
                 Title = page.Title,
                 Description = page.Description,
                 Content = page.Content
             };
+
 
             await db.InfoPages.AddAsync(newPage);
         }
@@ -145,5 +147,18 @@ public class PageController : ControllerBase
             .QueryOne();
 
         return Ok(page);
+    }
+    [HttpDelete("{shopId}/page/{slug}")]
+    [Authorize]
+    public async Task<IActionResult> DeletePage([FromRoute] string shopId, [FromRoute] string slug)
+    {
+        var uid = User.Uid();
+        var page = await db.InfoPages.QueryOne(x => x.Slug == slug && x.ShopId == shopId && x.Shop.OwnerId == uid);
+        if (page == null) return NotFound();
+
+        db.InfoPages.Remove(page);
+
+        var saved = await db.Save();
+        return saved ? Ok() : Problem();
     }
 }
