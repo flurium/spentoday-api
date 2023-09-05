@@ -152,7 +152,8 @@ public class PageController : ControllerBase
     [Authorize]
     public async Task<IActionResult> DeletePage([FromRoute] string shopId, [FromRoute] string slug)
     {
-        var page = await db.InfoPages.QueryOne(x => x.Slug == slug && x.ShopId == shopId);
+        var uid = User.Uid();
+        var page = await db.InfoPages.QueryOne(x => x.Slug == slug && x.ShopId == shopId && x.Shop.OwnerId == uid);
         if (page == null) return NotFound();
 
         db.InfoPages.Remove(page);
