@@ -116,14 +116,12 @@ public class PageController : ControllerBase
 
             db.InfoPages.Remove(page);
 
-
             var newPage = new InfoPage(input.Slug, shopId)
             {
                 Title = page.Title,
                 Description = page.Description,
                 Content = page.Content
             };
-
 
             await db.InfoPages.AddAsync(newPage);
         }
@@ -148,6 +146,7 @@ public class PageController : ControllerBase
 
         return Ok(page);
     }
+
     [HttpDelete("{shopId}/page/{slug}")]
     [Authorize]
     public async Task<IActionResult> DeletePage([FromRoute] string shopId, [FromRoute] string slug)
