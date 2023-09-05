@@ -1,14 +1,10 @@
-﻿using Backend.Auth;
-using Data;
+﻿using Data;
 using Data.Models.ProductTables;
 using Data.Models.ShopTables;
 using Lib.Email;
 using Lib.EntityFrameworkCore;
-using Lib.Storage;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using static Backend.Controllers.ShopRoutes.CartController;
 
 namespace Backend.Controllers.ShopRoutes
 {
@@ -30,10 +26,10 @@ namespace Backend.Controllers.ShopRoutes
 
         [HttpPost("{domain}/new")]
         public async Task<IActionResult> New([FromBody] OrderInput input, [FromRoute] string domain)
-        {    
+        {
             var shop = await db.Shops
             .WithDomain(domain)
-            .Include(x=>x.Owner)
+            .Include(x => x.Owner)
             .QueryOne();
 
             if (shop == null) return NotFound();
@@ -44,13 +40,12 @@ namespace Backend.Controllers.ShopRoutes
             {
                 var part = $"Назва: {product.Name} Ціна:{product.Price} Кількість: {product.Amount} <br/>";
                 Message += part;
-
                 var OrderProduct = new OrderProduct(product.Price, product.Amount, product.Name, product.Id, newOrder.Id);
-                await db.OrderProducts.AddAsync(OrderProduct);
+              await db.OrderProducts.AddAsync(OrderProduct);
             }
             await db.Orders.AddAsync(newOrder);
             var save = await db.Save();
-            if(!save) return Problem();
+            if (!save) return Problem();
 
             await email.Send(
              fromEmail: "support@flurium.com",

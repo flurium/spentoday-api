@@ -1,5 +1,4 @@
-﻿using Amazon.Auth.AccessControlPolicy;
-using Data;
+﻿using Data;
 using Data.Models.ShopTables;
 using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
