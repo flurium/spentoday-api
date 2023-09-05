@@ -6,7 +6,7 @@ using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backend.Controllers.SiteRoutes.Dashboard;
+namespace Backend.Controllers.SiteRoutes;
 
 [Route("v1/site/subscriptions")]
 [ApiController]
@@ -22,12 +22,19 @@ public class SubscriptionController : ControllerBase
     public record struct ListSubscription(string Id, string Email, DateTime Date);
 
     [HttpGet("{shopId}"), Authorize]
-    public async Task<IActionResult> List([FromRoute] string shopId)
+    public async Task<IActionResult> List([FromRoute] string shopId, [FromQuery] string? search = null)
     {
         var uid = User.Uid();
 
-        var subscriptions = await db.ShopSubscriptions
-            .Where(x => x.ShopId == shopId && x.Shop.OwnerId == uid)
+        var query = db.ShopSubscriptions.Where(x => x.ShopId == shopId && x.Shop.OwnerId == uid);
+        if (search != null)
+        {
+            query = query
+                .Where(x => x.Email.Contains(search))
+                .OrderByDescending(x => x.Email.StartsWith(search));
+        }
+
+        var subscriptions = await query
             .Select(x => new ListSubscription(x.Id, x.Email, x.Date))
             .QueryMany();
 
