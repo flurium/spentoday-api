@@ -35,10 +35,12 @@ public class CatalogController : ControllerBase
         var shop = await db.Shops.WithDomain(domain).QueryOne();
         if (shop == null) return Problem();
 
+        var search = input.Search.ToLower();
+
         IQueryable<Product> query = db.Products
-            .Where(x => x.ShopId == shop.Id && x.Name.Contains(input.Search))
+            .Where(x => x.ShopId == shop.Id && x.Name.ToLower().Contains(search))
             .Include(x => x.Images)
-            .OrderBy(x => x.Name.StartsWith(input.Search));
+            .OrderBy(x => x.Name.ToLower().StartsWith(search));
 
         if (input.Min != null && input.Min > 0) query = query.Where(x => x.Price >= input.Min);
 
