@@ -12,7 +12,7 @@ namespace Backend.Controllers.SiteRoutes;
 [ApiController]
 public class SubscriptionController : ControllerBase
 {
-    private Db db;
+    private readonly Db db;
 
     public SubscriptionController(Db db)
     {
