@@ -1,9 +1,9 @@
 ﻿using Data;
 using Data.Models.ShopTables;
+using Lib;
 using Lib.EntityFrameworkCore;
 using Lib.Storage;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers.ShopRoutes;
 
@@ -35,7 +35,10 @@ public class ShopController : ControllerBase
         var shop = await db.Shops.WithDomain(shopDomain).QueryOne();
         if (shop == null) return NotFound();
 
-        var categories = await db.Categories.Where(x => x.ShopId == shop.Id && x.ParentId == null).Select(x => new HomeCategory(x.Id, x.Name)).QueryMany();
+        var categories = await db.Categories
+            .Where(x => x.ShopId == shop.Id && x.ParentId == null)
+            .Select(x => new HomeCategory(x.Id, x.Name))
+            .QueryMany();
 
         var banners = await db.ShopBanners
           .Where(x => x.ShopId == shop.Id && x.Id != shop.TopBannerId)

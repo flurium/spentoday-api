@@ -25,7 +25,7 @@ public class Product
 
     public IReadOnlyCollection<ProductImage> Images { get; } = default!;
     public List<ProductCategory> ProductCategories { get; set; } = default!;
-    public IReadOnlyCollection<Order> Orders { get; } = default!;
+    public IReadOnlyCollection<OrderProduct> OrderProducts { get; } = default!;
 
     public Product(string name, string seoSlug, string shopId)
     {
