@@ -45,14 +45,12 @@ public class ShopController : ControllerBase
         var topBanner = await db.ShopBanners.QueryOne(x => x.Id == shop.TopBannerId);
         StorageFile? topBannerFile = topBanner?.GetStorageFile();
 
-        string top = topBannerFile == null
-            ? "https://wotpack.ru/wp-content/uploads/2022/02/raspisanieban.jpg"
-            : storage.Url(topBannerFile);
+        string? top = topBanner == null ? null : storage.Url(topBannerFile);
 
         var products = await db.Products.Where(x => x.ShopId == shop.Id).Select(p => new HomeProduct(
                 p.Id, p.Name, p.Price.ToString("F2"), p.Images.FirstOrDefault(x => x.Id == p.PreviewImage) == null
-                ? p.Images.FirstOrDefault() == null ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDsRxTnsSBMmVvRxdygcb9ue6xfUYL58YX27JLNLohHQ&s"
-                : storage.Url(p.Images.FirstOrDefault().GetStorageFile()) : storage.Url(p.Images.FirstOrDefault(x => x.Id == p.PreviewImage).GetStorageFile()))).QueryMany();
+                ? p.Images.FirstOrDefault() != null ? storage.Url(p.Images.FirstOrDefault().GetStorageFile())
+                : "" : storage.Url(p.Images.FirstOrDefault(x => x.Id == p.PreviewImage).GetStorageFile()))).QueryMany();
 
         var layoutShop = new HomeShop(shop.Id, shop.Name, top, categories, banners, products);
 
