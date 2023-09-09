@@ -51,9 +51,12 @@ public class ShopController : ControllerBase
         string? top = topBanner == null ? null : storage.Url(topBannerFile);
 
         var products = await db.Products.Where(x => x.ShopId == shop.Id).Select(p => new HomeProduct(
-                p.Id, p.Name, p.Price.ToString("F2"), p.Images.FirstOrDefault(x => x.Id == p.PreviewImage) == null
+                p.Id, p.Name, p.Price.ToString("F2"),
+                p.Images.FirstOrDefault(x => x.Id == p.PreviewImage) == null
                 ? p.Images.FirstOrDefault() != null ? storage.Url(p.Images.FirstOrDefault().GetStorageFile())
-                : "" : storage.Url(p.Images.FirstOrDefault(x => x.Id == p.PreviewImage).GetStorageFile()))).Take(4).QueryMany();
+                : "" : storage.Url(p.Images.FirstOrDefault(x => x.Id == p.PreviewImage).GetStorageFile())
+            ))
+            .Take(4).QueryMany();
 
         var layoutShop = new HomeShop(shop.Id, shop.Name, top, categories, banners, products);
 

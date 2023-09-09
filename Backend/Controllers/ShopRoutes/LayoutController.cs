@@ -5,11 +5,6 @@ using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-using System.Linq;
-
-using System.ComponentModel.DataAnnotations;
-
-
 namespace Backend.Controllers.ShopRoutes;
 
 [Route("v1/shop")]
