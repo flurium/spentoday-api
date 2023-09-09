@@ -20,9 +20,9 @@ public class ShopController : ControllerBase
     }
 
     public record HomeCategory(string Id, string Name);
-    public record HomeProduct(string Id, string Name, string Price, string Image);
+    public record HomeProduct(string Id, string Name, string Price, string? Image);
     public record HomeBanner(string Id, string Url);
-    public record HomeShop(string Id, string Name, string TopBanner,
+    public record HomeShop(string Id, string Name, string? TopBanner,
         IEnumerable<HomeCategory> Categories,
         IEnumerable<HomeBanner> Banners,
         IEnumerable<HomeProduct> Products
@@ -40,24 +40,38 @@ public class ShopController : ControllerBase
             .QueryMany();
 
         var banners = await db.ShopBanners
-          .Where(x => x.ShopId == shop.Id && x.Id != shop.TopBannerId)
-          .Select(x => new HomeBanner(x.Id, storage.Url(x.GetStorageFile())))
-          .QueryMany();
+            .Where(x => x.ShopId == shop.Id)
+            .Select(x => new HomeBanner(x.Id, storage.Url(x.GetStorageFile())))
+            .QueryMany();
 
-        var topBanner = await db.ShopBanners.QueryOne(x => x.Id == shop.TopBannerId);
-        StorageFile? topBannerFile = topBanner?.GetStorageFile();
+        var topBannerIndex = banners.FindIndex(x => x.Id == shop.TopBannerId);
+        string? topBannerUrl;
+        if (topBannerIndex < 0) { topBannerUrl = null; }
+        else
+        {
+            topBannerUrl = banners[topBannerIndex].Url;
+            banners.RemoveAt(topBannerIndex);
+        }
 
-        string? top = topBanner == null ? null : storage.Url(topBannerFile);
-
-        var products = await db.Products.Where(x => x.ShopId == shop.Id).Select(p => new HomeProduct(
-                p.Id, p.Name, p.Price.ToString("F2"),
-                p.Images.FirstOrDefault(x => x.Id == p.PreviewImage) == null
-                ? p.Images.FirstOrDefault() != null ? storage.Url(p.Images.FirstOrDefault().GetStorageFile())
-                : "" : storage.Url(p.Images.FirstOrDefault(x => x.Id == p.PreviewImage).GetStorageFile())
-            ))
+        var products = await db.Products
+            .Where(x => x.ShopId == shop.Id)
+            .Select(p => new
+            {
+                p.Id,
+                p.Name,
+                Price = p.Price.ToString("F2"),
+                Image = p.Images.OrderByDescending(x => x.Id == p.PreviewImage).FirstOrDefault()
+            })
             .Take(4).QueryMany();
 
-        var layoutShop = new HomeShop(shop.Id, shop.Name, top, categories, banners, products);
+        var homeProducts = products
+            .Select(x =>
+            {
+                string? url = x.Image != null ? storage.Url(x.Image.GetStorageFile()) : null;
+                return new HomeProduct(x.Id, x.Name, x.Price, url);
+            });
+
+        var layoutShop = new HomeShop(shop.Id, shop.Name, topBannerUrl, categories, banners, homeProducts);
 
         return Ok(layoutShop);
     }
