@@ -1,6 +1,5 @@
 ﻿using Data;
 using Data.Models.ShopTables;
-using Lib;
 using Lib.EntityFrameworkCore;
 using Lib.Storage;
 using Microsoft.AspNetCore.Mvc;
