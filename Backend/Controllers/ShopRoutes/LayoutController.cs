@@ -1,4 +1,5 @@
-﻿using Data;
+﻿using Backend.Services;
+using Data;
 using Data.Models.ShopTables;
 using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
@@ -60,14 +61,11 @@ public class LayoutController : ControllerBase
         }
     };
 
-    [NonAction]
-    public bool IsValidEmail(string email) => new EmailAddressAttribute().IsValid(email);
-
     [HttpPost("subscribe")]
     public async Task<IActionResult> Subscribe([FromBody] SubscribeInput input)
     {
         input.Email = input.Email.Trim();
-        if (!IsValidEmail(input.Email)) return BadRequest();
+        if (!input.Email.IsValidEmail()) return BadRequest();
 
         input.ShopId = input.ShopId.Trim();
         if (string.IsNullOrEmpty(input.ShopId)) return NotFound();
