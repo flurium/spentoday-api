@@ -14,12 +14,21 @@ public class Order
 
     public IReadOnlyCollection<OrderProduct> OrderProducts { get; set; } = default!;
 
-    public Order(string email, string adress, string fullName, string postIndex, string comment)
+
+    public string Status { get; set; }
+    public DateTime Date { get; set; } = DateTime.UtcNow;
+    public string SellerShopId { get; set; }
+    public string Phone { get; set; }
+
+    public Order(string email, string adress, string fullName, string postIndex, string comment, string status, string sellerShopId, string phone)
     {
         Email = email;
         Adress = adress;
         Comment = comment;
         FullName = fullName;
         PostIndex = postIndex;
+        Status = status;
+        SellerShopId = sellerShopId;
+        Phone = phone;
     }
 }

@@ -35,7 +35,7 @@ namespace Backend.Controllers.ShopRoutes
             if (shop == null) return NotFound();
 
             var Message = "";
-            var newOrder = new Order(input.Email, input.Adress, input.FullName, input.PostIndex, input.Comment);
+            var newOrder = new Order(input.Email, input.Adress, input.FullName, input.PostIndex, input.Comment,"Готується", shop.Id, input.Phone);
             foreach (var product in input.Products)
             {
                 var part = $"Назва: {product.Name} Ціна:{product.Price} Кількість: {product.Amount} <br/>";
