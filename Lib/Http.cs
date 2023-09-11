@@ -27,6 +27,8 @@ public static class Http
     {
         try
         {
+            //Console.WriteLine(await response.Content.ReadAsStringAsync());
+
             var jsonStream = await response.Content.ReadAsStreamAsync();
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var data = await JsonSerializer.DeserializeAsync<T>(jsonStream, options);

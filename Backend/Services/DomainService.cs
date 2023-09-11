@@ -48,7 +48,9 @@ public class DomainService
     {
         var route = $"/v9/projects/{projectId}/domains/{domain}/verify?teamId={teamId}";
         var response = await Http.Post(client, route);
+
         if (response == null) return false;
+        // Console.WriteLine(await response.Content.ReadAsStringAsync());
         return response.IsSuccessStatusCode;
     }
 

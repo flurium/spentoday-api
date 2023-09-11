@@ -113,6 +113,8 @@ public class DomainController : ControllerBase
         var domainResponse = await domainService.AddDomainToShop(domain);
         if (domainResponse == null) return Problem();
 
+        var verified = await domainService.VerifyDomain(domain);
+
         await db.ShopDomains.AddAsync(new ShopDomain(domain, shopId, domainResponse.Verified));
         var saved = await db.Save();
         if (!saved) return Problem();
