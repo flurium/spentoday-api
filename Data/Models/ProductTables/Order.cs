@@ -14,7 +14,6 @@ public class Order
 
     public IReadOnlyCollection<OrderProduct> OrderProducts { get; set; } = default!;
 
-
     public string Status { get; set; }
     public DateTime Date { get; set; } = DateTime.UtcNow;
     public string SellerShopId { get; set; }
