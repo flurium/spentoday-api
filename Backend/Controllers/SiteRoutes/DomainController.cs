@@ -122,17 +122,26 @@ public class DomainController : ControllerBase
             .QueryOne(x => x.Domain == domain && x.Verified && x.ShopId != input.ShopId);
         if (takenDomain != null)
         {
+            var projectDomain = await vercelDomainApi.GetProjectDomain(takenDomain.Domain);
+            if (projectDomain == null) return Problem();
+
+            if (!projectDomain.Verified)
+            {
+                var synced = await DomainService.SyncDbDomainVerification(db, takenDomain, false);
+                if (!synced) return Problem();
+            }
+            else
+            {
+                var domainConfiguration = await vercelDomainApi.GetDomainConfiguration(takenDomain.Domain);
+                if (domainConfiguration == null) return Problem();
+
+                if (domainConfiguration.Misconfigured)
+                {
+                    var synced = await DomainService.SyncDbDomainVerification(db, takenDomain, false);
+                    if (!synced) return Problem();
+                }
+            }
             return Conflict();
-
-            //// check if verified on Vercel
-            //var takenVerified = await domainService.GetDomainInfo(domain);
-            //if (takenVerified == null) return Problem();
-            //if (takenVerified.Verified) return Conflict();
-
-            //// if now it's not verified then sync with db
-            //takenDomain.Verified = false;
-            //var saved = await db.Save();
-            //if (!saved) return Problem();
         }
 
         var uid = User.Uid();
