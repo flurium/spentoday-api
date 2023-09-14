@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Lib;
+using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Services;
 
@@ -21,4 +22,14 @@ public static class EmailExtension
     {
         return new EmailAddressAttribute().IsValid(email);
     }
+}
+
+public static class Dev
+{
+    private static bool IsDevEnv() => (Env.GetOptional("ASPNETCORE_ENVIRONMENT") ?? "") == "Development";
+
+    /// <summary>
+    /// Logging to Console if Dev, otherwise doing nothing.
+    /// </summary>
+    public static readonly Action<string> Log = IsDevEnv() ? (message) => Console.WriteLine(message) : (message) => { };
 }

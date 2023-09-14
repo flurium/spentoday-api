@@ -1,4 +1,4 @@
-﻿using Backend.Services;
+﻿using Backend.Features.Domains;
 using Lib.Email;
 using Lib.Email.Services;
 using Lib.Storage;
@@ -31,7 +31,7 @@ public static class Infrastructure
         services.AddScoped(provider =>
         {
             var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient();
-            return new DomainService(
+            return new VercelDomainApi(
                 client, Secrets.VERCEL_TOKEN,
                 Secrets.VERCEL_PROJECT_ID, Secrets.VERCEL_TEAM_ID
             );
