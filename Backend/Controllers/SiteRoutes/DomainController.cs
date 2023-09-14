@@ -118,10 +118,12 @@ public class DomainController : ControllerBase
         var domain = input.Domain.Trim();
         if (string.IsNullOrEmpty(domain)) return BadRequest();
 
-        var takenDomain = await db.ShopDomains.QueryOne(x => x.Domain == domain && x.Verified && x.ShopId != input.ShopId);
+        var takenDomain = await db.ShopDomains
+            .QueryOne(x => x.Domain == domain && x.Verified && x.ShopId != input.ShopId);
         if (takenDomain != null)
         {
             return Conflict();
+
             //// check if verified on Vercel
             //var takenVerified = await domainService.GetDomainInfo(domain);
             //if (takenVerified == null) return Problem();
@@ -139,56 +141,10 @@ public class DomainController : ControllerBase
         );
         if (dbDomain == null) return NotFound();
 
-        var projectDomain = await vercelDomainApi.GetProjectDomain(domain);
-        if (projectDomain == null) return Problem();
-        if (!projectDomain.Verified)
-        {
-            var verified = await vercelDomainApi.VerifyDomain(domain);
-            if (verified == null) return Problem();
+        var verified = await vercelDomainApi.VerifyDomain(domain);
+        if (verified == null) return Problem();
 
-            if (verified == false)
-            {
-                dbDomain.Verified = false;
-                var domainSaved = await db.Save();
-                if (!domainSaved) return Problem();
-
-                return Accepted(DomainService.ProjectDomainStatus(dbDomain, projectDomain));
-            }
-        }
-
-        var domainConfiguration = await vercelDomainApi.GetDomainConfiguration(domain);
-        if (domainConfiguration == null) return Problem();
-        if (domainConfiguration.Misconfigured)
-        {
-            if (dbDomain.Verified)
-            {
-                dbDomain.Verified = false;
-                var domainSaved = await db.Save();
-                if (!domainSaved) return Problem();
-            }
-
-            return Accepted(DomainService.DomainConfigurationStatus(domain, projectDomain));
-        }
-
-        if (dbDomain.Verified) return Ok();
-
-        dbDomain.Verified = true;
-        var saved = await db.Save();
-        return saved ? Ok() : Problem();
-
-        //var verified = await domainService.VerifyDomain(domain);
-        //if (verified)
-        //{
-        //    shopDomain.Verified = true;
-        //    var saved = await db.Save();
-        //    return saved ? Ok() : Problem();
-        //}
-
-        //var info = await domainService.GetDomainInfo(domain);
-        //if (info == null) return Accepted(DomainOutput.NoStatus(domain));
-        //return Accepted(info.Verification == null
-        //    ? DomainOutput.Verified(domain)
-        //    : DomainOutput.NotVerified(domain, info.Verification)
-        //);
+        var state = await DomainService.GetStatusAndSync(vercelDomainApi, db, dbDomain);
+        return Ok(state);
     }
 }

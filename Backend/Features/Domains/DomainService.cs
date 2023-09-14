@@ -43,7 +43,7 @@ public class DomainService
         return DomainStatus.NotVerified(domain, new("CNAME", prefix, "cname.vercel-dns.com."));
     }
 
-    public static async Task<bool> SyncDomainVerification(Db db, ShopDomain dbDomain, bool verified)
+    public static async Task<bool> SyncDbDomainVerification(Db db, ShopDomain dbDomain, bool verified)
     {
         if (dbDomain.Verified == verified) return true;
         dbDomain.Verified = verified;
@@ -61,7 +61,7 @@ public class DomainService
 
         if (!projectDomain.Verified)
         {
-            var synced = await SyncDomainVerification(db, dbDomain, false);
+            var synced = await SyncDbDomainVerification(db, dbDomain, false);
             if (!synced) return DomainStatus.NoStatus(dbDomain.Domain);
 
             // requires Vercel TXT verification
@@ -76,14 +76,14 @@ public class DomainService
 
         if (domainConfiguration.Misconfigured)
         {
-            var synced = await SyncDomainVerification(db, dbDomain, false);
+            var synced = await SyncDbDomainVerification(db, dbDomain, false);
             if (!synced) return DomainStatus.NoStatus(dbDomain.Domain);
 
             return DomainConfigurationStatus(dbDomain.Domain, projectDomain);
         }
 
         { // smart move
-            var synced = await SyncDomainVerification(db, dbDomain, true);
+            var synced = await SyncDbDomainVerification(db, dbDomain, true);
             if (!synced) return DomainStatus.NoStatus(dbDomain.Domain);
         }
 
