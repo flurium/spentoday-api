@@ -1,4 +1,5 @@
 ﻿using Backend.Auth;
+using Backend.Features.Domains;
 using Backend.Services;
 using Data;
 using Data.Models.ShopTables;
@@ -13,76 +14,30 @@ namespace Backend.Controllers.SiteRoutes;
 public class DomainController : ControllerBase
 {
     private readonly Db db;
-    private readonly DomainService domainService;
+    private readonly VercelDomainApi vercelDomainApi;
     private readonly BackgroundQueue background;
 
-    public DomainController(Db db, DomainService domainService, BackgroundQueue background)
+    public DomainController(Db db, VercelDomainApi domainService, BackgroundQueue background)
     {
         this.db = db;
-        this.domainService = domainService;
+        this.vercelDomainApi = domainService;
         this.background = background;
-    }
-
-    public class DomainOutput
-    {
-        public string Domain { get; }
-        public string Status { get; }
-        public List<DomainVerification>? Verifications { get; }
-
-        private DomainOutput(string domain, string status, List<DomainVerification>? verifications = null)
-        {
-            Domain = domain;
-            Status = status;
-            Verifications = verifications;
-        }
-
-        public static DomainOutput NoStatus(string domain) => new(domain, "no-status");
-
-        public static DomainOutput Taken(string domain) => new(domain, "taken");
-
-        public static DomainOutput Verified(string domain) => new(domain, "verified");
-
-        public static DomainOutput NotVerified(string domain, List<DomainVerification> verifications) => new(domain, "not-verified", verifications);
     }
 
     [HttpGet("{shopId}"), Authorize]
     public async Task<IActionResult> ShopDomains([FromRoute] string shopId)
     {
         var uid = User.Uid();
-        var domains = await db.ShopDomains
+        var dbDomains = await db.ShopDomains
             .Where(x => x.ShopId == shopId && x.Shop.OwnerId == uid)
             .QueryMany();
 
-        List<DomainOutput> output = new(domains.Count);
-        for (int i = 0; i < domains.Count; ++i)
+        List<DomainStatus> output = new(dbDomains.Count);
+        for (int i = 0; i < dbDomains.Count; ++i)
         {
-            var domain = domains[i];
-            var result = await domainService.GetDomainInfo(domain.Domain);
-
-            if (result == null)
-            {
-                output.Add(DomainOutput.NoStatus(domain.Domain));
-                continue;
-            }
-
-            if (!domain.Verified && result.Verified)
-            {
-                // domain is taken by another shop
-                output.Add(DomainOutput.Taken(domain.Domain));
-                continue;
-            }
-
-            if (domain.Verified && !result.Verified)
-            {
-                // verification changed
-                domain.Verified = false;
-                await db.Save();
-            }
-
-            output.Add(result.Verification == null
-                ? DomainOutput.Verified(domain.Domain)
-                : DomainOutput.NotVerified(domain.Domain, result.Verification)
-            );
+            var dbDomain = dbDomains[i];
+            var status = await DomainService.GetStatusAndSync(vercelDomainApi, db, dbDomain);
+            output.Add(status);
         }
 
         return Ok(output);
@@ -90,6 +45,7 @@ public class DomainController : ControllerBase
 
     public record AddDomainInput(string Domain);
 
+    // TODO: remake
     [HttpPost("{shopId}"), Authorize]
     public async Task<IActionResult> AddDomain([FromRoute] string shopId, [FromBody] AddDomainInput input)
     {
@@ -110,19 +66,16 @@ public class DomainController : ControllerBase
         var userOwnShop = await db.Shops.Have(x => x.OwnerId == uid && x.Id == shopId);
         if (!userOwnShop) return Forbid();
 
-        var domainResponse = await domainService.AddDomainToShop(domain);
-        if (domainResponse == null) return Problem();
+        var projectDomain = await vercelDomainApi.AddDomain(domain);
+        if (projectDomain == null) return Problem();
 
-        var verified = await domainService.VerifyDomain(domain);
-
-        await db.ShopDomains.AddAsync(new ShopDomain(domain, shopId, domainResponse.Verified));
+        var dbDomain = new ShopDomain(domain, shopId, false);
+        await db.ShopDomains.AddAsync(dbDomain);
         var saved = await db.Save();
         if (!saved) return Problem();
 
-        return Ok(domainResponse.Verification == null
-            ? DomainOutput.Verified(domain)
-            : DomainOutput.NotVerified(domain, domainResponse.Verification)
-        );
+        var status = await DomainService.GetStatusAndSync(vercelDomainApi, db, dbDomain);
+        return Ok(status);
     }
 
     [HttpDelete("{shopId}/{domain}"), Authorize]
@@ -141,14 +94,14 @@ public class DomainController : ControllerBase
         var saved = await db.Save();
         if (!saved) return Problem();
 
-        var removed = await domainService.RemoveDomainFromShop(domain);
+        var removed = await vercelDomainApi.RemoveDomain(domain);
         if (!removed)
         {
             background.Enqueue(async provider =>
             {
                 using var scope = provider.CreateScope();
-                var service = scope.ServiceProvider.GetRequiredService<DomainService>();
-                await domainService.RemoveDomainFromShop(domain);
+                var service = scope.ServiceProvider.GetRequiredService<VercelDomainApi>();
+                await vercelDomainApi.RemoveDomain(domain);
             });
         }
 
@@ -156,6 +109,8 @@ public class DomainController : ControllerBase
     }
 
     public record VerifyInput(string Domain, string ShopId);
+
+    // TODO: remake
 
     [HttpPatch("verify"), Authorize]
     public async Task<IActionResult> VerifyDomain([FromBody] VerifyInput input)
@@ -166,36 +121,74 @@ public class DomainController : ControllerBase
         var takenDomain = await db.ShopDomains.QueryOne(x => x.Domain == domain && x.Verified && x.ShopId != input.ShopId);
         if (takenDomain != null)
         {
-            // check if verified on Vercel
-            var takenVerified = await domainService.GetDomainInfo(domain);
-            if (takenVerified == null) return Problem();
-            if (takenVerified.Verified) return Conflict();
+            return Conflict();
+            //// check if verified on Vercel
+            //var takenVerified = await domainService.GetDomainInfo(domain);
+            //if (takenVerified == null) return Problem();
+            //if (takenVerified.Verified) return Conflict();
 
-            // if now it's not verified then sync with db
-            takenDomain.Verified = false;
-            var saved = await db.Save();
-            if (!saved) return Problem();
+            //// if now it's not verified then sync with db
+            //takenDomain.Verified = false;
+            //var saved = await db.Save();
+            //if (!saved) return Problem();
         }
 
         var uid = User.Uid();
-        var shopDomain = await db.ShopDomains.QueryOne(
+        var dbDomain = await db.ShopDomains.QueryOne(
             x => x.Domain == domain && x.ShopId == input.ShopId && x.Shop.OwnerId == uid
         );
-        if (shopDomain == null) return NotFound();
+        if (dbDomain == null) return NotFound();
 
-        var verified = await domainService.VerifyDomain(domain);
-        if (verified)
+        var projectDomain = await vercelDomainApi.GetProjectDomain(domain);
+        if (projectDomain == null) return Problem();
+        if (!projectDomain.Verified)
         {
-            shopDomain.Verified = true;
-            var saved = await db.Save();
-            return saved ? Ok() : Problem();
+            var verified = await vercelDomainApi.VerifyDomain(domain);
+            if (verified == null) return Problem();
+
+            if (verified == false)
+            {
+                dbDomain.Verified = false;
+                var domainSaved = await db.Save();
+                if (!domainSaved) return Problem();
+
+                return Accepted(DomainService.ProjectDomainStatus(dbDomain, projectDomain));
+            }
         }
 
-        var info = await domainService.GetDomainInfo(domain);
-        if (info == null) return Accepted(DomainOutput.NoStatus(domain));
-        return Accepted(info.Verification == null
-            ? DomainOutput.Verified(domain)
-            : DomainOutput.NotVerified(domain, info.Verification)
-        );
+        var domainConfiguration = await vercelDomainApi.GetDomainConfiguration(domain);
+        if (domainConfiguration == null) return Problem();
+        if (domainConfiguration.Misconfigured)
+        {
+            if (dbDomain.Verified)
+            {
+                dbDomain.Verified = false;
+                var domainSaved = await db.Save();
+                if (!domainSaved) return Problem();
+            }
+
+            return Accepted(DomainService.DomainConfigurationStatus(domain, projectDomain));
+        }
+
+        if (dbDomain.Verified) return Ok();
+
+        dbDomain.Verified = true;
+        var saved = await db.Save();
+        return saved ? Ok() : Problem();
+
+        //var verified = await domainService.VerifyDomain(domain);
+        //if (verified)
+        //{
+        //    shopDomain.Verified = true;
+        //    var saved = await db.Save();
+        //    return saved ? Ok() : Problem();
+        //}
+
+        //var info = await domainService.GetDomainInfo(domain);
+        //if (info == null) return Accepted(DomainOutput.NoStatus(domain));
+        //return Accepted(info.Verification == null
+        //    ? DomainOutput.Verified(domain)
+        //    : DomainOutput.NotVerified(domain, info.Verification)
+        //);
     }
 }
