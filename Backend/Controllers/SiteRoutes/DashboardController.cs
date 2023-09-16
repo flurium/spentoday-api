@@ -4,6 +4,7 @@ using Data;
 using Data.Models.ShopTables;
 using Lib;
 using Lib.EntityFrameworkCore;
+using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,11 +17,13 @@ public class DashboardController : ControllerBase
 {
     private readonly Db db;
     private readonly ImageService imageService;
+    private readonly IStorage storage;
 
-    public DashboardController(Db db, ImageService imageService)
+    public DashboardController(Db db, ImageService imageService, IStorage storage)
     {
         this.db = db;
         this.imageService = imageService;
+        this.storage = storage;
     }
 
     // TODO: refactor this bullshit
@@ -61,6 +64,7 @@ public class DashboardController : ControllerBase
     }
 
     public record ShopOut(string Name, string Id);
+    public record AllShops(string Name, string Id, string? TopBanner, string Slug);
     public record ShopAdd(string ShopName);
 
     [HttpPost("addshop")]
@@ -87,9 +91,21 @@ public class DashboardController : ControllerBase
 
         var shops = await db.Shops
             .Where(x => x.OwnerId == uid.Value)
-            .Select(x => new ShopOut(x.Name, x.Id))
-            .QueryMany();
+            .Select(x => new
+            {
+                x.Name,
+                x.Id,
+                TopBanner = x.Banners.FirstOrDefault(b => b.Id == x.TopBannerId),
+                Path = x.Domains.FirstOrDefault(p => p.Verified).Domain
+            })
+           .QueryMany();
 
-        return Ok(shops);
+        var allShops = shops.Select(x =>
+        {
+            string? url = x.TopBanner != null ? storage.Url(x.TopBanner.GetStorageFile()) : null;
+            return new AllShops(x.Id, x.Name, url, x.Path);
+        });
+
+        return Ok(allShops);
     }
 }
