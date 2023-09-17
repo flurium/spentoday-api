@@ -64,7 +64,7 @@ public class DashboardController : ControllerBase
     }
 
     public record ShopOut(string Name, string Id);
-    public record AllShops(string Name, string Id, string? TopBanner, string Slug);
+    public record AllShops(string Id, string Name, string? TopBanner, string? Slug);
     public record ShopAdd(string ShopName);
 
     [HttpPost("addshop")]
@@ -96,14 +96,14 @@ public class DashboardController : ControllerBase
                 x.Name,
                 x.Id,
                 TopBanner = x.Banners.FirstOrDefault(b => b.Id == x.TopBannerId),
-                Path = x.Domains.FirstOrDefault(p => p.Verified).Domain
+                Path = x.Domains.FirstOrDefault(p => p.Verified)
             })
            .QueryMany();
 
         var allShops = shops.Select(x =>
         {
             string? url = x.TopBanner != null ? storage.Url(x.TopBanner.GetStorageFile()) : null;
-            return new AllShops(x.Id, x.Name, url, x.Path);
+            return new AllShops(x.Id, x.Name, url, x.Path?.Domain);
         });
 
         return Ok(allShops);
