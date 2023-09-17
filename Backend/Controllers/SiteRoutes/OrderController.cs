@@ -22,15 +22,21 @@ public class OrderController : ControllerBase
     public record OrderOutput(string Id, double Total, int Amount, string Status, DateTime Date);
 
     [HttpGet("{shopId}/orders")]
-    public async Task<IActionResult> Orders([FromRoute] string shopId)
+    public async Task<IActionResult> Orders([FromRoute] string shopId, [FromQuery] int start = 0)
     {
         var uid = User.Uid();
-        var shop = await db.Shops.QueryOne(x => x.Id == shopId && uid == x.OwnerId);
-        if (shop == null) return NotFound();
+        var ownShop = await db.Shops.Have(x => x.Id == shopId && uid == x.OwnerId);
+        if (!ownShop) return NotFound();
 
         var orders = await db.Orders
             .Where(x => x.SellerShopId == shopId)
-            .Select(x => new OrderOutput(x.Id, x.OrderProducts.Sum(x => x.Amount * x.Price), x.OrderProducts.Sum(x => x.Amount), x.Status, x.Date))
+            .Skip(start).Take(10)
+            .Select(x => new OrderOutput(
+                x.Id,
+                x.OrderProducts.Sum(x => x.Amount * x.Price),
+                x.OrderProducts.Sum(x => x.Amount),
+                x.Status, x.Date
+            ))
             .QueryMany();
         return Ok(orders);
     }
