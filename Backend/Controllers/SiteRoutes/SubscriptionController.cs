@@ -5,6 +5,7 @@ using Data.Models.ShopTables;
 using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Backend.Controllers.SiteRoutes.DashboardController;
 
 namespace Backend.Controllers.SiteRoutes;
 
@@ -22,19 +23,23 @@ public class SubscriptionController : ControllerBase
     public record struct ListSubscription(string Id, string Email, DateTime Date);
 
     [HttpGet("{shopId}"), Authorize]
-    public async Task<IActionResult> List([FromRoute] string shopId, [FromQuery] string? search = null)
+    public async Task<IActionResult> List(
+        [FromRoute] string shopId,
+        [FromQuery] string? search = null,
+        [FromQuery] int start = 0
+    )
     {
         var uid = User.Uid();
 
-        var query = db.ShopSubscriptions.Where(x => x.ShopId == shopId && x.Shop.OwnerId == uid);
-        if (search != null)
-        {
-            query = query
-                .Where(x => x.Email.Contains(search))
-                .OrderByDescending(x => x.Email.StartsWith(search));
-        }
+        // Order by break pagination
+        //.OrderByDescending(x => x.Email.StartsWith(sqlSearch))
 
-        var subscriptions = await query
+        string sqlSearch = search ?? "";
+        var subscriptions = await db.ShopSubscriptions
+            .OrderByDescending(x => x.Date)
+            .Where(x => x.ShopId == shopId && x.Shop.OwnerId == uid && x.Email.Contains(sqlSearch))
+            .Skip(start)
+            .Take(10)
             .Select(x => new ListSubscription(x.Id, x.Email, x.Date))
             .QueryMany();
 

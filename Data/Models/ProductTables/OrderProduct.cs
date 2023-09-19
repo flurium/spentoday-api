@@ -7,7 +7,6 @@ public class OrderProduct
     public double Price { get; set; }
     public int Amount { get; set; }
     public string Name { get; set; }
-
     public string OrderId { get; set; }
     public Order Order { get; set; } = default!;
 

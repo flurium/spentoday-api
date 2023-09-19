@@ -22,10 +22,11 @@ public class PageController : ControllerBase
     public record PagesOutput(string Slug, string Title, DateTime UpdatedAt);
 
     [HttpGet("{shopId}/pages")]
-    public async Task<IActionResult> Pages(string shopId)
+    public async Task<IActionResult> Pages(string shopId, [FromQuery] int start = 0)
     {
         var pages = await db.InfoPages
             .Where(x => x.ShopId == shopId)
+            .Skip(start).Take(10)
             .Select(x => new PagesOutput(x.Slug, x.Title, x.UpdatedAt))
             .QueryMany();
 
