@@ -6,6 +6,7 @@ using Lib.EntityFrameworkCore;
 using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Backend.Controllers.ShopRoutes.ShopController;
 
 namespace Backend.Controllers.SiteRoutes;
 
@@ -219,9 +220,18 @@ public class ShopSettingsController : ControllerBase
         if (shop == null) return NotFound();
 
         var banners = await db.ShopBanners
-            .Where(x => x.ShopId == shop.Id && x.Id != shop.TopBannerId)
+            .Where(x => x.ShopId == shop.Id)
             .Select(x => new BannerOut(storage.Url(x.GetStorageFile()), x.Id))
             .QueryMany();
+
+        var topBannerIndex = banners.FindIndex(x => x.Id == shop.TopBannerId);
+        string topBannerUrl;
+        if (topBannerIndex < 0) { topBannerUrl = ""; }
+        else
+        {
+            topBannerUrl = banners[topBannerIndex].Url;
+            banners.RemoveAt(topBannerIndex);
+        }
 
         var links = await db.SocialMediaLinks
            .Where(x => x.ShopId == shop.Id)
@@ -229,18 +239,9 @@ public class ShopSettingsController : ControllerBase
            .QueryMany();
 
         var logoFile = shop.GetStorageFile();
-        string logo = logoFile == null
-            ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDsRxTnsSBMmVvRxdygcb9ue6xfUYL58YX27JLNLohHQ&s"
-            : storage.Url(logoFile);
+        string logoUrl = logoFile == null ? "" : storage.Url(logoFile);
 
-        var topBanner = await db.ShopBanners.QueryOne(x => x.Id == shop.TopBannerId);
-        StorageFile? topBannerFile = topBanner?.GetStorageFile();
-
-        string top = topBannerFile == null
-            ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDsRxTnsSBMmVvRxdygcb9ue6xfUYL58YX27JLNLohHQ&s"
-            : storage.Url(topBannerFile);
-
-        var shopOut = new ShopOut(shop.Name, logo, top, banners, links);
+        var shopOut = new ShopOut(shop.Name, logoUrl, topBannerUrl, banners, links);
 
         var saved = await db.Save();
         return saved ? Ok(shopOut) : Problem();
