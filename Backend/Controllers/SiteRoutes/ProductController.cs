@@ -141,6 +141,18 @@ public class ProductController : ControllerBase
         return saved ? Ok() : Problem();
     }
 
+    [HttpPost("{id}/unpublish"), Authorize]
+    public async Task<IActionResult> Unpublish([FromRoute] string id)
+    {
+        var uid = User.Uid();
+        var product = await db.Products.QueryOne(x => x.Id == id && x.Shop.OwnerId == uid);
+        if (product == null) return NotFound();
+
+        product.IsDraft = true;
+        var saved = await db.Save();
+        return saved ? Ok() : Problem();
+    }
+
     [HttpDelete("{id}"), Authorize]
     public async Task<IActionResult> DeleteProduct(string id)
     {
