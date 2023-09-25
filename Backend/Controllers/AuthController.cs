@@ -1,4 +1,5 @@
 ﻿using Backend.Auth;
+using Backend.Config;
 using Data.Models.UserTables;
 using Lib;
 using Lib.Email;
@@ -31,7 +32,8 @@ public class AuthController : ControllerBase
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.None,
-            Expires = DateTimeOffset.Now.AddDays(30)
+            Expires = DateTimeOffset.Now.AddDays(30),
+            Domain = Secrets.COOKIE_DOMAIN
         });
     }
 
