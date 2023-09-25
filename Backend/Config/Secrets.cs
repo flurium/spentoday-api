@@ -7,6 +7,8 @@ namespace Backend.Config;
 /// </summary>
 public static class Secrets
 {
+    public static readonly string COOKIE_DOMAIN;
+
     public static readonly string JWT_ISSUER;
     public static readonly string JWT_AUDIENCE;
     public static readonly string JWT_SECRET;
@@ -28,6 +30,8 @@ public static class Secrets
 
     static Secrets()
     {
+        COOKIE_DOMAIN = Env.GetOptional("COOKIE_DOMAIN") ?? "localhost";
+
         JWT_ISSUER = Env.GetRequired("JWT_ISSUER");
         JWT_AUDIENCE = Env.GetRequired("JWT_AUDIENCE");
         JWT_SECRET = Env.GetRequired("JWT_SECRET");

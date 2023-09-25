@@ -1,4 +1,5 @@
 ﻿using Backend.Auth;
+using Backend.Config;
 using Data.Models.UserTables;
 using Lib;
 using Lib.Email;
@@ -31,7 +32,8 @@ public class AuthController : ControllerBase
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.None,
-            Expires = DateTimeOffset.Now.AddDays(30)
+            Expires = DateTimeOffset.Now.AddDays(30),
+            Domain = Secrets.COOKIE_DOMAIN
         });
     }
 
@@ -59,7 +61,6 @@ public class AuthController : ControllerBase
 
         var user = new User(input.Name, input.Email);
 
-        //TO DO!
         var res = await userManager.CreateAsync(user, input.Password);
         if (!res.Succeeded)
         {
@@ -143,7 +144,7 @@ public class AuthController : ControllerBase
     [HttpPost("reset")]
     public async Task<IActionResult> ResetPassword(ResetPasswordInput input)
     {
-        if (!input.Password.Equals(input.ConfirmPassword)) return BadRequest();
+        if (!input.Password.Equals(input.ConfirmPassword)) return BadRequest("confirmPassword");
 
         var user = await userManager.FindByEmailAsync(input.Email);
         if (user == null) return NotFound();
@@ -153,11 +154,18 @@ public class AuthController : ControllerBase
         var changeVersionResult = await userManager.UpdateAsync(user);
         if (!resetPassResult.Succeeded || !changeVersionResult.Succeeded)
         {
-            //foreach (var error in resetPassResult.Errors)
-            //{
-            //    ModelState.TryAddModelError(error.Code, error.Description);
-            //}
-            return Problem();
+            var errors = resetPassResult.Errors.Select(x =>
+            {
+                string? error = null;
+                if (x.Code == nameof(IdentityErrorDescriber.PasswordTooShort)) error = "password-too-short";
+                if (x.Code == nameof(IdentityErrorDescriber.PasswordRequiresDigit)) error = "digit";
+                if (x.Code == nameof(IdentityErrorDescriber.PasswordRequiresLower)) error = "lower";
+                if (x.Code == nameof(IdentityErrorDescriber.PasswordRequiresUpper)) error = "upper";
+                if (x.Code == nameof(IdentityErrorDescriber.PasswordRequiresNonAlphanumeric)) error = "nonAlphanumeric";
+
+                return error;
+            });
+            return StatusCode(500, errors);
         }
         return Ok();
     }
