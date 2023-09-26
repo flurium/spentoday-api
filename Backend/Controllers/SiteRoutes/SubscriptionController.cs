@@ -5,7 +5,6 @@ using Data.Models.ShopTables;
 using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static Backend.Controllers.SiteRoutes.DashboardController;
 
 namespace Backend.Controllers.SiteRoutes;
 

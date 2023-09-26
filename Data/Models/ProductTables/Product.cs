@@ -37,9 +37,10 @@ public class Product
 
 public static class ProductExtension
 {
-    public static IQueryable<Product> OwnedBy(this IQueryable<Product> query, string shopDomain)
+    public static IQueryable<Product> WithDomain(this IQueryable<Product> query, string Domain)
     {
-        // && x.Verified
-        return query.Where(x => x.Shop.Domains.Any(x => x.Domain == shopDomain));
+        return query.Where(x => x.Shop.Domains.Any(x => x.Domain == Domain
+            && x.Verified
+        ));
     }
 }

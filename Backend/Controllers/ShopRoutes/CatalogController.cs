@@ -27,7 +27,7 @@ public class CatalogController : ControllerBase
     }
 
     public record class CatalogInput(string Search = "", int Start = 0, int Count = 10, int? Min = null, int? Max = null, int? Order = 0);
-    public record ProductsOutput(string Id, string Name, double Price, StorageFile? Image);
+    public record ProductsOutput(string Id, string Name, double Price, StorageFile? Image, string Slug);
 
     [HttpPost("{domain}")]
     public async Task<IActionResult> List([FromRoute] string domain, [FromBody] CatalogInput input)
@@ -56,7 +56,7 @@ public class CatalogController : ControllerBase
         var products = await query
             .Select(x => new ProductsOutput(
                 x.Id, x.Name, x.Price,
-                x.Images.Select(x => x.GetStorageFile()).FirstOrDefault()
+                x.Images.Select(x => x.GetStorageFile()).FirstOrDefault(), x.SeoSlug
             ))
             .QueryMany();
 
