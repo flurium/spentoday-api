@@ -6,7 +6,6 @@ using Lib.EntityFrameworkCore;
 using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static Backend.Controllers.ShopRoutes.ShopController;
 
 namespace Backend.Controllers.SiteRoutes;
 

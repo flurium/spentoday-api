@@ -31,7 +31,7 @@ public class SingleProductController : ControllerBase
         string? Image, string SeoSlug
     );
 
-    public record Output(ProductOutput Product, List<ProductItemOutput> Products);
+    public record Output(ProductOutput Product, List<ProductItemOutput> Products, List<string> Categories);
 
     [HttpGet("{domain}/{slugOrId}/product")]
     public async Task<IActionResult> SingleProduct(
@@ -41,17 +41,36 @@ public class SingleProductController : ControllerBase
         var product = await db.Products
             .WithDomain(domain)
             .Where(x => x.SeoSlug == slugOrId || x.Id == slugOrId)
-            .Select(x => new ProductOutput(
-                x.Id, x.Name, x.Price, x.Amount,
-                x.SeoTitle, x.SeoDescription, x.SeoSlug, x.Description,
-                x.Images.Select(i => storj.Url(i.GetStorageFile())).ToList()
-            ))
+            .Select(x => new
+            {
+                x.Id,
+                x.Name,
+                x.Price,
+                x.Amount,
+                x.SeoTitle,
+                x.SeoDescription,
+                x.SeoSlug,
+                x.Description
+            })
             .QueryOne();
         if (product == null) return NotFound();
 
+        var images = await db.ProductImages.QueryMany(x => x.ProductId == product.Id);
+        var productOutput = new ProductOutput(
+            product.Id, product.Name, product.Price, product.Amount, product.SeoTitle,
+            product.SeoDescription, product.SeoSlug, product.Description,
+            images.Select(x => storj.Url(x.GetStorageFile())).ToList()
+        );
+
         var similar = await SimilarProducts(domain, product.Name);
 
-        var output = new Output(product, similar);
+        var categories = await db.ProductCategories
+            .Where(x => x.ProductId == product.Id)
+            .OrderBy(x => x.Order)
+            .Select(x => x.Category.Name)
+            .QueryMany();
+
+        var output = new Output(productOutput, similar, categories);
         return Ok(output);
     }
 
