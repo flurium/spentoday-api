@@ -96,7 +96,7 @@ public class SingleProductController : ControllerBase
                 Image = x.Images.OrderBy(i => i.Id == x.PreviewImage).FirstOrDefault(),
                 x.SeoSlug
             })
-            .Take(4)
+            .Take(5)
             .QueryMany();
 
         return products.Select(x =>
