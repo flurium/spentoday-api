@@ -26,7 +26,7 @@ public class AccountController : ControllerBase
         this.storage = storage;
     }
 
-    public record OneUser(string Name, string? ImageUrl);
+    public record OneUser(string Name, string Email, string? ImageUrl);
 
     [HttpGet("user"), Authorize]
     public async Task<IActionResult> GetUser()
@@ -37,7 +37,7 @@ public class AccountController : ControllerBase
         if (user == null) return NotFound();
         var file = user.GetStorageFile();
 
-        return Ok(new OneUser(Name: user.Name, ImageUrl: file != null ? storage.Url(file) : null));
+        return Ok(new OneUser(Name: user.Name, Email: user.Email , ImageUrl: file != null ? storage.Url(file) : null));
     }
 
     [HttpPost("image"), Authorize]
@@ -54,6 +54,10 @@ public class AccountController : ControllerBase
         var user = await userManager.FindByIdAsync(uid);
 
         if (user == null) return NotFound();
+
+        var image = user.GetStorageFile();
+
+        if (image != null) await storage.Delete(image);
 
         user.ImageProvider = uploadedFile.Provider;
         user.ImageBucket = uploadedFile.Bucket;
@@ -116,6 +120,30 @@ public class AccountController : ControllerBase
             Response.Cookies.Delete(RefreshOnly.Cookie);
             return Ok();
         }
+
+        return Problem();
+    }
+
+    [HttpDelete("image"), Authorize]
+    public async Task<IActionResult> DeleteImage()
+    {
+        var uid = User.Uid();
+        var user = await userManager.FindByIdAsync(uid);
+        if (user == null) return NotFound();
+
+        var image = user.GetStorageFile();
+
+        if (image == null) return NotFound();
+
+        await storage.Delete(image);
+
+        user.ImageKey = null;
+        user.ImageProvider = null;
+        user.ImageBucket = null;
+
+        var res = await userManager.UpdateAsync(user);
+
+        if (res.Succeeded) return Ok();
 
         return Problem();
     }
