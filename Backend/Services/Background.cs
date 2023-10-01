@@ -79,16 +79,25 @@ public class BackgroundQueue
 
         private async Task Run(CancellationToken stoppingToken)
         {
-            foreach (var task in backgroundQueue.queue.GetConsumingEnumerable(stoppingToken))
+            try
             {
-                try
+                var token = cancellationTokenSource == null ? stoppingToken : cancellationTokenSource.Token;
+
+                foreach (var task in backgroundQueue.queue.GetConsumingEnumerable(token))
                 {
-                    await task(serviceProvider);
+                    try
+                    {
+                        await task(serviceProvider);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Exception appeared during execution of Background task.");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "Exception appeared during execution of Background task.");
-                }
+            }
+            catch (OperationCanceledException)
+            {
+                logger.LogInformation("Background processing is canceled due to application shutdown.");
             }
         }
     }
