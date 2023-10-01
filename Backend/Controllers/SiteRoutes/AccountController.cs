@@ -13,20 +13,16 @@ namespace Backend.Controllers.SiteRoutes;
 [ApiController]
 public class AccountController : ControllerBase
 {
-    private readonly Db db;
     private readonly UserManager<User> userManager;
-    private readonly ImageService imageService;
     private readonly IStorage storage;
 
-    public AccountController(Db db, UserManager<User> userManager, ImageService imageService, IStorage storage)
+    public AccountController(UserManager<User> userManager, IStorage storage)
     {
-        this.db = db;
         this.userManager = userManager;
-        this.imageService = imageService;
         this.storage = storage;
     }
 
-    public record OneUser(string Name, string? ImageUrl);
+    public record OneUser(string Name, string Email, string? ImageUrl);
 
     [HttpGet("user"), Authorize]
     public async Task<IActionResult> GetUser()
@@ -37,7 +33,7 @@ public class AccountController : ControllerBase
         if (user == null) return NotFound();
         var file = user.GetStorageFile();
 
-        return Ok(new OneUser(Name: user.Name, ImageUrl: file != null ? storage.Url(file) : null));
+        return Ok(new OneUser(Name: user.Name, Email: user.Email, ImageUrl: file != null ? storage.Url(file) : null));
     }
 
     [HttpPost("image"), Authorize]
@@ -47,20 +43,25 @@ public class AccountController : ControllerBase
 
         var uid = User.Uid();
 
+        var user = await userManager.FindByIdAsync(uid);
+        if (user == null) return NotFound();
+
+        var image = user.GetStorageFile();
+        if (image != null)
+        {
+            var deleted = await storage.Delete(image);
+            if (!deleted) return Problem();
+        }
+
         var fileId = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
         var uploadedFile = await storage.Upload(fileId, file.OpenReadStream());
         if (uploadedFile == null) return Problem();
-
-        var user = await userManager.FindByIdAsync(uid);
-
-        if (user == null) return NotFound();
 
         user.ImageProvider = uploadedFile.Provider;
         user.ImageBucket = uploadedFile.Bucket;
         user.ImageKey = uploadedFile.Key;
 
         var res = await userManager.UpdateAsync(user);
-
         if (res.Succeeded) return Ok(storage.Url(uploadedFile));
 
         await storage.Delete(uploadedFile);
@@ -116,6 +117,30 @@ public class AccountController : ControllerBase
             Response.Cookies.Delete(RefreshOnly.Cookie);
             return Ok();
         }
+
+        return Problem();
+    }
+
+    [HttpDelete("image"), Authorize]
+    public async Task<IActionResult> DeleteImage()
+    {
+        var uid = User.Uid();
+        var user = await userManager.FindByIdAsync(uid);
+        if (user == null) return NotFound();
+
+        var image = user.GetStorageFile();
+
+        if (image == null) return NotFound();
+
+        await storage.Delete(image);
+
+        user.ImageKey = null;
+        user.ImageProvider = null;
+        user.ImageBucket = null;
+
+        var res = await userManager.UpdateAsync(user);
+
+        if (res.Succeeded) return Ok();
 
         return Problem();
     }
