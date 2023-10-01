@@ -1,5 +1,4 @@
 ﻿using Backend.Auth;
-using Backend.Services;
 using Data;
 using Data.Models.ProductTables;
 using Data.Models.ShopTables;
@@ -23,7 +22,7 @@ public class CatalogController : ControllerBase
 
     public record struct CatalogCategory(string Id, string Name, string? ParentId);
 
-    [HttpPost("{domain}/categories")]
+    [HttpGet("{domain}/categories")]
     public async Task<IActionResult> Categories([FromRoute] string domain)
     {
         var uid = User.Uid();
