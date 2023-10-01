@@ -2,6 +2,7 @@
 using Backend.Services;
 using Data;
 using Data.Models.UserTables;
+using Lib.EntityFrameworkCore;
 using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -15,11 +16,15 @@ public class AccountController : ControllerBase
 {
     private readonly UserManager<User> userManager;
     private readonly IStorage storage;
+    private readonly ImageService imageService;
+    private readonly Db db;
 
-    public AccountController(UserManager<User> userManager, IStorage storage)
+    public AccountController(UserManager<User> userManager, IStorage storage, ImageService imageService, Db db)
     {
         this.userManager = userManager;
         this.storage = storage;
+        this.imageService = imageService;
+        this.db = db;
     }
 
     public record OneUser(string Name, string Email, string? ImageUrl);
@@ -111,14 +116,39 @@ public class AccountController : ControllerBase
         var user = await userManager.FindByIdAsync(uid);
         if (user == null) return NotFound();
 
-        if (user.Email.Equals(input.Email) && await userManager.CheckPasswordAsync(user, input.Password))
-        {
-            await userManager.DeleteAsync(user);
-            Response.Cookies.Delete(RefreshOnly.Cookie);
-            return Ok();
-        }
+        var emailCorrect = user.Email == input.Email;
+        if (!emailCorrect) BadRequest();
 
-        return Problem();
+        var passwordCorrect = await userManager.CheckPasswordAsync(user, input.Password);
+        if (!passwordCorrect) return BadRequest();
+
+        var userImage = user.GetStorageFile();
+        if (userImage != null) await imageService.SafeDelete(userImage);
+
+        var shopLogos = await db.Shops.Where(x => x.OwnerId == uid).Select(x => x.GetStorageFile()).QueryMany();
+        await DeleteAllFiles(shopLogos.Where(x => x != null).Select(x => x!));
+
+        var shopBanners = await db.ShopBanners
+            .Where(x => x.Shop.OwnerId == uid).Select(x => x.GetStorageFile()).QueryMany();
+        await DeleteAllFiles(shopBanners);
+
+        var productImages = await db.ProductImages
+            .Where(x => x.Product.Shop.OwnerId == uid).Select(x => x.GetStorageFile()).QueryMany();
+        await DeleteAllFiles(productImages);
+
+        var deletion = await userManager.DeleteAsync(user);
+        if (!deletion.Succeeded) return Problem();
+
+        Response.Cookies.Delete(RefreshOnly.Cookie);
+        return Ok();
+    }
+
+    [NonAction]
+    public async Task DeleteAllFiles(IEnumerable<StorageFile> files)
+    {
+        var tasks = new List<Task>(files.Count());
+        foreach (var file in files) tasks.Add(imageService.SafeDelete(file));
+        await Task.WhenAll(tasks);
     }
 
     [HttpDelete("image"), Authorize]
