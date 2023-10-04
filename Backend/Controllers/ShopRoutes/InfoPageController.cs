@@ -17,8 +17,8 @@ namespace Backend.Controllers.ShopRoutes
             this.db = db;
         }
 
-        public record InfoSlug(string Slug);
-        public record InfoData(string Slug, string Content);
+        public record InfoSlug(string Slug, string Title);
+        public record InfoData(string Slug, string Title, string Content, string time);
 
         [HttpGet("{shopDomain}")]
         public async Task<IActionResult> AllPages([FromRoute] string shopDomain)
@@ -28,7 +28,7 @@ namespace Backend.Controllers.ShopRoutes
 
             var infoPages = await db.InfoPages
                 .Where(x => x.ShopId == shop.Id)
-                .Select(x => new InfoSlug(x.Slug))
+                .Select(x => new InfoSlug(x.Slug, x.Title == "" ? x.Slug : x.Title))
                 .QueryMany();
 
             return Ok(infoPages);
@@ -39,7 +39,7 @@ namespace Backend.Controllers.ShopRoutes
         {
             var infoPages = await db.InfoPages
               .Where(x => x.Slug == slug)
-              .Select(x => new InfoData(x.Slug, x.Content))
+              .Select(x => new InfoData(x.Slug, x.Title == "" ? x.Slug : x.Title, x.Content, x.UpdatedAt.ToString("yyyy-MM-dd HH:mm")))
               .QueryOne();
 
             return Ok(infoPages);
