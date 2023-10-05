@@ -1,6 +1,5 @@
 ﻿using Backend.Auth;
 using Backend.Features.Domains;
-using Backend.Services;
 using Data;
 using Data.Models.ShopTables;
 using Lib;
