@@ -30,7 +30,7 @@ builder.Services.AddStorage();
 builder.Services.AddDomainService();
 
 builder.Services.AddSingleton<BackgroundQueue>();
-builder.Services.AddHostedService<BackgroundQueue.Runner>();
+builder.Services.AddHostedService<BackgroundQueue.HostedService>();
 builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped<CategoryService>();
 
