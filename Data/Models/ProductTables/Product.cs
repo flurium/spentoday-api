@@ -8,6 +8,7 @@ public class Product
     public string Name { get; set; }
     public double Price { get; set; } = 0;
     public double DiscountPrice { get; set; } = 0;
+    public bool IsDiscount { get; set; } = false;
     public int Amount { get; set; } = 0;
     public string? PreviewImage { get; set; }
 
