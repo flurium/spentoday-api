@@ -1,8 +1,8 @@
 ﻿using Backend.Auth;
 using Backend.Features.Domains;
-using Backend.Services;
 using Data;
 using Data.Models.ShopTables;
+using Lib;
 using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -97,7 +97,7 @@ public class DomainController : ControllerBase
         var removed = await vercelDomainApi.RemoveDomain(domain);
         if (!removed)
         {
-            background.Enqueue(async provider =>
+            await background.Enqueue(async provider =>
             {
                 using var scope = provider.CreateScope();
                 var service = scope.ServiceProvider.GetRequiredService<VercelDomainApi>();

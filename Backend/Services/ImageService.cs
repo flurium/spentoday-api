@@ -1,4 +1,5 @@
-﻿using Lib.Storage;
+﻿using Lib;
+using Lib.Storage;
 
 namespace Backend.Services;
 
@@ -28,7 +29,7 @@ public class ImageService
             var deleted = await storage.Delete(file.GetStorageFile());
             if (deleted) continue;
 
-            background.Enqueue(async (provider) =>
+            await background.Enqueue(async (provider) =>
             {
                 using IServiceScope scope = provider.CreateScope();
                 var service = scope.ServiceProvider.GetRequiredService<IStorage>();
@@ -42,7 +43,7 @@ public class ImageService
         var deleted = await storage.Delete(file);
         if (deleted) return;
 
-        background.Enqueue(async (provider) =>
+        await background.Enqueue(async (provider) =>
         {
             using IServiceScope scope = provider.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<IStorage>();
