@@ -66,7 +66,7 @@ public class ProductController : ControllerBase
 
     public record ImageOutput(string Id, string Key, string Bucket, string Provider);
     public record ProductOutput(
-        string Id, string Name, double Price, int Amount, bool IsDraft,
+        string Id, string Name, double Price, double DiscountPrice, int Amount, bool IsDraft,
         string SeoTitle, string SeoDescription, string SeoSlug,
         string Description, IEnumerable<ImageOutput> Images
     );
@@ -82,7 +82,7 @@ public class ProductController : ControllerBase
             .Select(x => new
             {
                 Product = new ProductOutput(
-                    x.Id, x.Name, x.Price, x.Amount, x.IsDraft,
+                    x.Id, x.Name, x.Price, x.DiscountPrice, x.Amount, x.IsDraft,
                     x.SeoTitle, x.SeoDescription, x.SeoSlug, x.Description,
                     x.Images.Select(i => new ImageOutput(i.Id, i.Key, i.Bucket, i.Provider))
                 ),
@@ -106,7 +106,7 @@ public class ProductController : ControllerBase
 
     public record class UpdateInput(
         string Id, string? Name, double? Price, int? Amount, string? Description,
-        string? PreviewImage, string? SeoTitle, string? SeoDescription, string? SeoSlug
+        string? PreviewImage, string? SeoTitle, string? SeoDescription, string? SeoSlug, double? DiscountPrice
     );
 
     [HttpPatch, Authorize]
@@ -124,6 +124,7 @@ public class ProductController : ControllerBase
         if (input.SeoTitle != null) product.SeoTitle = input.SeoTitle;
         if (input.SeoSlug != null) product.SeoSlug = input.SeoSlug;
         if (input.SeoDescription != null) product.SeoDescription = input.SeoDescription;
+        if (input.DiscountPrice != null) product.DiscountPrice = input.DiscountPrice.Value;
 
         var saved = await db.Save();
         return saved ? Ok() : Problem();
