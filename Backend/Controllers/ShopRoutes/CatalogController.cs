@@ -25,9 +25,7 @@ public class CatalogController : ControllerBase
     [HttpGet("{domain}/categories")]
     public async Task<IActionResult> Categories([FromRoute] string domain)
     {
-        var uid = User.Uid();
-        var shopId = await db.Shops
-            .WithDomain(domain).Where(x => x.OwnerId == uid)
+        var shopId = await db.Shops.WithDomain(domain)
             .Select(x => x.Id).QueryOne();
         if (shopId == null) return NotFound();
 
@@ -44,7 +42,7 @@ public class CatalogController : ControllerBase
     /// </param>
     public record class CatalogInput(
         string Search = "", int Start = 0, int Count = 10,
-        int? Min = null, int? Max = null, int? Order = 0,
+        double? Min = null, double? Max = null, int? Order = 0,
         List<string>? Categories = null
     );
     public record ProductsOutput(string Id, string Name, double Price, StorageFile? Image, string Slug);
