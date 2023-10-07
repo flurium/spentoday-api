@@ -20,7 +20,7 @@ public class ShopController : ControllerBase
     }
 
     public record HomeCategory(string Id, string Name);
-    public record HomeProduct(string Id, string Name, string Price, string? Image);
+    public record HomeProduct(string Id, string Name, double Price, double DiscountPrice, bool IsDiscount, string? Image);
     public record HomeBanner(string Id, string Url);
     public record HomeShop(string Id, string Name, string? TopBanner,
         IEnumerable<HomeCategory> Categories,
@@ -59,7 +59,9 @@ public class ShopController : ControllerBase
             {
                 p.Id,
                 p.Name,
-                Price = p.Price.ToString("F2"),
+                p.Price,
+                p.DiscountPrice,
+                p.IsDiscount,
                 Image = p.Images.OrderByDescending(x => x.Id == p.PreviewImage).FirstOrDefault()
             })
             .Take(4).QueryMany();
@@ -68,7 +70,7 @@ public class ShopController : ControllerBase
             .Select(x =>
             {
                 string? url = x.Image != null ? storage.Url(x.Image.GetStorageFile()) : null;
-                return new HomeProduct(x.Id, x.Name, x.Price, url);
+                return new HomeProduct(x.Id, x.Name, x.Price, x.DiscountPrice, x.IsDiscount, url);
             });
 
         var layoutShop = new HomeShop(shop.Id, shop.Name, topBannerUrl, categories, banners, homeProducts);
