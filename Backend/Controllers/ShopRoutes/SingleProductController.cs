@@ -21,13 +21,13 @@ public class SingleProductController : ControllerBase
     }
 
     public record ProductOutput(
-        string Id, string Name, double Price, int Amount,
+        string Id, string Name, double Price, double DiscountPrice, bool IsDiscount, int Amount,
         string SeoTitle, string SeoDescription, string SeoSlug,
         string Description, List<string> Images
     );
 
     public record ProductItemOutput(
-        string Id, string Name, double Price,
+        string Id, string Name, double Price, double DiscountPrice , bool IsDiscount,
         string? Image, string SeoSlug
     );
 
@@ -46,6 +46,8 @@ public class SingleProductController : ControllerBase
                 x.Id,
                 x.Name,
                 x.Price,
+                x.DiscountPrice,
+                x.IsDiscount,
                 x.Amount,
                 x.SeoTitle,
                 x.SeoDescription,
@@ -57,7 +59,8 @@ public class SingleProductController : ControllerBase
 
         var images = await db.ProductImages.QueryMany(x => x.ProductId == product.Id);
         var productOutput = new ProductOutput(
-            product.Id, product.Name, product.Price, product.Amount, product.SeoTitle,
+            product.Id, product.Name, product.Price, product.DiscountPrice,
+                product.IsDiscount, product.Amount, product.SeoTitle,
             product.SeoDescription, product.SeoSlug, product.Description,
             images.Select(x => storj.Url(x.GetStorageFile())).ToList()
         );
@@ -93,6 +96,8 @@ public class SingleProductController : ControllerBase
                 x.Id,
                 x.Name,
                 x.Price,
+                x.DiscountPrice,
+                x.IsDiscount,
                 Image = x.Images.OrderBy(i => i.Id == x.PreviewImage).FirstOrDefault(),
                 x.SeoSlug
             })
@@ -102,7 +107,7 @@ public class SingleProductController : ControllerBase
         return products.Select(x =>
         {
             var image = x.Image == null ? null : storj.Url(x.Image.GetStorageFile());
-            return new ProductItemOutput(x.Id, x.Name, x.Price, image, x.SeoSlug);
+            return new ProductItemOutput(x.Id, x.Name, x.Price, x.DiscountPrice,x.IsDiscount, image, x.SeoSlug);
         }).ToList();
     }
 }
