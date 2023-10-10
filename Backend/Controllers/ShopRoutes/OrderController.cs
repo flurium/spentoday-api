@@ -24,6 +24,7 @@ namespace Backend.Controllers.ShopRoutes
 
         public record ProductInputList(string Id, int Amount);
         public record OrderInput(string Email, List<ProductInputList> Products, string FullName, string Phone, string Adress, string PostIndex, string Comment);
+
         public class ProductList
         {
             public string Id { get; set; }
@@ -31,6 +32,7 @@ namespace Backend.Controllers.ShopRoutes
             public double Price { get; set; }
             public int Amount { get; set; }
         }
+
         [HttpPost("{domain}/new")]
         public async Task<IActionResult> New([FromBody] OrderInput input, [FromRoute] string domain)
         {

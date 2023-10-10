@@ -1,5 +1,4 @@
-﻿using Backend.Auth;
-using Data;
+﻿using Data;
 using Data.Models.ProductTables;
 using Data.Models.ShopTables;
 using Lib.EntityFrameworkCore;

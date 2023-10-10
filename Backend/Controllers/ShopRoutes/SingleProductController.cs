@@ -27,7 +27,7 @@ public class SingleProductController : ControllerBase
     );
 
     public record ProductItemOutput(
-        string Id, string Name, double Price, double DiscountPrice , bool IsDiscount,
+        string Id, string Name, double Price, double DiscountPrice, bool IsDiscount,
         string? Image, string SeoSlug
     );
 
@@ -107,7 +107,7 @@ public class SingleProductController : ControllerBase
         return products.Select(x =>
         {
             var image = x.Image == null ? null : storj.Url(x.Image.GetStorageFile());
-            return new ProductItemOutput(x.Id, x.Name, x.Price, x.DiscountPrice,x.IsDiscount, image, x.SeoSlug);
+            return new ProductItemOutput(x.Id, x.Name, x.Price, x.DiscountPrice, x.IsDiscount, image, x.SeoSlug);
         }).ToList();
     }
 }

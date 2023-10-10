@@ -82,7 +82,7 @@ public class ProductController : ControllerBase
             .Select(x => new
             {
                 Product = new ProductOutput(
-                    x.Id, x.Name, x.Price, x.DiscountPrice,x.IsDiscount , x.Amount, x.IsDraft,
+                    x.Id, x.Name, x.Price, x.DiscountPrice, x.IsDiscount, x.Amount, x.IsDraft,
                     x.SeoTitle, x.SeoDescription, x.SeoSlug, x.Description,
                     x.Images.Select(i => new ImageOutput(i.Id, i.Key, i.Bucket, i.Provider))
                 ),
