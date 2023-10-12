@@ -28,6 +28,9 @@ public class Storj : IStorage
         this.bucket = bucket;
     }
 
+    /// <summary>
+    /// Upload file to Stroj. Includes Cache-Control header for 1 year.
+    /// </summary>
     public async Task<StorageFile?> Upload(string key, Stream fileStream)
     {
         try
@@ -37,7 +40,11 @@ public class Storj : IStorage
                 BucketName = bucket,
                 Key = key,
                 InputStream = fileStream,
-                CannedACL = S3CannedACL.PublicRead
+                CannedACL = S3CannedACL.PublicRead,
+                Headers =
+                {
+                    CacheControl = "public, max-age=31536000"
+                }
             };
 
             var response = await client.PutObjectAsync(request);
@@ -69,6 +76,12 @@ public class Storj : IStorage
         {
             return false;
         }
+    }
+
+    public async void Download(StorageFile file)
+    {
+        var req = new GetObjectRequest { BucketName = file.Bucket, Key = file.Key };
+        var res = await client.GetObjectAsync(req);
     }
 
     public string Url(StorageFile file)
