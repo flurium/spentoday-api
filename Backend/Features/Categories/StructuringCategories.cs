@@ -6,7 +6,7 @@ public record struct LeveledCategory(string Id, string? ParentId, int Level, str
 
 public record struct LeveledResult(List<LeveledCategory> Categories, int MaxLevel);
 
-public static class LevelingCategories
+public static class StructuringCategories
 {
     public static IEnumerable<LeveledCategory> MapLeveled(this IEnumerable<Category> categories, int level)
     {
@@ -15,7 +15,10 @@ public static class LevelingCategories
 
     private const int LEVEL_START = 2;
 
-    public static LeveledResult Sort(List<Category> categories)
+    /// <summary>
+    /// Sort list of categories like a tree but in list with levels.
+    /// </summary>
+    public static LeveledResult SortLeveled(List<Category> categories)
     {
         var sortedCategories = new List<LeveledCategory>(categories.Count);
 

@@ -50,7 +50,7 @@ public class CategoryController : ControllerBase
             .Where(x => x.ShopId == shop.Id)
             .QueryMany();
 
-        var sorted = LevelingCategories.Sort(categories);
+        var sorted = StructuringCategories.SortLeveled(categories);
 
         return Ok(new { Base = categories.Select(x => new { x.Id, x.ParentId, x.Name }), Sorted = sorted });
     }
