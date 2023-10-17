@@ -8,7 +8,7 @@ public class Shop : IPossibleStorageFileContainer
 {
     public string Id { get; } = Guid.NewGuid().ToString();
     public string Name { get; set; }
-    public string AccentColor { get; set; }
+    public string AccentColor { get; set; } = "#3b82f6";
 
     public string OwnerId { get; set; }
     public User Owner { get; } = default!;
