@@ -1,4 +1,5 @@
-﻿using Data;
+﻿using Backend.Features.Categories;
+using Data;
 using Data.Models.ProductTables;
 using Data.Models.ShopTables;
 using Lib.EntityFrameworkCore;
@@ -19,8 +20,6 @@ public class CatalogController : ControllerBase
         this.db = db;
     }
 
-    public record struct CatalogCategory(string Id, string Name, string? ParentId);
-
     [HttpGet("{domain}/categories")]
     public async Task<IActionResult> Categories([FromRoute] string domain)
     {
@@ -30,10 +29,9 @@ public class CatalogController : ControllerBase
 
         var categories = await db.Categories
             .Where(x => x.ShopId == shopId)
-            .Select(x => new CatalogCategory(x.Id, x.Name, x.ParentId))
             .QueryMany();
 
-        return Ok(categories);
+        return Ok(StructuringCategories.SortLeveled(categories));
     }
 
     /// <param name="Order">

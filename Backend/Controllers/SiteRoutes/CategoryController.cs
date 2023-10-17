@@ -41,20 +41,6 @@ public class CategoryController : ControllerBase
         return Ok(categories);
     }
 
-    [HttpGet("dev")]
-    public async Task<IActionResult> DevShopCategories()
-    {
-        var shop = await db.Shops.FirstAsync(x => x.Id == "466f6435-3246-4986-9179-01ca220c4a82");
-
-        var categories = await db.Categories
-            .Where(x => x.ShopId == shop.Id)
-            .QueryMany();
-
-        var sorted = StructuringCategories.SortLeveled(categories);
-
-        return Ok(new { Base = categories.Select(x => new { x.Id, x.ParentId, x.Name }), Sorted = sorted });
-    }
-
     public record AddCategoryInput(string Name, string ShopId, string? ParentId);
 
     [HttpPost]

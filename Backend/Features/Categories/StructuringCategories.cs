@@ -4,11 +4,11 @@ namespace Backend.Features.Categories;
 
 public record struct LeveledCategory(string Id, string? ParentId, int Level, string Name);
 
-public record struct LeveledResult(List<LeveledCategory> Categories, int MaxLevel);
+public record struct LeveledResult(List<LeveledCategory> List, int MaxLevel);
 
 public static class StructuringCategories
 {
-    public static IEnumerable<LeveledCategory> MapLeveled(this IEnumerable<Category> categories, int level)
+    private static IEnumerable<LeveledCategory> MapLeveled(this IEnumerable<Category> categories, int level)
     {
         return categories.Select(x => new LeveledCategory(x.Id, x.ParentId, level, x.Name));
     }
