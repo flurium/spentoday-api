@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Backend.Features.Categories;
 namespace Backend.Controllers.SiteRoutes;
 
 [Route("v1/site/products")]
@@ -70,8 +71,7 @@ public class ProductController : ControllerBase
         string SeoTitle, string SeoDescription, string SeoSlug,
         string Description, IEnumerable<ImageOutput> Images
     );
-    public record CategoryOutput(string Id, string Name);
-    public record OneOutput(ProductOutput Product, IEnumerable<CategoryOutput> Categories, string? CategoryId);
+    public record OneOutput(ProductOutput Product, int MaxLevel , List<LeveledCategory> Categories, string? CategoryId);
 
     [HttpGet("{id}"), Authorize]
     public async Task<IActionResult> One(string id)
@@ -97,10 +97,10 @@ public class ProductController : ControllerBase
 
         var categories = await db.Categories
             .Where(x => x.ShopId == product.ShopId)
-            .Select(x => new CategoryOutput(x.Id, x.Name))
             .QueryMany();
 
-        var output = new OneOutput(product.Product, categories, productCategory);
+        var sorted = StructuringCategories.SortLeveled(categories);
+        var output = new OneOutput(product.Product, sorted.MaxLevel, sorted.List, productCategory);
         return Ok(output);
     }
 
