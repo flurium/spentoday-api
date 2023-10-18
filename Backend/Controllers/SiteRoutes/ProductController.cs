@@ -71,8 +71,7 @@ public class ProductController : ControllerBase
         string SeoTitle, string SeoDescription, string SeoSlug,
         string Description, IEnumerable<ImageOutput> Images
     );
-    public record CategoryOutput(string Id, string Name, int Level);
-    public record OneOutput(ProductOutput Product, int MaxLevel , IEnumerable<CategoryOutput> Categories, string? CategoryId);
+    public record OneOutput(ProductOutput Product, int MaxLevel , List<LeveledCategory> Categories, string? CategoryId);
 
     [HttpGet("{id}"), Authorize]
     public async Task<IActionResult> One(string id)
@@ -101,8 +100,7 @@ public class ProductController : ControllerBase
             .QueryMany();
 
         var sorted = StructuringCategories.SortLeveled(categories);
-        var categoriesOutput = sorted.List.Select(x=> new CategoryOutput(x.Id,x.Name,x.Level)).ToList();
-        var output = new OneOutput(product.Product, sorted.MaxLevel, categoriesOutput, productCategory);
+        var output = new OneOutput(product.Product, sorted.MaxLevel, sorted.List, productCategory);
         return Ok(output);
     }
 
