@@ -1,5 +1,4 @@
 ﻿using Backend.Auth;
-using Backend.Features.Categories;
 using Backend.Services;
 using Data;
 using Data.Models.ProductTables;
@@ -7,7 +6,6 @@ using Lib;
 using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers.SiteRoutes;
 
