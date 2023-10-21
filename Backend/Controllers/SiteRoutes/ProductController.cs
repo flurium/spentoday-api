@@ -1,4 +1,5 @@
 ﻿using Backend.Auth;
+using Backend.Features.Categories;
 using Backend.Services;
 using Data;
 using Data.Models.ProductTables;
@@ -8,7 +9,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-using Backend.Features.Categories;
 namespace Backend.Controllers.SiteRoutes;
 
 [Route("v1/site/products")]
@@ -71,7 +71,7 @@ public class ProductController : ControllerBase
         string SeoTitle, string SeoDescription, string SeoSlug,
         string Description, IEnumerable<ImageOutput> Images
     );
-    public record OneOutput(ProductOutput Product, int MaxLevel , List<LeveledCategory> Categories, string? CategoryId);
+    public record OneOutput(ProductOutput Product, int MaxLevel, List<LeveledCategory> Categories, string? CategoryId);
 
     [HttpGet("{id}"), Authorize]
     public async Task<IActionResult> One(string id)
