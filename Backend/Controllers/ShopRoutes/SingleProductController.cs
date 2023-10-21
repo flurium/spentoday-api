@@ -23,7 +23,8 @@ public class SingleProductController : ControllerBase
     public record ProductOutput(
         string Id, string Name, double Price, double DiscountPrice, bool IsDiscount, int Amount,
         string SeoTitle, string SeoDescription, string SeoSlug,
-        string Description, List<string> Images
+        string Description, List<string> Images,
+        IEnumerable<ProductProperty> Properties
     );
 
     public record struct ProductItemOutput(
@@ -32,6 +33,8 @@ public class SingleProductController : ControllerBase
     );
 
     public record struct ProductCategoryOutput(string Id, string Name);
+
+    public record struct ProductProperty(string Key, string Value);
 
     public record Output(
         ProductOutput Product, List<ProductItemOutput> Products,
@@ -57,7 +60,8 @@ public class SingleProductController : ControllerBase
                 x.SeoTitle,
                 x.SeoDescription,
                 x.SeoSlug,
-                x.Description
+                x.Description,
+                Properties = x.Properties.Select(p => new ProductProperty(p.Key, p.Value))
             })
             .QueryOne();
         if (product == null) return NotFound();
@@ -65,9 +69,10 @@ public class SingleProductController : ControllerBase
         var images = await db.ProductImages.QueryMany(x => x.ProductId == product.Id);
         var productOutput = new ProductOutput(
             product.Id, product.Name, product.Price, product.DiscountPrice,
-                product.IsDiscount, product.Amount, product.SeoTitle,
+            product.IsDiscount, product.Amount, product.SeoTitle,
             product.SeoDescription, product.SeoSlug, product.Description,
-            images.Select(x => storj.Url(x.GetStorageFile())).ToList()
+            images.Select(x => storj.Url(x.GetStorageFile())).ToList(),
+            product.Properties
         );
 
         var similar = await SimilarProducts(domain, product.Name);
