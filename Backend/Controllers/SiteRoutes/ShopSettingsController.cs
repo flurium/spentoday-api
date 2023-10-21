@@ -30,6 +30,7 @@ public class ShopSettingsController : ControllerBase
     public record BannerOut(string Url, string Id);
     public record ShopUpdate(string Name);
     public record ShopAccentColor(string AccentColor);
+    public record ShopSlogan(string Slogan);
 
     [HttpPost("{shopId}/link")]
     [Authorize]
@@ -138,6 +139,21 @@ public class ShopSettingsController : ControllerBase
         return saved ? Ok() : Problem();
     }
 
+    [HttpPost("{shopId}/slogan")]
+    [Authorize]
+    public async Task<IActionResult> UpdateSlogan([FromRoute] string shopId, [FromBody] ShopSlogan shopSlogan)
+    {
+        var uid = User.Uid();
+
+        var shop = await db.Shops.QueryOne(x => x.Id == shopId && x.OwnerId == uid);
+        if (shop == null) return NotFound();
+
+        shop.Slogan = shopSlogan.Slogan;
+
+        var saved = await db.Save();
+        return saved ? Ok() : Problem();
+    }
+
     [HttpPost("{shopId}/logo")]
     [Authorize]
     public async Task<IActionResult> UploadLogo([FromRoute] string shopId, IFormFile file)
@@ -223,7 +239,7 @@ public class ShopSettingsController : ControllerBase
         return Ok(storage.Url(uploadedFile));
     }
 
-    public record ShopOut(string Name, string AccentColor, string Logo, string TopBanner, List<BannerOut> Banners, List<LinkOut> Links);
+    public record ShopOut(string Name, string AccentColor, string Slogan, string Logo, string TopBanner, List<BannerOut> Banners, List<LinkOut> Links);
 
     [HttpGet("shop/{shopId}")]
     [Authorize]
@@ -256,7 +272,7 @@ public class ShopSettingsController : ControllerBase
         var logoFile = shop.GetStorageFile();
         string logoUrl = logoFile == null ? "" : storage.Url(logoFile);
 
-        var shopOut = new ShopOut(shop.Name, shop.AccentColor, logoUrl, topBannerUrl, banners, links);
+        var shopOut = new ShopOut(shop.Name, shop.AccentColor, shop.Slogan, logoUrl, topBannerUrl, banners, links);
 
         var saved = await db.Save();
         return saved ? Ok(shopOut) : Problem();

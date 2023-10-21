@@ -23,6 +23,7 @@ public class HomeController : ControllerBase
     public record HomeProduct(string Id, string Slug, string Name, double Price, double DiscountPrice, bool IsDiscount, StorageFile? Image);
     public record HomeBanner(string Id, string Url);
     public record HomeShop(string Id, string Name, string? TopBanner,
+        IEnumerable<string> Slogans,
         IEnumerable<HomeCategory> Categories,
         IEnumerable<HomeBanner> Banners,
         IEnumerable<HomeProduct> Products
@@ -53,6 +54,8 @@ public class HomeController : ControllerBase
             banners.RemoveAt(topBannerIndex);
         }
 
+        var slogans = shop.Slogan.Split('\n', StringSplitOptions.RemoveEmptyEntries).ToList();
+
         var products = await db.Products
             .Where(x => x.ShopId == shop.Id)
             .Select(p => new HomeProduct(
@@ -66,7 +69,7 @@ public class HomeController : ControllerBase
             ))
             .Take(4).QueryMany();
 
-        var layoutShop = new HomeShop(shop.Id, shop.Name, topBannerUrl, categories, banners, products);
+        var layoutShop = new HomeShop(shop.Id, shop.Name, topBannerUrl, slogans, categories, banners, products);
 
         return Ok(layoutShop);
     }
