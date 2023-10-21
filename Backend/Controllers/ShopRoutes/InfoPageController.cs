@@ -3,45 +3,42 @@ using Data.Models.ShopTables;
 using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backend.Controllers.ShopRoutes
+namespace Backend.Controllers.ShopRoutes;
+
+[Route("v1/shop/about")]
+[ApiController]
+public class InfoPageController : ControllerBase
 {
-    [Route("v1/shop/about")]
-    [ApiController]
-    public class InfoPageController : ControllerBase
+    private readonly Db db;
+
+    public InfoPageController(Db db)
     {
-        private readonly Db db;
+        this.db = db;
+    }
 
-        public InfoPageController(Db db)
-        {
-            this.db = db;
-        }
+    public record struct InfoSlug(string Slug, string Title);
+    public record struct InfoData(string Slug, string Title, string Content, string Time);
 
-        public record InfoSlug(string Slug, string Title);
-        public record InfoData(string Slug, string Title, string Content, string time);
+    [HttpGet("{shopDomain}")]
+    public async Task<IActionResult> AllPages([FromRoute] string shopDomain)
+    {
+        var infoPages = await db.InfoPages
+            .WithDomain(shopDomain)
+            .Select(x => new InfoSlug(x.Slug, x.Title == "" ? x.Slug : x.Title))
+            .QueryMany();
 
-        [HttpGet("{shopDomain}")]
-        public async Task<IActionResult> AllPages([FromRoute] string shopDomain)
-        {
-            var shop = await db.Shops.WithDomain(shopDomain).QueryOne();
-            if (shop == null) return NotFound();
+        return Ok(infoPages);
+    }
 
-            var infoPages = await db.InfoPages
-                .Where(x => x.ShopId == shop.Id)
-                .Select(x => new InfoSlug(x.Slug, x.Title == "" ? x.Slug : x.Title))
-                .QueryMany();
+    [HttpGet("{shopDomain}/{slug}")]
+    public async Task<IActionResult> GetInfoPage([FromRoute] string shopDomain, [FromRoute] string slug)
+    {
+        var infoPages = await db.InfoPages
+          .WithDomain(shopDomain)
+          .Where(x => x.Slug == slug)
+          .Select(x => new InfoData(x.Slug, x.Title, x.Content, x.UpdatedAt.ToString("yyyy-MM-dd HH:mm")))
+          .QueryOne();
 
-            return Ok(infoPages);
-        }
-
-        [HttpGet("info/{slug}")]
-        public async Task<IActionResult> GetInfoPage([FromRoute] string slug)
-        {
-            var infoPages = await db.InfoPages
-              .Where(x => x.Slug == slug)
-              .Select(x => new InfoData(x.Slug, x.Title == "" ? x.Slug : x.Title, x.Content, x.UpdatedAt.ToString("yyyy-MM-dd HH:mm")))
-              .QueryOne();
-
-            return Ok(infoPages);
-        }
+        return Ok(infoPages);
     }
 }
