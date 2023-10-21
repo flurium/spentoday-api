@@ -1,6 +1,4 @@
-﻿using Data.Models.ProductTables;
-
-namespace Data.Models.ShopTables;
+﻿namespace Data.Models.ShopTables;
 
 public class InfoPage
 {

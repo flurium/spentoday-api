@@ -3,7 +3,6 @@ using Data;
 using Data.Models.ProductTables;
 using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers.SiteRoutes;
