@@ -26,12 +26,17 @@ public class SingleProductController : ControllerBase
         string Description, List<string> Images
     );
 
-    public record ProductItemOutput(
+    public record struct ProductItemOutput(
         string Id, string Name, double Price, double DiscountPrice, bool IsDiscount,
-        string? Image, string SeoSlug
+        StorageFile? Image, string Slug
     );
 
-    public record Output(ProductOutput Product, List<ProductItemOutput> Products, List<string> Categories);
+    public record struct ProductCategoryOutput(string Id, string Name);
+
+    public record Output(
+        ProductOutput Product, List<ProductItemOutput> Products,
+        List<ProductCategoryOutput> Categories
+    );
 
     [HttpGet("{domain}/{slugOrId}/product")]
     public async Task<IActionResult> SingleProduct(
@@ -70,7 +75,7 @@ public class SingleProductController : ControllerBase
         var categories = await db.ProductCategories
             .Where(x => x.ProductId == product.Id)
             .OrderBy(x => x.Order)
-            .Select(x => x.Category.Name)
+            .Select(x => new ProductCategoryOutput(x.CategoryId, x.Category.Name))
             .QueryMany();
 
         var output = new Output(productOutput, similar, categories);
@@ -91,23 +96,14 @@ public class SingleProductController : ControllerBase
         var products = await db.Products
             .Where(x => x.Shop.Domains.Any(x => x.Domain == domain && x.Verified) && x.Name != name)
             .Where(keywordsPredicate)
-            .Select(x => new
-            {
-                x.Id,
-                x.Name,
-                x.Price,
-                x.DiscountPrice,
-                x.IsDiscount,
-                Image = x.Images.OrderBy(i => i.Id == x.PreviewImage).FirstOrDefault(),
+            .Select(x => new ProductItemOutput(
+                x.Id, x.Name, x.Price, x.DiscountPrice, x.IsDiscount,
+                x.Images.OrderBy(i => i.Id == x.PreviewImage).Select(x => x.GetStorageFile()).FirstOrDefault(),
                 x.SeoSlug
-            })
+            ))
             .Take(5)
             .QueryMany();
 
-        return products.Select(x =>
-        {
-            var image = x.Image == null ? null : storj.Url(x.Image.GetStorageFile());
-            return new ProductItemOutput(x.Id, x.Name, x.Price, x.DiscountPrice, x.IsDiscount, image, x.SeoSlug);
-        }).ToList();
+        return products;
     }
 }
