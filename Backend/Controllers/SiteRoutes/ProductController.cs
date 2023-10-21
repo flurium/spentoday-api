@@ -65,13 +65,20 @@ public class ProductController : ControllerBase
         return saved ? Ok(new ListOutput(product.Id, product.Name, product.Price, product.IsDraft)) : Problem();
     }
 
-    public record ImageOutput(string Id, string Key, string Bucket, string Provider);
+    public record ImageOutput(
+        string Id, string Key, string Bucket, string Provider
+    );
+
     public record ProductOutput(
         string Id, string Name, double Price, double DiscountPrice, bool IsDiscount, int Amount, bool IsDraft,
         string SeoTitle, string SeoDescription, string SeoSlug,
         string Description, IEnumerable<ImageOutput> Images
     );
-    public record OneOutput(ProductOutput Product, int MaxLevel, List<LeveledCategory> Categories, string? CategoryId);
+    public record struct OnePropertyOutput(string Id, string Key, string Value);
+    public record OneOutput(
+        ProductOutput Product, int MaxLevel, List<LeveledCategory> Categories, string? CategoryId,
+        IEnumerable<OnePropertyOutput> Properties
+    );
 
     [HttpGet("{id}"), Authorize]
     public async Task<IActionResult> One(string id)
@@ -86,7 +93,8 @@ public class ProductController : ControllerBase
                     x.SeoTitle, x.SeoDescription, x.SeoSlug, x.Description,
                     x.Images.Select(i => new ImageOutput(i.Id, i.Key, i.Bucket, i.Provider))
                 ),
-                ShopId = x.ShopId
+                x.ShopId,
+                Properties = x.Properties.Select(p => new OnePropertyOutput(p.Id, p.Key, p.Value))
             })
             .QueryOne();
         if (product == null) return NotFound();
@@ -100,7 +108,7 @@ public class ProductController : ControllerBase
             .QueryMany();
 
         var sorted = StructuringCategories.SortLeveled(categories);
-        var output = new OneOutput(product.Product, sorted.MaxLevel, sorted.List, productCategory);
+        var output = new OneOutput(product.Product, sorted.MaxLevel, sorted.List, productCategory, product.Properties);
         return Ok(output);
     }
 
