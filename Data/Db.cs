@@ -23,6 +23,7 @@ public class Db : IdentityDbContext<User>
     public DbSet<ProductCategory> ProductCategories { get; set; } = default!;
     public DbSet<Product> Products { get; set; } = default!;
     public DbSet<ProductImage> ProductImages { get; set; } = default!;
+    public DbSet<Property> Properties { get; set; } = default!;
 
     public DbSet<Order> Orders { get; set; } = default!;
     public DbSet<OrderProduct> OrderProducts { get; set; } = default!;
@@ -71,6 +72,10 @@ public class Db : IdentityDbContext<User>
         product.HasKey(x => x.Id);
         product.HasOne(x => x.Shop).WithMany(x => x.Products).HasForeignKey(x => x.ShopId);
         product.Property(x => x.SeoDescription).HasColumnType("text");
+
+        var property = builder.Entity<Property>();
+        property.HasKey(x => x.Id);
+        property.HasOne(x => x.Product).WithMany(x => x.Properties).HasForeignKey(x => x.ProductId);
 
         var productImage = builder.Entity<ProductImage>();
         productImage.HasKey(x => x.Id);
