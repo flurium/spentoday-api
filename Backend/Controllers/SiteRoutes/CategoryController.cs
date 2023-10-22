@@ -1,4 +1,5 @@
 ﻿using Backend.Auth;
+using Backend.Features.Categories;
 using Backend.Services;
 using Data;
 using Data.Models.ProductTables;
@@ -22,8 +23,6 @@ public class CategoryController : ControllerBase
         this.categoryService = categoryService;
     }
 
-    public record ShopCategoryOutput(string Id, string Name, string? ParentId);
-
     [HttpGet("{shopId}")]
     [Authorize]
     public async Task<IActionResult> ShopCategories([FromRoute] string shopId)
@@ -33,13 +32,15 @@ public class CategoryController : ControllerBase
 
         var categories = await db.Categories
             .Where(x => x.ShopId == shopId && x.Shop.OwnerId == uid)
-            .Select(x => new ShopCategoryOutput(x.Id, x.Name, x.ParentId))
             .QueryMany();
 
-        return Ok(categories);
+        var sorted = StructuringCategories.SortLeveled(categories);
+
+        return Ok(sorted.List);
     }
 
     public record AddCategoryInput(string Name, string ShopId, string? ParentId);
+
 
     [HttpPost]
     [Authorize]
@@ -55,7 +56,7 @@ public class CategoryController : ControllerBase
         await db.Categories.AddAsync(category);
 
         var saved = await db.Save();
-        return saved ? Ok(new ShopCategoryOutput(category.Id, category.Name, category.ParentId)) : Problem();
+        return saved ? Ok(category.Id) : Problem();
     }
 
     [HttpDelete("{id}"), Authorize]
@@ -69,7 +70,14 @@ public class CategoryController : ControllerBase
 
         db.Remove(category);
         var saved = await db.Save();
-        return saved ? Ok() : Problem();
+
+        var categories = await db.Categories
+           .Where(x => x.ShopId == category.ShopId && x.Shop.OwnerId == uid)
+           .QueryMany();
+
+        var sorted = StructuringCategories.SortLeveled(categories);
+        
+        return saved ? Ok(sorted.List) : Problem();
     }
 
     /// <param name="ParentId">
@@ -77,7 +85,7 @@ public class CategoryController : ControllerBase
     /// Empty string will be used as not edit value.
     /// </param>
     public record EditCategoryInput(string Id, string? Name, string? ParentId = "");
-
+    public record CategoryOutput(string Id, string Name, string ParentId);
     [HttpPatch, Authorize]
     public async Task<IActionResult> EditCategory([FromBody] EditCategoryInput input)
     {
@@ -99,6 +107,12 @@ public class CategoryController : ControllerBase
         }
 
         var saved = await db.Save();
-        return saved ? Ok(new ShopCategoryOutput(category.Id, category.Name, category.ParentId)) : Problem();
+
+        var categories = await db.Categories
+           .Where(x => x.ShopId == category.ShopId && x.Shop.OwnerId == uid)
+           .QueryMany();
+
+        var sorted = StructuringCategories.SortLeveled(categories);       
+        return saved ? Ok(sorted.List) : Problem();
     }
 }
