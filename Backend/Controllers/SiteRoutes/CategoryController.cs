@@ -41,7 +41,6 @@ public class CategoryController : ControllerBase
 
     public record AddCategoryInput(string Name, string ShopId, string? ParentId);
 
-
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> AddCategory([FromBody] AddCategoryInput input)
@@ -76,7 +75,7 @@ public class CategoryController : ControllerBase
            .QueryMany();
 
         var sorted = StructuringCategories.SortLeveled(categories);
-        
+
         return saved ? Ok(sorted.List) : Problem();
     }
 
@@ -86,6 +85,7 @@ public class CategoryController : ControllerBase
     /// </param>
     public record EditCategoryInput(string Id, string? Name, string? ParentId = "");
     public record CategoryOutput(string Id, string Name, string ParentId);
+
     [HttpPatch, Authorize]
     public async Task<IActionResult> EditCategory([FromBody] EditCategoryInput input)
     {
@@ -112,7 +112,7 @@ public class CategoryController : ControllerBase
            .Where(x => x.ShopId == category.ShopId && x.Shop.OwnerId == uid)
            .QueryMany();
 
-        var sorted = StructuringCategories.SortLeveled(categories);       
+        var sorted = StructuringCategories.SortLeveled(categories);
         return saved ? Ok(sorted.List) : Problem();
     }
 }
