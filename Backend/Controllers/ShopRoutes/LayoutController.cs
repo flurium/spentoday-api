@@ -21,7 +21,7 @@ public class LayoutController : ControllerBase
     public record LayoutCategory(string Id, string Name);
     public record LayoutPage(string Slug, string Name);
     public record LayoutSocialMedia(string Name, string Link);
-    public record LayoutShop(string Id, string Name,
+    public record LayoutShop(string Id, string Name, string AccentColor,
         IEnumerable<LayoutCategory> Categories, IEnumerable<LayoutPage> Pages,
         IEnumerable<LayoutSocialMedia> SocialMediaLinks
     );
@@ -34,7 +34,7 @@ public class LayoutController : ControllerBase
             .Include(x => x.Categories)
             .Include(x => x.InfoPages)
             .Select(x => new LayoutShop(
-                x.Id, x.Name,
+                x.Id, x.Name, x.AccentColor,
                 x.Categories.Select(x => new LayoutCategory(x.Id, x.Name)),
                 x.InfoPages.Select(x => new LayoutPage(x.Slug, x.Title)),
                 x.SocialMediaLinks.Select(x => new LayoutSocialMedia(x.Name, x.Link))

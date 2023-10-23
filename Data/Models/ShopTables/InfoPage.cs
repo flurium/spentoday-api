@@ -17,3 +17,13 @@ public class InfoPage
         ShopId = shopId;
     }
 }
+
+public static class InfoPageExtension
+{
+    public static IQueryable<InfoPage> WithDomain(this IQueryable<InfoPage> query, string Domain)
+    {
+        return query.Where(x => x.Shop.Domains.Any(x => x.Domain == Domain
+            && x.Verified
+        ));
+    }
+}

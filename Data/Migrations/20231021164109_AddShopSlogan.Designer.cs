@@ -3,6 +3,7 @@ using System;
 using Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Data.Migrations
 {
     [DbContext(typeof(Db))]
-    partial class DbModelSnapshot : ModelSnapshot
+    [Migration("20231021164109_AddShopSlogan")]
+    partial class AddShopSlogan
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -221,30 +223,6 @@ namespace Data.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductImages");
-                });
-
-            modelBuilder.Entity("Data.Models.ProductTables.Property", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProductId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("Properties");
                 });
 
             modelBuilder.Entity("Data.Models.ShopTables.InfoPage", b =>
@@ -715,17 +693,6 @@ namespace Data.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("Data.Models.ProductTables.Property", b =>
-                {
-                    b.HasOne("Data.Models.ProductTables.Product", "Product")
-                        .WithMany("Properties")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
             modelBuilder.Entity("Data.Models.ShopTables.InfoPage", b =>
                 {
                     b.HasOne("Data.Models.ShopTables.Shop", "Shop")
@@ -862,8 +829,6 @@ namespace Data.Migrations
                     b.Navigation("OrderProducts");
 
                     b.Navigation("ProductCategories");
-
-                    b.Navigation("Properties");
                 });
 
             modelBuilder.Entity("Data.Models.ShopTables.Shop", b =>

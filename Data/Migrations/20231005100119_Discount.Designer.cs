@@ -3,6 +3,7 @@ using System;
 using Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Data.Migrations
 {
     [DbContext(typeof(Db))]
-    partial class DbModelSnapshot : ModelSnapshot
+    [Migration("20231005100119_Discount")]
+    partial class Discount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -138,9 +140,6 @@ namespace Data.Migrations
                     b.Property<double>("DiscountPrice")
                         .HasColumnType("double precision");
 
-                    b.Property<bool>("IsDiscount")
-                        .HasColumnType("boolean");
-
                     b.Property<bool>("IsDraft")
                         .HasColumnType("boolean");
 
@@ -223,30 +222,6 @@ namespace Data.Migrations
                     b.ToTable("ProductImages");
                 });
 
-            modelBuilder.Entity("Data.Models.ProductTables.Property", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProductId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("Properties");
-                });
-
             modelBuilder.Entity("Data.Models.ShopTables.InfoPage", b =>
                 {
                     b.Property<string>("Slug")
@@ -282,10 +257,6 @@ namespace Data.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<string>("AccentColor")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("LogoBucket")
                         .HasColumnType("text");
 
@@ -300,10 +271,6 @@ namespace Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Slogan")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -715,17 +682,6 @@ namespace Data.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("Data.Models.ProductTables.Property", b =>
-                {
-                    b.HasOne("Data.Models.ProductTables.Product", "Product")
-                        .WithMany("Properties")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
             modelBuilder.Entity("Data.Models.ShopTables.InfoPage", b =>
                 {
                     b.HasOne("Data.Models.ShopTables.Shop", "Shop")
@@ -862,8 +818,6 @@ namespace Data.Migrations
                     b.Navigation("OrderProducts");
 
                     b.Navigation("ProductCategories");
-
-                    b.Navigation("Properties");
                 });
 
             modelBuilder.Entity("Data.Models.ShopTables.Shop", b =>

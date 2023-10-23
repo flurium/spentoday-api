@@ -1,4 +1,4 @@
-﻿using Backend.Services;
+﻿using Backend.Features.Categories;
 using Data;
 using Data.Models.ProductTables;
 using Data.Models.ShopTables;
@@ -14,20 +14,35 @@ namespace Backend.Controllers.ShopRoutes;
 public class CatalogController : ControllerBase
 {
     private readonly Db db;
-    private readonly ImageService imageService;
-    private readonly IStorage storage;
-    private readonly CategoryService categoryService;
 
-    public CatalogController(Db db, ImageService imageService, IStorage storage, CategoryService categoryService)
+    public CatalogController(Db db)
     {
         this.db = db;
-        this.imageService = imageService;
-        this.storage = storage;
-        this.categoryService = categoryService;
     }
 
-    public record class CatalogInput(string Search = "", int Start = 0, int Count = 10, int? Min = null, int? Max = null, int? Order = 0);
-    public record ProductsOutput(string Id, string Name, double Price, StorageFile? Image);
+    [HttpGet("{domain}/categories")]
+    public async Task<IActionResult> Categories([FromRoute] string domain)
+    {
+        var shopId = await db.Shops.WithDomain(domain)
+            .Select(x => x.Id).QueryOne();
+        if (shopId == null) return NotFound();
+
+        var categories = await db.Categories
+            .Where(x => x.ShopId == shopId)
+            .QueryMany();
+
+        return Ok(StructuringCategories.SortLeveled(categories));
+    }
+
+    /// <param name="Order">
+    /// 0 = No sort | 1 = From cheap | 2 = From expensive
+    /// </param>
+    public record class CatalogInput(
+        string Search = "", int Start = 0, int Count = 10,
+        double? Min = null, double? Max = null, int? Order = 0,
+        List<string>? Categories = null
+    );
+    public record ProductsOutput(string Id, string Name, double Price, double DiscountPrice, bool IsDiscount, StorageFile? Image, string Slug);
 
     [HttpPost("{domain}")]
     public async Task<IActionResult> List([FromRoute] string domain, [FromBody] CatalogInput input)
@@ -48,15 +63,22 @@ public class CatalogController : ControllerBase
 
         if (input.Order != 0)
         {
-            query = input.Order == 1 ? query.OrderBy(x => x.Price) : query.OrderBy(x => x.Price).Reverse();
+            query = input.Order == 1 ? query.OrderBy(x => x.Price) : query.OrderByDescending(x => x.Price);
+        }
+
+        if (input.Categories != null && input.Categories.Count > 0)
+        {
+            query = query.Where(x => x.ProductCategories.Any(
+                x => input.Categories.Contains(x.CategoryId)
+            ));
         }
 
         query = query.Skip(input.Start).Take(input.Count);
 
         var products = await query
             .Select(x => new ProductsOutput(
-                x.Id, x.Name, x.Price,
-                x.Images.Select(x => x.GetStorageFile()).FirstOrDefault()
+                x.Id, x.Name, x.Price, x.DiscountPrice, x.IsDiscount,
+                x.Images.Select(x => x.GetStorageFile()).FirstOrDefault(), x.SeoSlug
             ))
             .QueryMany();
 

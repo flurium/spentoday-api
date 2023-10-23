@@ -1,4 +1,5 @@
 ﻿using Backend.Auth;
+using Backend.Features.Categories;
 using Backend.Services;
 using Data;
 using Data.Models.ProductTables;
@@ -64,14 +65,20 @@ public class ProductController : ControllerBase
         return saved ? Ok(new ListOutput(product.Id, product.Name, product.Price, product.IsDraft)) : Problem();
     }
 
-    public record ImageOutput(string Id, string Key, string Bucket, string Provider);
+    public record ImageOutput(
+        string Id, string Key, string Bucket, string Provider
+    );
+
     public record ProductOutput(
-        string Id, string Name, double Price, int Amount, bool IsDraft,
+        string Id, string Name, double Price, double DiscountPrice, bool IsDiscount, int Amount, bool IsDraft,
         string SeoTitle, string SeoDescription, string SeoSlug,
         string Description, IEnumerable<ImageOutput> Images
     );
-    public record CategoryOutput(string Id, string Name);
-    public record OneOutput(ProductOutput Product, IEnumerable<CategoryOutput> Categories, string? CategoryId);
+    public record struct OnePropertyOutput(string Id, string Key, string Value);
+    public record OneOutput(
+        ProductOutput Product, int MaxLevel, List<LeveledCategory> Categories, string? CategoryId,
+        IEnumerable<OnePropertyOutput> Properties
+    );
 
     [HttpGet("{id}"), Authorize]
     public async Task<IActionResult> One(string id)
@@ -82,11 +89,12 @@ public class ProductController : ControllerBase
             .Select(x => new
             {
                 Product = new ProductOutput(
-                    x.Id, x.Name, x.Price, x.Amount, x.IsDraft,
+                    x.Id, x.Name, x.Price, x.DiscountPrice, x.IsDiscount, x.Amount, x.IsDraft,
                     x.SeoTitle, x.SeoDescription, x.SeoSlug, x.Description,
                     x.Images.Select(i => new ImageOutput(i.Id, i.Key, i.Bucket, i.Provider))
                 ),
-                ShopId = x.ShopId
+                x.ShopId,
+                Properties = x.Properties.Select(p => new OnePropertyOutput(p.Id, p.Key, p.Value))
             })
             .QueryOne();
         if (product == null) return NotFound();
@@ -97,16 +105,16 @@ public class ProductController : ControllerBase
 
         var categories = await db.Categories
             .Where(x => x.ShopId == product.ShopId)
-            .Select(x => new CategoryOutput(x.Id, x.Name))
             .QueryMany();
 
-        var output = new OneOutput(product.Product, categories, productCategory);
+        var sorted = StructuringCategories.SortLeveled(categories);
+        var output = new OneOutput(product.Product, sorted.MaxLevel, sorted.List, productCategory, product.Properties);
         return Ok(output);
     }
 
     public record class UpdateInput(
         string Id, string? Name, double? Price, int? Amount, string? Description,
-        string? PreviewImage, string? SeoTitle, string? SeoDescription, string? SeoSlug
+        string? PreviewImage, string? SeoTitle, string? SeoDescription, string? SeoSlug, double? DiscountPrice, bool IsDiscount
     );
 
     [HttpPatch, Authorize]
@@ -124,6 +132,8 @@ public class ProductController : ControllerBase
         if (input.SeoTitle != null) product.SeoTitle = input.SeoTitle;
         if (input.SeoSlug != null) product.SeoSlug = input.SeoSlug;
         if (input.SeoDescription != null) product.SeoDescription = input.SeoDescription;
+        if (input.DiscountPrice != null) product.DiscountPrice = input.DiscountPrice.Value;
+        product.IsDiscount = input.IsDiscount;
 
         var saved = await db.Save();
         return saved ? Ok() : Problem();

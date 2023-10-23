@@ -10,7 +10,7 @@ public class PlanLimits
         var shopsCount = await db.Shops
             .Where(x => x.OwnerId == userId)
             .CountAsync().ConfigureAwait(false);
-        return shopsCount >= 1;
+        return shopsCount >= 2;
     }
 
     public static async Task<bool> ReachedProductLimit(Db db, string userId)
