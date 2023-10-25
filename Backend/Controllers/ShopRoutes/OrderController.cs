@@ -25,13 +25,7 @@ namespace Backend.Controllers.ShopRoutes
         public record ProductInputList(string Id, int Amount);
         public record OrderInput(string Email, List<ProductInputList> Products, string FullName, string Phone, string Adress, string PostIndex, string Comment);
 
-        public class ProductList
-        {
-            public string Id { get; set; }
-            public string Name { get; set; }
-            public double Price { get; set; }
-            public int Amount { get; set; }
-        }
+        public record ProductList(string Id,string Name,double Price,int Amount);
 
         [HttpPost("{domain}/new")]
         public async Task<IActionResult> New([FromBody] OrderInput input, [FromRoute] string domain)
@@ -49,24 +43,27 @@ namespace Backend.Controllers.ShopRoutes
                 predicate = predicate.Or(p => p.Id == product.Id);
             }
 
-            var products = await db.Products
+            var products = new List<ProductList>();
+
+            var productsToSelect = await db.Products
            .Where(x => x.ShopId == shop.Id)
            .Where(predicate)
-           .Select(p => new ProductList()
-           {
-               Id = p.Id,
-               Name = p.Name,
-               Price = p.IsDiscount ? p.DiscountPrice : p.Price,
-               Amount = 0
-           }
-           )
            .QueryMany();
-
-            foreach (var product in products)
+            foreach (var product in productsToSelect)
             {
                 var inputProduct = input.Products.FirstOrDefault(x => x.Id == product.Id);
+
                 if (inputProduct == null) return NotFound();
-                product.Amount = inputProduct.Amount;
+
+                product.Amount -= inputProduct.Amount;
+
+                var orderingProduct = new ProductList(
+                    product.Id,
+                    product.Name,
+                    product.IsDiscount ? product.DiscountPrice : product.Price,
+                    inputProduct.Amount
+                );
+                products.Add(orderingProduct);
             }
 
             var Message = "";
