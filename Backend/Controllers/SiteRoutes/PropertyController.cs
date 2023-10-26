@@ -44,6 +44,30 @@ public class PropertyController : ControllerBase
         return Ok(new PostPropertyOutput(property.Id, property.Key, property.Value));
     }
 
+    public record EditPropertyInput(
+        string Id,
+        string Key,
+        string Value
+    );
+
+    [HttpPut]
+    [Authorize]
+    public async Task<IActionResult> Edit([FromBody] EditPropertyInput input)
+    {
+        var uid = User.Uid();
+
+        var property = await db.Properties.QueryOne(x => x.Id == input.Id && x.Product.Shop.OwnerId == uid);
+        if (property == null) return NotFound();
+
+        property.Value = input.Value;
+        property.Key = input.Key;
+
+        var saved = await db.Save();
+        if (!saved) return Problem();
+
+        return Ok();
+    }
+
     [HttpDelete("{propertyId}")]
     [Authorize]
     public async Task<IActionResult> Delete([FromRoute] string propertyId)
