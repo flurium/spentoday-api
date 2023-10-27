@@ -73,6 +73,8 @@ public class CatalogController : ControllerBase
             ));
         }
 
+        query = query.Where(x => x.Amount > 0);
+
         query = query.Skip(input.Start).Take(input.Count);
 
         var products = await query
