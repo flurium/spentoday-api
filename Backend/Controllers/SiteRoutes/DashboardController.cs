@@ -6,6 +6,7 @@ using Lib;
 using Lib.EntityFrameworkCore;
 using Lib.Storage;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -82,15 +83,23 @@ public class DashboardController : ControllerBase
         return saved ? Ok(new ShopOut(newShop.Name, newShop.Id)) : Problem();
     }
 
+    [NonAction]
+    public async Task<string?> AccountImage(string uid)
+    {
+        var userImage = await db.Users.Where(x => x.Id == uid).Select(x => x.GetStorageFile()).QueryOne();
+        return userImage == null ? null : storage.Url(userImage);
+    }
+
+    public record struct ShopsOutput(IEnumerable<AllShops> Shops, string? AccountImage);
+
     [HttpGet("shops")]
     [Authorize]
     public async Task<IActionResult> Shops()
     {
-        var uid = User.FindFirst(Jwt.Uid);
-        if (uid == null) return Unauthorized();
+        var uid = User.Uid();
 
         var shops = await db.Shops
-            .Where(x => x.OwnerId == uid.Value)
+            .Where(x => x.OwnerId == uid)
             .Select(x => new
             {
                 x.Name,
@@ -106,6 +115,16 @@ public class DashboardController : ControllerBase
             return new AllShops(x.Id, x.Name, url, x.Path?.Domain);
         });
 
-        return Ok(allShops);
+        return Ok(new ShopsOutput(allShops, await AccountImage(uid)));
+    }
+
+    public record struct ShopLayoutOutput(string? AccountImage);
+
+    [HttpGet("layout")]
+    public async Task<IActionResult> ShopLayout()
+    {
+        var uid = User.Uid();
+        var accountImage = await AccountImage(uid);
+        return Ok(new ShopLayoutOutput(accountImage));
     }
 }
