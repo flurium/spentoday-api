@@ -57,7 +57,7 @@ public class HomeController : ControllerBase
         var slogans = shop.Slogan.Split('\n', StringSplitOptions.RemoveEmptyEntries).ToList();
 
         var products = await db.Products
-            .Where(x => x.ShopId == shop.Id)
+            .Where(x => x.ShopId == shop.Id && x.IsDraft == false)
             .Select(p => new HomeProduct(
                 p.Id,
                 p.SeoSlug,
