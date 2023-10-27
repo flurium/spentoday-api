@@ -53,7 +53,7 @@ public class CatalogController : ControllerBase
         var search = input.Search.ToLower();
 
         IQueryable<Product> query = db.Products
-            .Where(x => x.ShopId == shop.Id && x.Name.ToLower().Contains(search))
+            .Where(x => x.ShopId == shop.Id && x.Name.ToLower().Contains(search) && x.IsDraft == false)
             .Include(x => x.Images)
             .OrderBy(x => x.Name.ToLower().StartsWith(search));
 
