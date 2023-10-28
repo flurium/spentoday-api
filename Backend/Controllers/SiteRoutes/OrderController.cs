@@ -1,8 +1,12 @@
 ﻿using Backend.Auth;
 using Data;
+using Data.Models.ProductTables;
+using Data.Models.ShopTables;
 using Lib.Email;
 using Lib.EntityFrameworkCore;
+using LinqKit;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers.SiteRoutes;
 
@@ -47,8 +51,53 @@ public class OrderController : ControllerBase
     public async Task<IActionResult> SetStatus([FromRoute] string orderId, [FromBody] StatusInput input)
     {
         var order = await db.Orders
+            .Include(x => x.OrderProducts)
             .QueryOne(x => x.Id == orderId);
         if (order == null) return NotFound();
+
+        if (input.Status == "Скасовано")
+        {
+
+            var predicate = PredicateBuilder.New<Product>();
+            foreach (var orderProduct in order.OrderProducts)
+            {
+                predicate = predicate.Or(p => p.Id == orderProduct.ProductId);
+            }
+            var products = await db.Products
+           .Where(predicate)
+           .QueryMany();
+
+            foreach (var product in products)
+            {
+                var orderProduct = order.OrderProducts.FirstOrDefault(x => x.ProductId == product.Id);
+
+                if (orderProduct == null) return NotFound();
+
+                product.Amount += orderProduct.Amount;
+            }
+
+        }
+        else if ((input.Status == "Готується" || input.Status == "Виконано") && order.Status == "Скасовано" )
+        {
+            var predicate = PredicateBuilder.New<Product>();
+            foreach (var orderProduct in order.OrderProducts)
+            {
+                predicate = predicate.Or(p => p.Id == orderProduct.ProductId);
+            }
+            var products = await db.Products
+           .Where(predicate)
+           .QueryMany();
+
+            foreach (var product in products)
+            {
+                var orderProduct = order.OrderProducts.FirstOrDefault(x => x.ProductId == product.Id);
+
+                if (orderProduct == null) return NotFound();
+
+                product.Amount -= orderProduct.Amount;
+            }
+        }
+
         order.Status = input.Status;
 
         var saved = await db.Save();
