@@ -1,8 +1,6 @@
 ﻿using Backend.Auth;
 using Data;
 using Data.Models.ProductTables;
-using Data.Models.ShopTables;
-using Lib.Email;
 using Lib.EntityFrameworkCore;
 using LinqKit;
 using Microsoft.AspNetCore.Mvc;
