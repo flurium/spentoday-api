@@ -48,7 +48,7 @@ public class SingleProductController : ControllerBase
     {
         var product = await db.Products
             .WithDomain(domain)
-            .Where(x => x.SeoSlug == slugOrId || x.Id == slugOrId)
+            .Where(x => x.IsDraft == false && (x.SeoSlug == slugOrId || x.Id == slugOrId))
             .Select(x => new
             {
                 x.Id,
@@ -99,7 +99,8 @@ public class SingleProductController : ControllerBase
         }
 
         var products = await db.Products
-            .Where(x => x.Shop.Domains.Any(x => x.Domain == domain && x.Verified) && x.Name != name)
+            .WithDomain(domain)
+            .Where(x => x.IsDraft == false && x.Name != name)
             .Where(keywordsPredicate)
             .Select(x => new ProductItemOutput(
                 x.Id, x.Name, x.Price, x.DiscountPrice, x.IsDiscount,

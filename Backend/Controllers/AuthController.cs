@@ -169,4 +169,11 @@ public class AuthController : ControllerBase
         }
         return Ok();
     }
+
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        Response.Cookies.Delete(RefreshOnly.Cookie);
+        return Ok();
+    }
 }

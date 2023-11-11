@@ -1,8 +1,6 @@
 ﻿using Backend.Auth;
 using Data;
 using Data.Models.ProductTables;
-using Data.Models.ShopTables;
-using Lib.Email;
 using Lib.EntityFrameworkCore;
 using LinqKit;
 using Microsoft.AspNetCore.Mvc;
@@ -15,12 +13,10 @@ namespace Backend.Controllers.SiteRoutes;
 public class OrderController : ControllerBase
 {
     private readonly Db db;
-    private readonly IEmailSender email;
 
-    public OrderController(Db db, IEmailSender email)
+    public OrderController(Db db)
     {
         this.db = db;
-        this.email = email;
     }
 
     public record OrderOutput(string Id, double Total, int Amount, string Status, DateTime Date);
