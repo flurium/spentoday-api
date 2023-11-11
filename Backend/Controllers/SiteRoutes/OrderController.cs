@@ -33,7 +33,7 @@ public class OrderController : ControllerBase
             .Skip(start).Take(10)
             .Select(x => new OrderOutput(
                 x.Id,
-                x.OrderProducts.Sum(x => x.Amount * x.Price),
+                Math.Round(x.OrderProducts.Sum(op => op.Amount * op.Price), 2),
                 x.OrderProducts.Sum(x => x.Amount),
                 x.Status, x.Date
             ))
