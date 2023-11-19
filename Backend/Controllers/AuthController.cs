@@ -1,8 +1,10 @@
 ﻿using Backend.Auth;
 using Backend.Config;
+using Data;
 using Data.Models.UserTables;
 using Lib;
 using Lib.Email;
+using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Web;
@@ -15,13 +17,15 @@ public class AuthController : ControllerBase
 {
     private readonly Jwt jwt;
     private readonly UserManager<User> userManager;
+    private readonly Db db;
     private readonly IEmailSender email;
 
-    public AuthController(Jwt jwt, UserManager<User> userManager, IEmailSender email)
+    public AuthController(Jwt jwt, UserManager<User> userManager, IEmailSender email, Db db)
     {
         this.jwt = jwt;
         this.userManager = userManager;
         this.email = email;
+        this.db = db;
     }
 
     [NonAction]
@@ -103,13 +107,13 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
-    [HttpGet("confirm")]
+    [HttpPost("confirm")]
     public async Task<IActionResult> Confirm([FromQuery] string token, [FromQuery] string user)
     {
-        var u = await userManager.FindByEmailAsync(user);
+        var userInDb = await userManager.FindByEmailAsync(user);
+        if (userInDb == null) return NotFound();
 
-        if (u == null) return NotFound();
-        var res = await userManager.ConfirmEmailAsync(u, token);
+        var res = await userManager.ConfirmEmailAsync(userInDb, token);
         if (!res.Succeeded) return Problem();
 
         return Ok();
