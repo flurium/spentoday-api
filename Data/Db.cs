@@ -38,13 +38,13 @@ public class Db : IdentityDbContext<User>
         var user = builder.Entity<User>();
         user.HasKey(x => x.Id);
 
-        var question = builder.Entity<Question>();
-        question.HasKey(x => x.Id);
-
         // Shop tables
         var shop = builder.Entity<Shop>();
         shop.HasKey(x => x.Id);
         shop.HasOne(x => x.Owner).WithMany(x => x.Shops).HasForeignKey(x => x.OwnerId);
+
+        var question = builder.Entity<Question>();
+        question.HasKey(x => x.Id);
 
         var shopDomain = builder.Entity<ShopDomain>();
         shopDomain.HasKey(x => new { x.Domain, x.ShopId });

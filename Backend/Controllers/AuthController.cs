@@ -4,7 +4,6 @@ using Data;
 using Data.Models.UserTables;
 using Lib;
 using Lib.Email;
-using Lib.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Web;
@@ -88,11 +87,7 @@ public class AuthController : ControllerBase
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
 
         string baseUrl = Request.Headers["Referer"].ToString();
-        //string baseUrl = $"{Request.Scheme}://{Request.Host}";
         string confirmationLink = $"{baseUrl}account/confirm?token={HttpUtility.UrlEncode(token)}&user={user.Email}";
-        //string confirmationLink = $"{baseUrl}confirm?token ={Uri.EscapeDataString(token)}&user ={Uri.EscapeDataString(user.Email)}";
-
-        //Console.WriteLine(confirmationLink);
 
         await email.Send(
             fromEmail: "support@flurium.com",

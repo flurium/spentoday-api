@@ -63,8 +63,8 @@ public class DashboardController : ControllerBase
         return saved ? Ok() : Problem();
     }
 
-    public record ShopOut(string Name, string Id);
     public record AllShops(string Id, string Name, string? TopBanner, string? Slug);
+    public record ShopOut(string Name, string Id);
     public record ShopAdd(string ShopName);
 
     [HttpPost("addshop")]
