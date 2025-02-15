@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
+  <Class Name="Data.Models.ProductTables.Category">
+    <Position X="2.75" Y="20" Width="4" />
+    <TypeIdentifier>
+      <HashCode>QBACAAAAAAAAAAAAABAAQAQAAACAAAAAAgAAAAAAAAA=</HashCode>
+      <FileName>Models\ProductTables\Category.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Data.Models.ProductTables.Order">
+    <Position X="2.75" Y="15.5" Width="4" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAlACAAAIAAAAAAAAgAAAgAAAABAAAAIAAAAAA=</HashCode>
+      <FileName>Models\ProductTables\Order.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Data.Models.ProductTables.OrderProduct">
+    <Position X="7.25" Y="15.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>EAECAAAAAQAAAAAAAAAAAASAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\ProductTables\OrderProduct.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Data.Models.ProductTables.Product">
+    <Position X="9.5" Y="15.5" Width="3.75" />
+    <TypeIdentifier>
+      <HashCode>QAACKAAFAQAkAAAAABACAASAAgCAABAAAAAEAAACAAA=</HashCode>
+      <FileName>Models\ProductTables\Product.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Data.Models.ProductTables.ProductExtension">
+    <Position X="9.5" Y="20.75" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\ProductTables\Product.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Data.Models.ProductTables.ProductCategory">
+    <Position X="7.25" Y="20" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>EAECAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAACAA=</HashCode>
+      <FileName>Models\ProductTables\ProductCategory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Data.Models.ProductTables.ProductImage" BaseTypeListCollapsed="true">
+    <Position X="13.75" Y="15.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>EAACAQAAAAAEAAQAAAAAAAAAAAAAAAAAAAAAAAAIAAA=</HashCode>
+      <FileName>Models\ProductTables\ProductImage.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Data.Models.ProductTables.Property">
+    <Position X="13.75" Y="18.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAACAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Models\ProductTables\Property.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Data.Models.ShopTables.InfoPage">
+    <Position X="2.75" Y="8" Width="2" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAgAgCEAAAAAAAAAAAACAAAAAAAAAAAQAAAA=</HashCode>
+      <FileName>Models\ShopTables\InfoPage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Data.Models.ShopTables.InfoPageExtension">
+    <Position X="2.75" Y="11.25" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\ShopTables\InfoPage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Data.Models.ShopTables.Shop" BaseTypeListCollapsed="true">
+    <Position X="10.25" Y="8" Width="4" />
+    <TypeIdentifier>
+      <HashCode>QABCAQCIAABCAAAAAAAAAgQAAAQBEAAAAAAERAAAABQ=</HashCode>
+      <FileName>Models\ShopTables\Shop.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Data.Models.ShopTables.ShopExtension">
+    <Position X="10.25" Y="13.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\ShopTables\Shop.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Data.Models.ShopTables.ShopBanner" BaseTypeListCollapsed="true">
+    <Position X="5.5" Y="8" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>QAACAQAAAAAEAAQAAAAAAAAAAACAAAAAAAAAAAAIAAA=</HashCode>
+      <FileName>Models\ShopTables\ShopBanner.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Data.Models.ShopTables.ShopDomain">
+    <Position X="8.25" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAIAAAAAAAAAAAAAAAAAAAAAAgCAAAAAAAAAAAACAAA=</HashCode>
+      <FileName>Models\ShopTables\ShopDomain.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Data.Models.ShopTables.SocialMediaLink">
+    <Position X="6" Y="11.25" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>QAACAAAAAAAAAAAAAAAAAAQAAACAAAAAAAAAQAAAAAA=</HashCode>
+      <FileName>Models\ShopTables\SocialMediaLink.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Data.Models.ShopTables.Subscription">
+    <Position X="8.25" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAACAAAAACAAAAAAAAAAAAAAAACAAAABAAAAAAAAAAA=</HashCode>
+      <FileName>Models\ShopTables\Subscription.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Data.Models.UserTables.Question">
+    <Position X="4" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\UserTables\Question.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Data.Models.UserTables.User" BaseTypeListCollapsed="true">
+    <Position X="10.25" Y="3.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>IAAAAQAAAAAAAAAAEAAAAA0ABAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\UserTables\User.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Data.Db">
+    <Position X="6" Y="2.75" Width="3.25" />
+    <TypeIdentifier>
+      <HashCode>RBEYAAABAABAAAAAEBAAAAAAEAAAEAAEAAAAAAACAAQ=</HashCode>
+      <FileName>Db.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
+  <Class Name="Lib.Jwt">
+    <Position X="12.5" Y="6" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAQCAAAAAABAAAAAAAAAAAAAAAAAAAAABAAA=</HashCode>
+      <FileName>Jwt.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Lib.Http">
+    <Position X="7.75" Y="8.75" Width="3" />
+    <TypeIdentifier>
+      <HashCode>gAAAAAAQAAAAAABAAAAAAAAACAEAAAAAAAAQAAIAAAA=</HashCode>
+      <FileName>Http.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Lib.CompactExtension">
+    <Position X="5.75" Y="8.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>Http.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Lib.Env">
+    <Position X="5.75" Y="10.25" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAAAAAAAAAAAAAAQAAAAAAAAAABAA=</HashCode>
+      <FileName>Env.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Lib.BackgroundQueue">
+    <Position X="11.25" Y="8.75" Width="3.5" />
+    <NestedTypes>
+      <Class Name="Lib.BackgroundQueue.HostedService" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>BackgroundQueue.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BackgroundQueue.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Lib.Storage.Services.Storj" BaseTypeListCollapsed="true">
+    <Position X="9.75" Y="1" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAQAAAAAAAAABAAAAAgAAAEAAAAACAkABAAAAAA=</HashCode>
+      <FileName>Storage\Services\Storj.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Lib.EntityFrameworkCore.DbExtension">
+    <Position X="1.75" Y="8.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>EntityFrameworkCore\DbExtension.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Lib.EntityFrameworkCore.QueryExtension">
+    <Position X="1.75" Y="10.25" Width="3.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAAAAAABAEAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>EntityFrameworkCore\QueryExtension.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Lib.Email.DayLimiter" BaseTypeListCollapsed="true">
+    <Position X="4" Y="1.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAAAAAAAABAAAAAAEAAAAAAAAAAAAAAgAgAACA=</HashCode>
+      <FileName>Email\Limiter.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Lib.Email.Services.Brevo" BaseTypeListCollapsed="true">
+    <Position X="8.5" Y="6.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAEAAAAAAAAAIAAgAAAAAAAAAAAA=</HashCode>
+      <FileName>Email\Services\Brevo.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Lib.Email.Services.Resend" BaseTypeListCollapsed="true">
+    <Position X="6" Y="6.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAEAAAAAAAAAIAAgAAAAAAAAAAAA=</HashCode>
+      <FileName>Email\Services\Resend.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Lib.Email.Services.SendGrid" BaseTypeListCollapsed="true">
+    <Position X="3.5" Y="6.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAEAAAAAAAAAIAAgAAAAAAAAAAAA=</HashCode>
+      <FileName>Email\Services\SendGrid.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Lib.Email.EmailGod">
+    <Position X="1.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>Email\EmailGod.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Interface Name="Lib.Storage.IStorageFileContainer">
+    <Position X="12.25" Y="4" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Storage\IStorage.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Lib.Storage.IPossibleStorageFileContainer">
+    <Position X="12.25" Y="2.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Storage\IStorage.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Lib.Storage.IStorage">
+    <Position X="12.25" Y="1" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAgAAAEAAAAACAAAAAAAAAA=</HashCode>
+      <FileName>Storage\IStorage.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Lib.Email.ILimiter">
+    <Position X="1.75" Y="1.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAABAAAAAAEAAAAAAAAAAAAAAAAgAAAA=</HashCode>
+      <FileName>Email\Limiter.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Lib.Email.IEmailSender">
+    <Position X="3.5" Y="4.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Email\IEmailSender.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -2,20 +2,6 @@
 
 namespace Lib.Email;
 
-public enum EmailStatus
-{
-    Success,
-    LimitReached,
-    Failed
-}
-
-public interface IEmailSender
-{
-    public Task<EmailStatus> Send(string fromEmail, string fromName, List<string> toEmails, string subject, string text, string html);
-}
-
-public record EmailService(IEmailSender Sender, params ILimiter[] Limiters);
-
 /// <summary>
 /// Orchestrate/manage several email services.
 /// Based on limits it sends email through available service.
